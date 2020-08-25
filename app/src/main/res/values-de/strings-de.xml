@@ -1159,6 +1159,8 @@
     <string name="title_warn_nightscout_failures">Alarm bei Fehlern</string>
     <string name="summary_nightscout_device_append_source_info">Für G5, sendet Sammlertyp (z.B. OB1) und lese Nachfüll-Status (native) an Nightscout.</string>
     <string name="title_nightscout_device_append_source_info">Quell-Info an Gerätename anhängen</string>
+    <string name="summary_nightscout_upload_insulin_profiles">Wenn der Nightscout Server die Uploads von Insulin Profilen erlaubt, können hier die Profile und die Multi-Insulin Konfiguration hochgeladen werden.</string>
+    <string name="title_nightscout_upload_insulin_profiles">Insulin Profile auf Nightscout hochladen</string>
     <string name="summary_tap_to_send_historical_data">Klicken um historische Daten an Nightscout zu senden</string>
     <string name="title_back_fill_data">Back-fill Daten</string>
     <string name="summary_tidepool_upload_screen">Daten zum Tidepool-Dienst hochladen</string>

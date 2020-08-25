@@ -47,6 +47,11 @@ public abstract class Insulin {
         return name;
     }
 
+    public double getConcentration()
+    {
+        return concentration;
+    }
+
     public String getDisplayName() {
         return displayName;
     }
@@ -77,5 +82,19 @@ public abstract class Insulin {
 
     public double calculateActivity(double time) {
         return -1;
+    }
+
+    public ArrayList<Double> getIOBList(int timesliceSize)
+    {
+        ArrayList<Double> ret = new ArrayList<>();
+        double time = 0;
+        double iob = 1;
+        while (iob > 1.0/1000000)
+        {
+            iob = calculateIOB(time);
+            ret.add(iob);
+            time = time + timesliceSize;
+        }
+        return ret;
     }
 }
