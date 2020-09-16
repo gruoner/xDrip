@@ -11,6 +11,7 @@ import android.widget.Spinner;
 
 import com.eveningoutpost.dexdrip.BaseAppCompatActivity;
 import com.eveningoutpost.dexdrip.R;
+import com.eveningoutpost.dexdrip.UtilityModels.PersistentStore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -127,6 +128,7 @@ public class InsulinProfileEditor extends BaseAppCompatActivity {
 
     public void profileSaveButton(View myview) {
         InsulinManager.saveDisabledProfilesToPrefs();
+        PersistentStore.setLong("nightscout-rest-insulin-synced-time", 0);
         finish();
     }
 

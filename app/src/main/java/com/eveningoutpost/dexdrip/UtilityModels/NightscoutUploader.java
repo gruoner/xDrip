@@ -26,12 +26,17 @@ import com.eveningoutpost.dexdrip.Models.UserError.Log;
 import com.eveningoutpost.dexdrip.Models.LibreBlock;
 import com.eveningoutpost.dexdrip.Services.DexCollectionService;
 import com.eveningoutpost.dexdrip.Services.ActivityRecognizedService;
+import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
+import com.eveningoutpost.dexdrip.insulin.Insulin;
+import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.utils.CipherUtils;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 import com.eveningoutpost.dexdrip.utils.Mdns;
 import com.eveningoutpost.dexdrip.xdrip;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.WriteResult;
@@ -45,6 +50,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -151,6 +157,14 @@ public class NightscoutUploader {
             @POST("activity")
             Call<ResponseBody> uploadActivity(@Header("api-secret") String secret, @Body RequestBody body);
 
+            @POST("insulin")
+            Call<ResponseBody> createInsulin(@Header("api-secret") String secret, @Body RequestBody body);
+
+            @PUT("insulin")
+            Call<ResponseBody> updateInsulin(@Header("api-secret") String secret, @Body RequestBody body);
+
+            @GET("insulin")
+            Call<ResponseBody> getInsulin(@Header("api-secret") String secret);
         }
 
         private class UploaderException extends RuntimeException {
@@ -566,6 +580,15 @@ public class NightscoutUploader {
                   if (JoH.ratelimit("heartrate-upload-exception", 3600)) {
                       Log.e(TAG, "Exception uploading REST API heartrate: " + e.getMessage());
                   }
+                }
+            }
+            if (Pref.getBooleanDefaultFalse("nightscout_upload_insulin_profiles")) {
+                try {
+                    sendInsulin2Nightscout(nightscoutService, secret);
+                } catch (Exception e) {
+                    if (JoH.ratelimit("insulin-profile-upload-exception", 3600)) {
+                        Log.e(TAG, "Exception uploading REST API insulin profiles: " + e.getMessage());
+                    }
                 }
             }
         }
@@ -1377,20 +1400,135 @@ public class NightscoutUploader {
 
         private RequestBody gzip(final RequestBody body) {
             return new RequestBody() {
-                @Override public MediaType contentType() {
+                @Override
+                public MediaType contentType() {
                     return body.contentType();
                 }
 
-                @Override public long contentLength() {
+                @Override
+                public long contentLength() {
                     return -1; // We don't know the compressed length in advance!
                 }
 
-                @Override public void writeTo(BufferedSink sink) throws IOException {
+                @Override
+                public void writeTo(BufferedSink sink) throws IOException {
                     BufferedSink gzipSink = Okio.buffer(new GzipSink(sink));
                     body.writeTo(gzipSink);
                     gzipSink.close();
                 }
             };
+        }
+    }
+
+    // Multiple Insulin Upload to Nightscout
+    private void sendInsulin2Nightscout(NightscoutService nightscoutService, String apiSecret) throws Exception {
+        Log.d(TAG, "Processing insulin profiles for RESTAPI");
+        final String STORE_COUNTER = "nightscout-rest-insulin-synced-time";
+        if (PersistentStore.getLong(STORE_COUNTER) > JoH.tsl() - Constants.DAY_IN_MS / 4)
+        {
+            Log.d(TAG, "Insulin Profiles already sync within last 24h");
+        } else if (apiSecret != null)
+        {
+            Response<ResponseBody> r;
+            r = nightscoutService.getInsulin(apiSecret).execute();
+            if ((r != null) && (r.isSuccessful()))
+            {
+                NightscoutFollow.NightscoutInsulinStructure[] NSprofiles = null;
+                try {
+                    NSprofiles = new GsonBuilder().create().fromJson(r.body().string(), NightscoutFollow.NightscoutInsulinStructure[].class);
+                    android.util.Log.d(TAG, "insulin profiles loaded from nightscout");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    android.util.Log.d(TAG, "Got exception during insulin load: " + e.toString());
+                }
+
+                ArrayList<Insulin> profiles = InsulinManager.getAllProfiles();
+                final ArrayList<NightscoutFollow.NightscoutInsulinStructure> data2Create = new ArrayList<NightscoutFollow.NightscoutInsulinStructure>();
+                for (Insulin profile : profiles)
+                {
+                    NightscoutFollow.NightscoutInsulinStructure found = null;
+                    for (NightscoutFollow.NightscoutInsulinStructure o : NSprofiles)
+                        if (o.name.equalsIgnoreCase(profile.getName())) {
+                            found = o;
+                            break;
+                        }
+                    if (found != null)
+                    {
+                        Boolean somethingChanged = false;
+                        if (!found.displayName.equals(profile.getDisplayName())) {
+                            found.displayName = profile.getDisplayName();
+                            somethingChanged = true;
+                        }
+                        if (!found.name.equals(profile.getName())) {
+                            found.name = profile.getName();
+                            somethingChanged = true;
+                        }
+                        if (!profile.getPharmacyProductNumber().containsAll(found.pharmacyProductNumber) || !found.pharmacyProductNumber.containsAll(profile.getPharmacyProductNumber())) {
+                            found.pharmacyProductNumber = profile.getPharmacyProductNumber();
+                            somethingChanged = true;
+                        }
+                        if ((found.enabled.equalsIgnoreCase("false") && profile.isEnabled()) ||
+                                (found.enabled.equalsIgnoreCase("true") && !profile.isEnabled())) {
+                            found.enabled = (profile.isEnabled() ? "TRUE" : "FALSE");
+                            somethingChanged = true;
+                        }
+                        if (profile == InsulinManager.getBasalProfile() && !found.type.equalsIgnoreCase("basal")) {
+                            found.type = "basal";
+                            somethingChanged = true;
+                        } else if (profile == InsulinManager.getBolusProfile() && !found.type.equalsIgnoreCase("bolus")) {
+                            found.type = "bolus";
+                            somethingChanged = true;
+                        } else if ((profile != InsulinManager.getBasalProfile()) && (profile != InsulinManager.getBolusProfile()) && (found.type != null) && !found.type.isEmpty()) {
+                            found.type = "";
+                            somethingChanged = true;
+                        }
+                        ArrayList<Double> io1min = profile.getIOBList(1);
+                        if (!found.IOB1Min.equals(io1min)) {
+                            found.IOB1Min = io1min;
+                            somethingChanged = true;
+                        }
+                        if (somethingChanged) {
+                            String request = new GsonBuilder().create().toJson(found, NightscoutFollow.NightscoutInsulinStructure.class);
+                            final RequestBody body = RequestBody.create(MediaType.parse("application/json"), request);
+                            r = nightscoutService.updateInsulin(apiSecret, body).execute();
+                            if (!r.isSuccessful()) {
+                                if (JoH.ratelimit("insulin-profile-unable-upload", 3600)) {
+                                    UserError.Log.e(TAG, "Unable to upload insulin profiles data to Nightscout - check nightscout version");
+                                }
+                                throw new UploaderException(r.message(), r.code());
+                            }
+                        }
+                    } else {
+                        found = new NightscoutFollow.NightscoutInsulinStructure();
+                        found.displayName = profile.getDisplayName();
+                        found.name = profile.getName();
+                        found.pharmacyProductNumber = profile.getPharmacyProductNumber();
+                        found.enabled = (profile.isEnabled() ? "TRUE" : "FALSE");
+                        if (profile == InsulinManager.getBasalProfile())
+                            found.type = "basal";
+                        if (profile == InsulinManager.getBolusProfile())
+                            found.type = "bolus";
+                        found.IOB1Min = profile.getIOBList(1);
+                        data2Create.add(found);
+                    }
+                }
+                if (data2Create.size() > 0)
+                {
+                    String request = new GsonBuilder().create().toJson(data2Create.toArray(), NightscoutFollow.NightscoutInsulinStructure[].class);
+                    final RequestBody body = RequestBody.create(MediaType.parse("application/json"), request);
+                    r = nightscoutService.createInsulin(apiSecret, body).execute();
+                    if (!r.isSuccessful()) {
+                        if (JoH.ratelimit("insulin-profile-unable-upload", 3600)) {
+                            UserError.Log.e(TAG, "Unable to upload insulin profiles data to Nightscout - check nightscout version");
+                        }
+                        throw new UploaderException(r.message(), r.code());
+                    }
+                }
+                PersistentStore.setLong(STORE_COUNTER, JoH.tsl());
+                UserError.Log.d(TAG, "Updating insulin profiles synced to nightscout");
+            }
+        } else {
+            UserError.Log.e(TAG, "Api secret is null");
         }
     }
 }
