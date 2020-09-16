@@ -1,5 +1,6 @@
 package com.eveningoutpost.dexdrip.cgm.nsfollow;
 
+import com.activeandroid.ActiveAndroid;
 import com.eveningoutpost.dexdrip.BuildConfig;
 import com.eveningoutpost.dexdrip.Models.JoH;
 import com.eveningoutpost.dexdrip.Models.UserError;
@@ -10,6 +11,7 @@ import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.messages.Entry;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.utils.NightscoutUrl;
 import com.eveningoutpost.dexdrip.evaluators.MissedReadingsEstimator;
+import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.tidepool.InfoInterceptor;
 
 import java.util.List;
@@ -45,6 +47,16 @@ public class NightscoutFollow {
     private static Retrofit retrofit;
     private static Nightscout service;
 
+    public static class NightscoutInsulinStructure {
+        public String _id;
+        public String displayName;
+        public String name;
+        public List<String> pharmacyProductNumber;
+        public String enabled;
+        public String type;
+        public List<Double> IOB1Min;
+    }
+
 
     public interface Nightscout {
         @Headers({
@@ -56,6 +68,9 @@ public class NightscoutFollow {
 
         @GET("/api/v1/treatments")
         Call<ResponseBody> getTreatments(@Header("api-secret") String secret);
+
+        @GET("/api/v1/insulin")
+        Call<List<NightscoutInsulinStructure>> getInsulinProfiles(@Header("api-secret") String secret);
     }
 
     private static Nightscout getService() {
@@ -99,6 +114,19 @@ public class NightscoutFollow {
         })
                 .setOnFailure(() -> msg(session.treatmentsCallback.getStatus()));
 
+        // set up processing callback for treatments
+        session.insulinCallback = new NightscoutCallback<List<NightscoutInsulinStructure>>("NS insulin download", session, () -> {
+            // process data
+            try {
+                if (InsulinManager.updateFromNightscout(session.insulin)) ActiveAndroid.clearCache();   // when at least one profile has been changed ActiveAndroid Cache will be cleared to reload all insulin injections from scratch
+                NightscoutFollowService.updateInsulinDownloaded();
+            } catch (Exception e) {
+                JoH.clearRatelimit("nsfollow-insulin-download");
+                msg("Insulin: " + e);
+            }
+        })
+                .setOnFailure(() -> msg(session.insulinCallback.getStatus()));
+
         if (!emptyString(urlString)) {
             try {
                 int count = Math.min(MissedReadingsEstimator.estimate() + 1, (int) (Constants.DAY_IN_MS / DEXCOM_PERIOD));
@@ -119,6 +147,17 @@ public class NightscoutFollow {
                     }
                 }
             }
+            if (insulinDownloadEnabled()) {
+                if (JoH.ratelimit("nsfollow-insulin-download", 60*10)) {
+                    try {
+                        getService().getInsulinProfiles(session.url.getHashedSecret()).enqueue(session.insulinCallback);
+                    } catch (Exception e) {
+                        JoH.clearRatelimit("nsfollow-insulin-download");
+                        UserError.Log.e(TAG, "Exception in insulin work() " + e);
+                        msg("Nightscout follow insulin error: " + e);
+                    }
+                }
+            }
         } else {
             msg("Please define Nightscout follow URL");
         }
@@ -130,6 +169,10 @@ public class NightscoutFollow {
 
     static boolean treatmentDownloadEnabled() {
         return Pref.getBooleanDefaultFalse("nsfollow_download_treatments");
+    }
+
+    static boolean insulinDownloadEnabled() {
+        return Pref.getBooleanDefaultFalse("nsfollow_download_insulin");
     }
 
     // TODO make reusable

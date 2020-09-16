@@ -10,7 +10,6 @@ public class InsulinInjection {
     private Insulin profile;
 
     @Expose
-    @Getter
     private double units;
 
     @Expose
