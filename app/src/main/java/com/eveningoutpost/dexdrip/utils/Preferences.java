@@ -1504,8 +1504,8 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             if (collectionType != DexCollectionType.NSFollow) {
                 try {
                     collectionCategory.removePreference(nsFollowUrl);
-                    collectionCategory.removePreference(nsFollowDownloadTreatment);
                     collectionCategory.removePreference(nsFollowDownloadInsulin);
+                    collectionCategory.removePreference(nsFollowDownloadTreatment);
                 } catch (Exception e) {
                     //
                 }
@@ -2131,8 +2131,8 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
 
                     if (collectionType == DexCollectionType.NSFollow) {
                         collectionCategory.addPreference(nsFollowUrl);
-                        collectionCategory.addPreference(nsFollowDownloadTreatment);
                         collectionCategory.addPreference(nsFollowDownloadInsulin);
+                        collectionCategory.addPreference(nsFollowDownloadTreatment);
                     }
 
 
