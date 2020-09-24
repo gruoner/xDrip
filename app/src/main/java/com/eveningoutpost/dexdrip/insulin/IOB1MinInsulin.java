@@ -23,7 +23,7 @@ public class IOB1MinInsulin extends Insulin {
         int index = (int) t;    // typecast / round down
         double remaining = t - index;   // remaining double to be approximated linearly
 
-        if (index >= curve.size())
+        if (index+1 >= curve.size())
             return curve.get(curve.size()-1);
         double valueIndex = curve.get(index);
         double valueNextIndex = curve.get(index + 1);
