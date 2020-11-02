@@ -10,11 +10,6 @@ import com.activeandroid.util.SQLiteUtils;
 import com.eveningoutpost.dexdrip.insulin.Insulin;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,34 +30,41 @@ public class InsulinProfile extends Model {
     private String pharmacyProductNumber;
     @Column(name = "curve")
     private String curve;
+    @Column(name = "deleted")
+    private Integer deleted;
 
     public InsulinProfile() {
         super();
     }
-    public InsulinProfile(String n, String dn, List<String> ppn, InsulinManager.insulinCurve curveData) {
+    public InsulinProfile(String n, String dn, List<String> ppn, InsulinManager.insulinCurve curveData, Boolean del) {
         name = n;
         displayName = dn;
         Gson gson = new Gson();
         pharmacyProductNumber = gson.toJson(ppn, List.class);
         curve = gson.toJson(curveData, InsulinManager.insulinCurve.class);
+        if (del) deleted = 1;
+        else deleted = 0;
     }
 
-    public static InsulinProfile create(String n, String d, List<String> ppn, InsulinManager.insulinCurve cu)
+    public static InsulinProfile create(String n, String d, List<String> ppn, InsulinManager.insulinCurve cu, Boolean del)
     {
-        InsulinProfile ret = new InsulinProfile(n, d, ppn, cu);
+        InsulinProfile ret = new InsulinProfile(n, d, ppn, cu, del);
         ret.setLastupdate(JoH.tsl());
-        ret.save();
+        try {
+            ret.save();
+        } catch (android.database.sqlite.SQLiteException e) {
+            fixUpTable();
+            ret.save();
+        }
         return ret;
     }
 
     public String getName() {
         return name;
     }
-
     public String getDisplayName() {
         return displayName;
     }
-
     public ArrayList<String> getPharmacyProductNumber() {
         Gson gson = new Gson();
         try {
@@ -72,33 +74,62 @@ public class InsulinProfile extends Model {
             return new ArrayList<>();
         }
     }
-
     public InsulinManager.insulinCurve getCurve() {
         Gson gson = new Gson();
         InsulinManager.insulinCurve ret = gson.fromJson(curve, InsulinManager.insulinCurve.class);
         return ret;
     }
+    public Boolean isDeleted() {
+        if (deleted == null) return false;
+        if (deleted == 0) return false;
+        else return true;
+    }
 
     public void setLastupdate(long lastupdate) {
         this.lastupdate = lastupdate;
     }
-
     public void setDisplayName(String dn) {
         displayName = dn;
         setLastupdate(JoH.tsl());
-        save();
+        try {
+            save();
+        } catch (android.database.sqlite.SQLiteException e) {
+            fixUpTable();
+            save();
+        }
     }
     public void setPharmacyProductNumber(List<String> ppn) {
         Gson gson = new Gson();
         pharmacyProductNumber = gson.toJson(ppn, List.class);
         setLastupdate(JoH.tsl());
-        save();
+        try {
+            save();
+        } catch (android.database.sqlite.SQLiteException e) {
+            fixUpTable();
+            save();
+        }
     }
     public void setCurve(InsulinManager.insulinCurve c) {
         Gson gson = new Gson();
         this.curve = gson.toJson(c, InsulinManager.insulinCurve.class);
         setLastupdate(JoH.tsl());
-        save();
+        try {
+            save();
+        } catch (android.database.sqlite.SQLiteException e) {
+            fixUpTable();
+            save();
+        }
+    }
+    public void setDeleted(Boolean del) {
+        if (del) deleted = 1;
+        else deleted = 0;
+        setLastupdate(JoH.tsl());
+        try {
+            save();
+        } catch (android.database.sqlite.SQLiteException e) {
+            fixUpTable();
+            save();
+        }
     }
 
     // This shouldn't be needed but it seems it is
@@ -112,6 +143,7 @@ public class InsulinProfile extends Model {
                 "ALTER TABLE InsulinProfiles ADD COLUMN concentration TEXT;",
                 "ALTER TABLE InsulinProfiles ADD COLUMN pharmacyProductNumber TEXT;",
                 "ALTER TABLE InsulinProfiles ADD COLUMN curve TEXT;",
+                "ALTER TABLE InsulinProfiles ADD COLUMN deleted INTEGER DEFAULT 0;",
                 "CREATE INDEX index_InsulinProfiles_lastupdate on InsulinProfiles(lastupdate);",
                 "CREATE UNIQUE INDEX index_InsulinProfiles_name on InsulinProfiles(name);"};
 

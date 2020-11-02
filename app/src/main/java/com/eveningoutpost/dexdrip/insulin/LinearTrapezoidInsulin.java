@@ -11,8 +11,8 @@ public class LinearTrapezoidInsulin extends Insulin {
 
     private double max;
 
-    public LinearTrapezoidInsulin(String n, String dn, ArrayList<String> ppn, InsulinManager.insulinCurve curveData) {
-        super(n, dn, ppn, curveData);
+    public LinearTrapezoidInsulin(String n, String dn, ArrayList<String> ppn, InsulinManager.insulinCurve curveData, Boolean del) {
+        super(n, dn, ppn, curveData, del);
 
         onset = curveData.data.get("onset").getAsLong();
         if (curveData.data.get("peak").getAsString().contains("-")) {

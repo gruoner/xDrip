@@ -13,6 +13,7 @@ public abstract class Insulin {
     private String name;
     private ArrayList<String> pharmacyProductNumber;
     private InsulinManager.insulinCurve curve;
+    private Boolean deleted;
 
     public Insulin() {
         name = null;
@@ -20,44 +21,41 @@ public abstract class Insulin {
         pharmacyProductNumber = null;
         curve = null;
         enabled = false;
+        deleted = false;
     }
 
-    public Insulin(String n, String dn, List<String> ppn, InsulinManager.insulinCurve curveData) {
+    public Insulin(String n, String dn, List<String> ppn, InsulinManager.insulinCurve curveData, Boolean del) {
         name = n;
         displayName = dn;
         pharmacyProductNumber = (ArrayList<String>) ppn;
         maxEffect = 0;
         enabled = true;
         curve = curveData;
+        deleted = del;
     }
 
     public String getName() {
         return name;
     }
-
     public String getDisplayName() {
         return displayName;
     }
-
     public ArrayList<String> getPharmacyProductNumber() {
         return pharmacyProductNumber;
     }
-
     public InsulinManager.insulinCurve getCurve() {
         return curve;
     }
-
     public void enable() {
         enabled = true;
     }
-
     public void disable() {
         enabled = false;
     }
-
     public boolean isEnabled() {
         return enabled;
     }
+    public boolean isDeleted() { return deleted; }
 
     public long getMaxEffect() {
         return maxEffect;

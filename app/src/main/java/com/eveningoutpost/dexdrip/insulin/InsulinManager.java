@@ -83,12 +83,20 @@ public class InsulinManager {
             for (int i = 0; i < profile.IOB1Min.size(); i++)
                 a.add(profile.IOB1Min.get(i));
             c.data.add("list", a);
+            Boolean deleted = false;
+            if (profile.enabled.equalsIgnoreCase("deleted"))
+                deleted = true;
             if (InsulinProfile.byName(profile.name) == null)   // its a new profile --> create it
             {
-                InsulinProfile.create(profile.name, profile.displayName, profile.pharmacyProductNumber, c);
+                InsulinProfile.create(profile.name, profile.displayName, profile.pharmacyProductNumber, c, deleted);
                 somethingChanged = true;
             } else {        // its a known profile --> update it
                 InsulinProfile o = InsulinProfile.byName(profile.name);
+                if (o.isDeleted() != deleted)
+                {
+                    o.setDeleted(deleted);
+                    somethingChanged = true;
+                }
                 if (!profile.displayName.equals(o.getDisplayName()))
                 {
                     o.setDisplayName(profile.displayName);
@@ -133,7 +141,7 @@ public class InsulinManager {
             Boolean somethingChanged = false;
             for (insulinData ins : iDW.profiles)
                 if (InsulinProfile.byName(ins.name) == null)  {  // its a new profile --> create it
-                    InsulinProfile.create(ins.name, ins.displayName, ins.PPN, ins.Curve);
+                    InsulinProfile.create(ins.name, ins.displayName, ins.PPN, ins.Curve, false);
                     somethingChanged = true;
                 } else {        // its a known profile --> update it
                     InsulinProfile o = InsulinProfile.byName(ins.name);
@@ -171,11 +179,11 @@ public class InsulinManager {
             Insulin insulin;
             switch (d.getCurve().type.toLowerCase()) {
                 case "linear trapezoid":
-                    insulin = new LinearTrapezoidInsulin(d.getName(), d.getDisplayName(), d.getPharmacyProductNumber(), d.getCurve());
+                    insulin = new LinearTrapezoidInsulin(d.getName(), d.getDisplayName(), d.getPharmacyProductNumber(), d.getCurve(), d.isDeleted());
                     Log.d(TAG, "initialized linear trapezoid insulin " + d.getDisplayName());
                     break;
                 case "iob1min":
-                    insulin = new IOB1MinInsulin(d.getName(), d.getDisplayName(), d.getPharmacyProductNumber(), d.getCurve());
+                    insulin = new IOB1MinInsulin(d.getName(), d.getDisplayName(), d.getPharmacyProductNumber(), d.getCurve(), d.isDeleted());
                     Log.d(TAG, "initialized IOB1Min insulin " + d.getDisplayName());
                     break;
                 default:
