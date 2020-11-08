@@ -29,7 +29,7 @@ public abstract class Insulin {
         displayName = dn;
         pharmacyProductNumber = (ArrayList<String>) ppn;
         maxEffect = 0;
-        enabled = true;
+        enabled = false;
         curve = curveData;
         deleted = del;
     }

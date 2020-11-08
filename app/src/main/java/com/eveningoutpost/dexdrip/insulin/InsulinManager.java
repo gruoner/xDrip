@@ -22,6 +22,7 @@ public class InsulinManager {
     private static final String TAG = "InsulinManager";
     private static ArrayList<Insulin> profiles;
     private static Insulin basalProfile, bolusProfile;
+    private static Boolean loadConfigFromNightscout;
 
     public static class insulinCurve {
         public String type;
@@ -115,18 +116,21 @@ public class InsulinManager {
             }
         }
         if (somethingChanged) profiles = getInsulinProfiles();
-        for (NightscoutFollow.NightscoutInsulinStructure profile: p)
-        {
-            if (profile.enabled.equalsIgnoreCase("false") && (countEnabledProfiles() > 1))
-                getProfile(profile.name).disable();
-            if (profile.type != null) {
-                if (profile.type.equalsIgnoreCase("basal"))
-                    setBasalProfile(getProfile(profile.name));
-                if (profile.type.equalsIgnoreCase("bolus"))
-                    setBolusProfile(getProfile(profile.name));
+        if (loadConfigFromNightscout) {
+            for (NightscoutFollow.NightscoutInsulinStructure profile : p) {
+                if (profile.enabled.equalsIgnoreCase("false") && (countEnabledProfiles() > 1))
+                    getProfile(profile.name).disable();
+                if (profile.enabled.equalsIgnoreCase("true") && (countEnabledProfiles() < 3))
+                    getProfile(profile.name).enable();
+                if (profile.type != null) {
+                    if (profile.type.equalsIgnoreCase("basal"))
+                        setBasalProfile(getProfile(profile.name));
+                    if (profile.type.equalsIgnoreCase("bolus"))
+                        setBolusProfile(getProfile(profile.name));
+                }
             }
-        }
-        saveDisabledProfilesToPrefs();
+            saveDisabledProfilesToPrefs();
+        } else LoadDisabledProfilesFromPrefs();
         Log.d(TAG, "InsulinManager initialized from nightscout");
         return somethingChanged;
     }
@@ -213,7 +217,6 @@ public class InsulinManager {
         checkInitialized();
         return basalProfile;
     }
-
     public static void setBasalProfile(Insulin p) {
         basalProfile = p;
     }
@@ -222,9 +225,15 @@ public class InsulinManager {
         checkInitialized();
         return bolusProfile;
     }
-
     public static void setBolusProfile(Insulin p) {
         bolusProfile = p;
+    }
+
+    public static Boolean getLoadConfigFromNightscout() {
+        return loadConfigFromNightscout;
+    }
+    public static void setLoadConfigFromNightscout(Boolean l) {
+        loadConfigFromNightscout = l;
     }
 
     public static ArrayList<Insulin> getAllProfiles() {
@@ -297,37 +306,41 @@ public class InsulinManager {
 
     public static void LoadDisabledProfilesFromPrefs() {
         checkInitialized();
-        for (Insulin i : profiles)
-            i.enable();
-        String json = Pref.getString("saved_disabled_insulinprofiles_json", "[]");
-        Log.d(TAG, "Loaded disabled Insulin Profiles from Prefs: " + json);
-        String[] disabled = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().fromJson(json, String[].class);
-        for (String d : disabled) {
+        String json = Pref.getString("saved_enabled_insulinprofiles_json", "[" + bolusProfile.getName() + "]");
+        Log.d(TAG, "Loaded enabled Insulin Profiles from Prefs: " + json);
+        String[] enabled = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().fromJson(json, String[].class);
+        for (String d : enabled) {
             Insulin ins = getProfile(d);
             if (ins != null)
-                disableProfile(ins);
+                enableProfile(ins);
         }
         String prof = Pref.getString("saved_basal_insulinprofiles", "");
         Log.d(TAG, "Loaded basal Insulin Profiles from Prefs: " + prof);
         basalProfile = getProfile(prof);
         if (basalProfile == null)
             basalProfile = profiles.get(0);
-        prof = Pref.getString("saved_bolus_insulinprofiles", "");
+        prof = Pref.getString("saved_bolus_insulinprofiles", bolusProfile.getName());
         Log.d(TAG, "Loaded bolus Insulin Profiles from Prefs: " + prof);
         bolusProfile = getProfile(prof);
         if (bolusProfile == null)
             bolusProfile = profiles.get(0);
+
+        prof = Pref.getString("saved_load_insulinprofilesconfig_from_ns", "false");
+        Log.d(TAG, "Loaded Insulin Profiles ConfigFromNS from Prefs: " + prof);
+        if (prof.equalsIgnoreCase("true"))
+            loadConfigFromNightscout = true;
+        else loadConfigFromNightscout = false;
     }
 
     public static void saveDisabledProfilesToPrefs() {
         checkInitialized();
-        ArrayList<String> disabled = new ArrayList<String>();
+        ArrayList<String> enabled = new ArrayList<String>();
         for (Insulin i : profiles)
-            if (!isProfileEnabled(i))
-                disabled.add(i.getName());
-        String json = new GsonBuilder().create().toJson(disabled);
-        Pref.setString("saved_disabled_insulinprofiles_json", json);
-        Log.d(TAG, "saved disabled Insulin Profiles to Prefs: " + json);
+            if (isProfileEnabled(i))
+                enabled.add(i.getName());
+        String json = new GsonBuilder().create().toJson(enabled);
+        Pref.setString("saved_enabled_insulinprofiles_json", json);
+        Log.d(TAG, "saved enabled Insulin Profiles to Prefs: " + json);
         if (basalProfile != null) {
             Pref.setString("saved_basal_insulinprofiles", basalProfile.getName());
             Log.d(TAG, "saved basal Insulin Profiles to Prefs: " + basalProfile.getName());
@@ -336,5 +349,6 @@ public class InsulinManager {
             Pref.setString("saved_bolus_insulinprofiles", bolusProfile.getName());
             Log.d(TAG, "saved bolus Insulin Profiles to Prefs: " + bolusProfile.getName());
         }
+        Pref.setString("saved_load_insulinprofilesconfig_from_ns", loadConfigFromNightscout.toString());
     }
 }

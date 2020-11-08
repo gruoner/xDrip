@@ -229,7 +229,6 @@
           }
         }
       }
-    }
   ],
   defaultBolus: "Novorapid"
 }

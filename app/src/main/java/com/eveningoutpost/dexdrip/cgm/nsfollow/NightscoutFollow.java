@@ -12,6 +12,7 @@ import com.eveningoutpost.dexdrip.cgm.nsfollow.messages.Entry;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.utils.NightscoutUrl;
 import com.eveningoutpost.dexdrip.evaluators.MissedReadingsEstimator;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
+import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
 import com.eveningoutpost.dexdrip.tidepool.InfoInterceptor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -124,18 +125,19 @@ public class NightscoutFollow {
         })
                 .setOnFailure(() -> msg(session.treatmentsCallback.getStatus()));
 
-        // set up processing callback for treatments
-        session.insulinCallback = new NightscoutCallback<List<NightscoutInsulinStructure>>("NS insulin download", session, () -> {
-            // process data
-            try {
-                if (InsulinManager.updateFromNightscout(session.insulin)) ActiveAndroid.clearCache();   // when at least one profile has been changed ActiveAndroid Cache will be cleared to reload all insulin injections from scratch
-                NightscoutFollowService.updateInsulinDownloaded();
-            } catch (Exception e) {
-                JoH.clearRatelimit("nsfollow-insulin-download");
-                msg("Insulin: " + e);
-            }
-        })
-                .setOnFailure(() -> msg(session.insulinCallback.getStatus()));
+        if (MultipleInsulins.isEnabled())
+            // set up processing callback for treatments
+            session.insulinCallback = new NightscoutCallback<List<NightscoutInsulinStructure>>("NS insulin download", session, () -> {
+                // process data
+                try {
+                    if (InsulinManager.updateFromNightscout(session.insulin)) ActiveAndroid.clearCache();   // when at least one profile has been changed ActiveAndroid Cache will be cleared to reload all insulin injections from scratch
+                    NightscoutFollowService.updateInsulinDownloaded();
+                } catch (Exception e) {
+                    JoH.clearRatelimit("nsfollow-insulin-download");
+                    msg("Insulin: " + e);
+                }
+            })
+                    .setOnFailure(() -> msg(session.insulinCallback.getStatus()));
 
         if (!emptyString(urlString)) {
             try {
@@ -215,7 +217,7 @@ public class NightscoutFollow {
     };
     public static final TypeAdapterFactory UNRELIABLE_INTEGER_FACTORY = TypeAdapters.newFactory(int.class, Integer.class, UNRELIABLE_INTEGER);
 
-    static boolean insulinDownloadEnabled() {
+    public static boolean insulinDownloadEnabled() {
         return Pref.getBooleanDefaultFalse("nsfollow_download_insulin");
     }
 

@@ -111,6 +111,7 @@
             android:title="@string/title_nsfollow_url" />
         <CheckBoxPreference
             android:defaultValue="false"
+            android:dependency="multiple_insulin_types"
             android:key="nsfollow_download_insulin"
             android:summary="@string/summary_nsfollow_download_insulin"
             android:title="@string/title_nsfollow_download_insulin"

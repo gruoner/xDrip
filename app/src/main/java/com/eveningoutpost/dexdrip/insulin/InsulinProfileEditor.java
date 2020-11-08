@@ -1,7 +1,6 @@
 package com.eveningoutpost.dexdrip.insulin;
 
 import android.os.Bundle;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -13,7 +12,9 @@ import android.widget.ScrollView;
 
 import com.eveningoutpost.dexdrip.BaseAppCompatActivity;
 import com.eveningoutpost.dexdrip.R;
+import com.eveningoutpost.dexdrip.UtilityModels.NightscoutUploader;
 import com.eveningoutpost.dexdrip.UtilityModels.PersistentStore;
+import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,8 +35,9 @@ public class InsulinProfileEditor extends BaseAppCompatActivity {
     private Spinner basalSpinner, bolusSpinner;
     private HashMap<Insulin, CheckBox> checkboxes;
     private HashMap<String, Insulin> profiles;
-    private ScrollView parentScrollView;
-    private ScrollView childScrollView;
+    private CheckBox loadFromNightscout;
+//    private ScrollView parentScrollView;
+//    private ScrollView childScrollView;
 
     //private Context mContext;
 
@@ -54,19 +56,7 @@ public class InsulinProfileEditor extends BaseAppCompatActivity {
         linearLayout = (LinearLayout) findViewById(R.id.profile_layout_view);
         basalSpinner = (Spinner) findViewById(R.id.basalSpinner);
         bolusSpinner = (Spinner) findViewById(R.id.bolusSpinner);
-        parentScrollView = (ScrollView) findViewById(R.id.parent_scroll_view);
-        childScrollView = (ScrollView) findViewById(R.id.child_scroll_view);
-
-        parentScrollView.setOnTouchListener((v, event) -> {
-            findViewById(R.id.parent_scroll_view).getParent().requestDisallowInterceptTouchEvent(false);
-            return false;
-        });
-
-        childScrollView.setOnTouchListener((v, event) -> {
-            // Disallow the touch request for parent scroll on touch of  child view
-            v.getParent().getParent().requestDisallowInterceptTouchEvent(true);
-            return false;
-        });
+        loadFromNightscout = (CheckBox) findViewById(R.id.load_from_ms);
 
         for (Insulin i : InsulinManager.getAllProfiles())
             if (!i.isDeleted()) {
@@ -131,6 +121,43 @@ public class InsulinProfileEditor extends BaseAppCompatActivity {
                 basalSpinner.setSelection(i);
             if (p.get(i).equals(bolus))
                 bolusSpinner.setSelection(i);
+        }
+
+        if (!NightscoutFollow.insulinDownloadEnabled() && !NightscoutUploader.insulinDownloadEnabled()) {
+            InsulinManager.setLoadConfigFromNightscout(false);
+            loadFromNightscout.setEnabled(false);
+        }
+        else {
+            if (InsulinManager.getLoadConfigFromNightscout()) {
+                loadFromNightscout.setChecked(true);
+                for (CheckBox i : checkboxes.values())
+                    i.setEnabled(false);
+                basalSpinner.setEnabled(false);
+                bolusSpinner.setEnabled(false);
+            } else {
+                loadFromNightscout.setChecked(false);
+                for (CheckBox i : checkboxes.values())
+                    i.setEnabled(true);
+                basalSpinner.setEnabled(true);
+                bolusSpinner.setEnabled(true);
+            }
+            loadFromNightscout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    InsulinManager.setLoadConfigFromNightscout(!InsulinManager.getLoadConfigFromNightscout());
+                    if (InsulinManager.getLoadConfigFromNightscout()) {
+                        for (CheckBox i : checkboxes.values())
+                            i.setEnabled(false);
+                        basalSpinner.setEnabled(false);
+                        bolusSpinner.setEnabled(false);
+                    } else {
+                        for (CheckBox i : checkboxes.values())
+                            i.setEnabled(true);
+                        basalSpinner.setEnabled(true);
+                        bolusSpinner.setEnabled(true);
+                    }
+                }
+            });
         }
     }
 

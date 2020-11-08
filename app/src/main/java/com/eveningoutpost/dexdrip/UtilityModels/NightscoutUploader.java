@@ -10,6 +10,7 @@ import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Base64;
 
+import com.activeandroid.ActiveAndroid;
 import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.MegaStatus;
 import com.eveningoutpost.dexdrip.Models.BgReading;
@@ -29,6 +30,7 @@ import com.eveningoutpost.dexdrip.Services.ActivityRecognizedService;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
 import com.eveningoutpost.dexdrip.insulin.Insulin;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
+import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
 import com.eveningoutpost.dexdrip.utils.CipherUtils;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 import com.eveningoutpost.dexdrip.utils.Mdns;
@@ -58,6 +60,7 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -111,6 +114,7 @@ public class NightscoutUploader {
         private static boolean notification_shown = false;
 
         private static final String LAST_SUCCESS_TREATMENT_DOWNLOAD = "NS-Last-Treatment-Download-Modified";
+        private static final String LAST_SUCCESS_INSULIN_DOWNLOAD = "NS-Last-Insulin-Download-Modified";
         private static final String ETAG = "ETAG";
 
 
@@ -260,7 +264,14 @@ public class NightscoutUploader {
                     } catch (InterruptedException e) {
                         //
                     }
-                    if (doRESTtreatmentDownload(prefs)) {
+                    Boolean refresh = false;
+                    if (treatmensDownloadEnabled())
+                        if (doRESTtreatmentDownload(prefs))
+                            refresh = true;
+                    if (insulinDownloadEnabled() && MultipleInsulins.isEnabled())
+                        if (doRESTinsulinDownload(prefs))
+                            refresh = true;
+                    if (refresh) {
                         Home.staticRefreshBGCharts();
                     }
                 } finally {
@@ -283,7 +294,13 @@ public class NightscoutUploader {
 
             if (prefs.getBoolean("cloud_storage_api_download_enable", false)) {
                 start = System.currentTimeMillis();
-                final boolean substatus = doRESTtreatmentDownload(prefs);
+                boolean substatus = false;
+                if (treatmensDownloadEnabled())
+                    if (doRESTtreatmentDownload(prefs))
+                        substatus = true;
+                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled())
+                    if (doRESTinsulinDownload(prefs))
+                        substatus = true;
                 if (substatus) {
                     Home.staticRefreshBGCharts();
                 }
@@ -362,8 +379,6 @@ public class NightscoutUploader {
             Log.e(TAG, "Unable to process API Base URL: " + e);
             return false;
         }
-
-
 
         // process a list of base uris
         for (String baseURI : baseURIs) {
@@ -451,6 +466,118 @@ public class NightscoutUploader {
         return new_data;
     }
 
+    private synchronized boolean doRESTinsulinDownload(SharedPreferences prefs) {
+        final String baseURLSettings = prefs.getString("cloud_storage_api_base", "");
+        final ArrayList<String> baseURIs = new ArrayList<>();
+
+        boolean new_data = false;
+        Log.d(TAG, "doRESTinsulinDownload() starting run");
+
+        try {
+            for (String baseURLSetting : baseURLSettings.split(" ")) {
+                String baseURL = baseURLSetting.trim();
+                if (baseURL.isEmpty()) continue;
+                baseURIs.add(baseURL + (baseURL.endsWith("/") ? "" : "/"));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Unable to process API Base URL: " + e);
+            return false;
+        }
+
+        // process a list of base uris
+        for (String baseURI : baseURIs) {
+            try {
+                baseURI = TryResolveName(baseURI);
+                int apiVersion = 0;
+                URI uri = new URI(baseURI);
+                if ((uri.getHost().startsWith("192.168.")) && prefs.getBoolean("skip_lan_uploads_when_no_lan", true) && (!JoH.isLANConnected())) {
+                    Log.d(TAG, "Skipping Nighscout download from: " + uri.getHost() + " due to no LAN connection");
+                    continue;
+                }
+
+                if (uri.getPath().endsWith("/v1/")) apiVersion = 1;
+                String baseURL;
+                String secret = uri.getUserInfo();
+                if ((secret == null || secret.isEmpty()) && apiVersion == 0) {
+                    baseURL = baseURI;
+                } else if ((secret == null || secret.isEmpty())) {
+                    throw new Exception("Starting with API v1, a pass phase is required");
+                } else if (apiVersion > 0) {
+                    baseURL = baseURI.replaceFirst("//[^@]+@", "//");
+                } else {
+                    throw new Exception("Unexpected baseURI: " + baseURI);
+                }
+
+                final Retrofit retrofit = new Retrofit.Builder().baseUrl(baseURL).client(client).build();
+                final NightscoutService nightscoutService = retrofit.create(NightscoutService.class);
+
+                final String checkurl = retrofit.baseUrl().url().toString();
+                if (!isNightscoutCompatible(checkurl)) {
+                    Log.e(TAG, "Nightscout version: " + getNightscoutVersion(checkurl) + " on " + checkurl + " is not compatible with the Rest-API download feature!");
+                    continue;
+                }
+
+                if (apiVersion == 1) {
+                    final String hashedSecret = Hashing.sha1().hashBytes(secret.getBytes(Charsets.UTF_8)).toString();
+                    final Response<ResponseBody> r;
+                    if (hashedSecret != null) {
+                        doStatusUpdate(nightscoutService, retrofit.baseUrl().url().toString(), hashedSecret); // update status if needed
+                        final String LAST_MODIFIED_KEY = LAST_SUCCESS_INSULIN_DOWNLOAD + CipherUtils.getMD5(uri.toString()); // per uri marker
+                        String last_modified_string = PersistentStore.getString(LAST_MODIFIED_KEY);
+                        if (last_modified_string.equals("")) last_modified_string = JoH.getRFC822String(0);
+                        final long request_start = JoH.tsl();
+                        r = nightscoutService.getInsulin(hashedSecret).execute();
+
+                        if ((r != null) && (r.raw().networkResponse().code() == HttpURLConnection.HTTP_NOT_MODIFIED)) {
+                            Log.d(TAG, "Treatments on " + uri.getHost() + ":" + uri.getPort() + " not modified since: " + last_modified_string);
+                            continue; // skip further processing of this url
+                        }
+
+                        if ((r != null) && (r.isSuccessful())) {
+                            NightscoutFollow.NightscoutInsulinStructure[] NSprofiles = null;
+                            try {
+                                NSprofiles = new GsonBuilder().create().fromJson(r.body().string(), NightscoutFollow.NightscoutInsulinStructure[].class);
+                                android.util.Log.d(TAG, "insulin profiles loaded from nightscout");
+                                last_modified_string = r.raw().header("Last-Modified", JoH.getRFC822String(request_start));
+                                final String this_etag = r.raw().header("Etag", "");
+                                if (this_etag.length() > 0) {
+                                    // older versions of nightscout don't support if-modified-since so check the etag for duplication
+                                    if (this_etag.equals(PersistentStore.getString(ETAG + LAST_MODIFIED_KEY))) {
+                                        Log.d(TAG, "Skipping Insulin on " + uri.getHost() + ":" + uri.getPort() + " due to etag duplicate: " + this_etag);
+                                        continue;
+                                    }
+                                    PersistentStore.setString(ETAG + LAST_MODIFIED_KEY, this_etag);
+                                }
+                                if (InsulinManager.updateFromNightscout(new ArrayList<>(Arrays.asList(NSprofiles)))) {
+                                    PersistentStore.setString(LAST_MODIFIED_KEY, last_modified_string);
+                                    checkGzipSupport(r);
+                                    ActiveAndroid.clearCache();
+                                    new_data = true;
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                android.util.Log.d(TAG, "Got exception during insulin load: " + e.toString());
+                            }
+
+                        } else {
+                            Log.d(TAG, "Failed to get insulin from: " + baseURI);
+                        }
+
+                    } else {
+                        Log.d(TAG, "Old api version not supported");
+                    }
+                }
+
+
+            } catch (Exception e) {
+                String msg = "Unable to do REST API Download " + e + " " + e.getMessage() + " url: " + baseURI;
+                handleRestFailure(msg);
+            }
+        }
+        Log.d(TAG, "doRESTinsulinDownload() finishing run");
+        return new_data;
+    }
+
     private boolean doRESTUpload(SharedPreferences prefs, List<BgReading> glucoseDataSets, List<BloodTest> meterRecords, List<Calibration> calRecords) {
             String baseURLSettings = prefs.getString("cloud_storage_api_base", "");
             ArrayList<String> baseURIs = new ArrayList<String>();
@@ -510,7 +637,7 @@ public class NightscoutUploader {
             return any_successes;
         }
 
-        private void doLegacyRESTUploadTo(NightscoutService nightscoutService, List<BgReading> glucoseDataSets) throws Exception {
+    private void doLegacyRESTUploadTo(NightscoutService nightscoutService, List<BgReading> glucoseDataSets) throws Exception {
             for (BgReading record : glucoseDataSets) {
                 Response<ResponseBody> r = nightscoutService.upload(populateLegacyAPIEntry(record)).execute();
                 if (!r.isSuccessful()) throw new UploaderException(r.message(), r.code());
@@ -523,7 +650,7 @@ public class NightscoutUploader {
             }
         }
 
-        private void doRESTUploadTo(NightscoutService nightscoutService, String secret, List<BgReading> glucoseDataSets, List<BloodTest> meterRecords, List<Calibration> calRecords) throws Exception {
+    private void doRESTUploadTo(NightscoutService nightscoutService, String secret, List<BgReading> glucoseDataSets, List<BloodTest> meterRecords, List<Calibration> calRecords) throws Exception {
             final JSONArray array = new JSONArray();
 
             for (BgReading record : glucoseDataSets) {
@@ -582,7 +709,7 @@ public class NightscoutUploader {
                   }
                 }
             }
-            if (Pref.getBooleanDefaultFalse("nightscout_upload_insulin_profiles")) {
+            if (MultipleInsulins.isEnabled() && Pref.getBooleanDefaultFalse("nightscout_upload_insulin_profiles")) {
                 try {
                     sendInsulin2Nightscout(nightscoutService, secret);
                 } catch (Exception e) {
@@ -1530,5 +1657,22 @@ public class NightscoutUploader {
         } else {
             UserError.Log.e(TAG, "Api secret is null");
         }
+    }
+
+    public static boolean insulinDownloadEnabled() {
+
+        if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
+                Pref.getBooleanDefaultFalse("cloud_storage_api_download_enable") &&
+                Pref.getBooleanDefaultFalse("cloud_storage_api_download_insulin_enable"))
+            return true;
+        else return false;
+    }
+
+    public static boolean treatmensDownloadEnabled() {
+        if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
+                Pref.getBooleanDefaultFalse("cloud_storage_api_download_enable") &&
+                Pref.getBooleanDefaultFalse("cloud_storage_api_download_treatments_enable"))
+            return true;
+        else return false;
     }
 }
