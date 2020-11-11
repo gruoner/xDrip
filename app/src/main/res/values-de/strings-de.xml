@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="monday">MO</string>
+    <string name="tuesday">DI</string>
+    <string name="wednesday">MI</string>
+    <string name="thursday">DO</string>
+    <string name="friday">FR</string>
+    <string name="saturday">SA</string>
+    <string name="sunday">SO</string>
+    <string name="select_days_for_alert_colon">Wähle die Tage der Woche für den Alarm aus</string>
+
     <string name="title_activity_bluetooth_scan">Bluetooth-Suche</string>
     <string name="connected">Verbunden</string>
     <string name="disconnected">Getrennt</string>
