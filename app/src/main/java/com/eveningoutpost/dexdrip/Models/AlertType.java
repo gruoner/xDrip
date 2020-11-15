@@ -223,7 +223,7 @@ public class AlertType extends Model {
                 }
             }
         }
-        
+
         // If no low alert found or low alerts disabled, check higher alert.
         if(prefs.getLong("high_alerts_disabled_until", 0) > new Date().getTime()){
             Log.i("NOTIFICATIONS", "get_highest_active_alert_helper: High alerts are currently disabled!! Skipping high alerts");
