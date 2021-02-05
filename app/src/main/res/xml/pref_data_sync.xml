@@ -56,6 +56,18 @@
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:dependency="cloud_storage_api_download_enable"
+                    android:key="cloud_storage_api_download_treatments_enable"
+                    android:summary="@string/summary_cloud_storage_api_download_treatments_enable"
+                    android:title="@string/title_cloud_storage_api_download_treatments_enable" />
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:dependency="cloud_storage_api_download_enable"
+                    android:key="cloud_storage_api_download_insulin_enable"
+                    android:summary="@string/summary_cloud_storage_api_download_insulin_enable"
+                    android:title="@string/title_cloud_storage_api_download_insulin_enable" />
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:dependency="cloud_storage_api_download_enable"
                     android:key="bluetooth_meter_for_calibrations_auto"
                     android:summary="@string/summary_bluetooth_meter_for_calibrations_auto"
                     android:title="@string/title_bluetooth_meter_for_calibrations_auto" />
@@ -88,6 +100,12 @@
                         android:key="nightscout_device_append_source_info"
                         android:summary="@string/summary_nightscout_device_append_source_info"
                         android:title="@string/title_nightscout_device_append_source_info" />
+                    <CheckBoxPreference
+                        android:defaultValue="false"
+                        android:dependency="multiple_insulin_types"
+                        android:key="nightscout_upload_insulin_profiles"
+                        android:summary="@string/summary_nightscout_upload_insulin_profiles"
+                        android:title="@string/title_nightscout_upload_insulin_profiles" />
                     <Preference
                         android:summary="@string/summary_tap_to_send_historical_data"
                         android:title="@string/title_back_fill_data">
