@@ -21,7 +21,7 @@ import java.util.List;
 public class InsulinManager {
     private static final String TAG = "InsulinManager";
     private static ArrayList<Insulin> profiles;
-    private static Insulin basalProfile, bolusProfile;
+    private static volatile Insulin basalProfile, bolusProfile;
     private static Boolean loadConfigFromNightscout;
 
     public static class insulinCurve {
