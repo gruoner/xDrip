@@ -339,6 +339,7 @@
     <string name="speak_your_treatment">Speak your treatment eg:\nx.x units insulin / xx grams carbs</string>
     <string name="speech_recognition_is_not_supported">Speech recognition is not supported</string>
     <string name="treatment_note">Treatment Note</string>
+    <string name="accessibility_description">xDrip uses the Accessibility feature just to adjust the screen when the device is locked. This is likely only useful if you have a phone with the Always On Display feature and have it enabled. xDrip does not interact with Android in any other way.</string>
     <string name="could_not_export_database">Could not export Database :(</string>
     <string name="exported_to">"Exported to "</string>
     <string name="default_to_voice_input_next_time">Default to voice input next time</string>
@@ -641,7 +642,7 @@
     <string name="use_external_blukon_algorithm">Out of process libre algorithm.</string>
     <string name="calibrate_external_libre_algorithm_summary">Apply xDrip calibration methods on OOP data.</string>
     <string name="calibrate_external_libre_algorithm_title">OOP algorithm calibration.</string>
-    <string name="libre_use_smoothed_data_summary">Use averatge of 5 points to get smoother libre data.</string>
+    <string name="libre_use_smoothed_data_summary">Use average of 5 points to get smoother libre data.</string>
     <string name="libre_use_smoothed_data_title">Smooth libre data.</string>
     <string name="retrieve_blukon_history_title">Retrieve Libre history</string>
     <string name="retrieve_blukon_history_summary">Retrieve missed history from Blukon device when reconnecting to sensor.</string>
@@ -1196,6 +1197,10 @@
     <string name="use_mobile_data">Use mobile data</string>
     <string name="summary_cloud_storage_api_download_enable">Also try to download data from Nightscout</string>
     <string name="title_cloud_storage_api_download_enable">Download data</string>
+    <string name="summary_cloud_storage_api_download_treatments_enable">try to download treatments from Nightscout</string>
+    <string name="title_cloud_storage_api_download_treatments_enable">Download treatments</string>
+    <string name="summary_cloud_storage_api_download_insulin_enable">try to download insulin profiles from Nightscout</string>
+    <string name="title_cloud_storage_api_download_insulin_enable">Download insulin profiles</string>
     <string name="summary_bluetooth_meter_for_calibrations_auto">Calibrate using new blood glucose readings if the conditions appear right to do so without asking confirmation (experimental)</string>
     <string name="title_bluetooth_meter_for_calibrations_auto">Automatic Calibration</string>
     <string name="title_rest_api_extra_options">Extra Options</string>
@@ -1207,6 +1212,8 @@
     <string name="title_warn_nightscout_failures">Alert on failures</string>
     <string name="summary_nightscout_device_append_source_info">For G5, sends collector type (e.g. OB1) and reading backfill status (for native) to Nightscout.</string>
     <string name="title_nightscout_device_append_source_info">Append source info to device name</string>
+    <string name="summary_nightscout_upload_insulin_profiles">If Nightscout Server is supporting uploads of insulin profiles, here one can upload profiles and Multi-Insulin configuration.</string>
+    <string name="title_nightscout_upload_insulin_profiles">Upload insulin profiles to nightscout</string>
     <string name="summary_tap_to_send_historical_data">Tap to send historical data to Nightscout</string>
     <string name="title_back_fill_data">Back-fill data</string>
     <string name="summary_tidepool_upload_screen">Upload data to the Tidepool service</string>
@@ -1314,8 +1321,12 @@
     <string name="title_medtrum_a_hex">Medtrum Debug</string>
     <string name="summary_nsfollow_url">Web address for following</string>
     <string name="title_nsfollow_url">Nightscout Follow URL</string>
+    <string name="summary_nsfollow_download_insulin">Also download insulin profiles from Nightscout as follower</string>
+    <string name="title_nsfollow_download_insulin">Download Insulin Profiles</string>
     <string name="summary_nsfollow_download_treatments">Also download treatments from Nightscout as follower</string>
     <string name="title_nsfollow_download_treatments">Download Treatments</string>
+    <string name="summary_nsfollow_download_treatments_even_xdrip">Also download treatments from Nightscout as follower even if it comes from xdrip</string>
+    <string name="title_nsfollow_download_treatments_even_xdrip">Download Treatments XDrip+</string>
     <string name="title_ob1_options">OB1 G5/G6 Collector Settings</string>
     <string name="summary_use_ob1_g5_collector_service">Complete re-write, should work on Android 4.4-9, supports native mode and more</string>
     <string name="title_use_ob1_g5_collector_service">Use the OB1 Collector</string>
@@ -1533,6 +1544,7 @@
     <string name="unusual_internal_context_problem__please_report">Unusual internal context problem - please report</string>
     <string name="cannot_start__please_report_context_problem">Cannot start - please report context problem</string>
     <string name="xdrip_will_not_work_below_android_version_42">xDrip+ will not work below Android version 4.2</string>
+    <string name="xdrip_oop2_not_installed">xDrip+ needs oop2 to handle libre2/libre us sensors.</string>
     <string name="this_app_needs_battery_optimization_whitelisting_or_it_will_not_work_well_please_reset_app_preferences">This app needs battery optimization whitelisting or it will not work well. Please reset app preferences</string>
     <string name="setting_disabled_">Setting disabled :)</string>
     <string name="yes_please">YES, Please</string>
@@ -1588,7 +1600,18 @@
     <string name="collection_summary_ob1_g5_preemptive_restart">Automatically restart a sensor before it stops</string>
     <string name="title_ob1_g5_preemptive_restart_alert">Alert on preemptive restart</string>
     <string name="summary_ob1_g5_preemptive_restart_alert">Raise an alert when preemptively restarting the session</string>
+    <string name="blood_glucose_graph">Blood Glucose Graph</string>
     <string name="pref_enable_insulinprofiles">enable at least one max three profiles</string>
     <string name="pref_select_basal_insulinprofiles">choose basal insulin profile.</string>
     <string name="pref_select_bolus_insulinprofiles">choose bolus insulin profile. also used for pump and pen...</string>
+    <string name="enable_streaming_summary">connect to libre 2 sensors after scanning them. This will stop libre reader and libre link from receiving alerts</string>
+    <string name="enable_streaming_title">Starting bluetooth connection with libre 2 sensors</string>
+    <string name="enable_streaming_always_allow">Always connect to libre2 sensors</string>
+    <string name="enable_streaming_ask_each_time">ask each time</string>
+    <string name="enable_streaming_never">Never connect to libre2 sensors</string>
+    <string name="enable_streaming_dialog_yes">connect to this libre2 sensor</string>
+    <string name="enable_streaming_dialog_no">Don\'t connect to this libre2 sensor </string>
+    <string name="enable_streaming_dialog_dont_ask_again">Don\'t ask me that again</string>
+    <string name="enable_streaming_dialog_title">Connecting libre sensor to bluetooth</string>
+    <string name="enable_streaming_dialog_text">Do you want to connect xDrip with this sensor? This will stop libre reader and libre link from receiving alerts. Press yes and scan again to connect (choose don\'t connect if you want to run xDrip with the patched app)</string>
 </resources>

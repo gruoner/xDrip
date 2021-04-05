@@ -47,6 +47,8 @@ import com.bytehamster.lib.preferencesearch.SearchConfiguration;
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResult;
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener;
 import com.eveningoutpost.dexdrip.BasePreferenceActivity;
+import com.eveningoutpost.dexdrip.G5Model.DexSyncKeeper;
+import com.eveningoutpost.dexdrip.G5Model.Ob1G5StateMachine;
 import com.eveningoutpost.dexdrip.GcmActivity;
 import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.Models.DesertSync;
@@ -119,6 +121,8 @@ import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+
+import static com.eveningoutpost.dexdrip.xdrip.gs;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -1142,7 +1146,9 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     return true;
             });
 
-            final Preference nsFollowDownload = findPreference("nsfollow_download_treatments");
+            final Preference nsFollowDownloadInsulin = findPreference("nsfollow_download_insulin");
+            final Preference nsFollowDownloadTreatment = findPreference("nsfollow_download_treatments");
+            final Preference nsFollowDownloadTreatmentXDrip = findPreference("nsfollow_download_treatments_even_xdrip");
             final Preference nsFollowUrl = findPreference("nsfollow_url");
             try {
                 nsFollowUrl.setOnPreferenceChangeListener((preference, newValue) -> {
@@ -1503,7 +1509,9 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             if (collectionType != DexCollectionType.NSFollow) {
                 try {
                     collectionCategory.removePreference(nsFollowUrl);
-                    collectionCategory.removePreference(nsFollowDownload);
+                    collectionCategory.removePreference(nsFollowDownloadInsulin);
+                    collectionCategory.removePreference(nsFollowDownloadTreatment);
+                    collectionCategory.removePreference(nsFollowDownloadTreatmentXDrip);
                 } catch (Exception e) {
                     //
                 }
@@ -1672,6 +1680,17 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     try {
                         ((PreferenceGroup)findPreference("xdrip_plus_display_category")).removePreference(findPreference("xdrip_plus_number_icon"));
                     } catch (Exception e) { //
+                    }
+                }
+
+
+                // don't show web deposit unless in engineering mode
+                if (!Pref.getBooleanDefaultFalse("engineering_mode")) {
+                    try {
+                        final PreferenceScreen screen = (PreferenceScreen) findPreference("cloud_data_sync");
+                        screen.removePreference(findPreference("cloud_storage_web_deposit"));
+                    } catch (Exception e) {
+                        //
                     }
                 }
 
@@ -2038,6 +2057,12 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                                 //
                             }
                             Log.d(TAG, "Trying to restart collector due to tx id change");
+                            Ob1G5StateMachine.emptyQueue();
+                            try {
+                                DexSyncKeeper.clear((String) newValue);
+                            } catch (Exception e) {
+                                //
+                            }
                             CollectionServiceStarter.restartCollectionService(xdrip.getAppContext());
                         }
                     }).start();
@@ -2129,7 +2154,9 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
 
                     if (collectionType == DexCollectionType.NSFollow) {
                         collectionCategory.addPreference(nsFollowUrl);
-                        collectionCategory.addPreference(nsFollowDownload);
+                        collectionCategory.addPreference(nsFollowDownloadInsulin);
+                        collectionCategory.addPreference(nsFollowDownloadTreatment);
+                        collectionCategory.addPreference(nsFollowDownloadTreatmentXDrip);
                     }
 
 
@@ -2421,7 +2448,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                 }
 
 
-            builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            builder.setPositiveButton(gs(R.string.yes), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
 
@@ -2447,13 +2474,13 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                             builder.setTitle("Snooze Control Install");
                             builder.setMessage("Install Pebble Snooze Button App?");
                             // inner
-                            builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                            builder.setPositiveButton(gs(R.string.yes), new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
                                     context.startActivity(new Intent(context, InstallPebbleSnoozeControlApp.class));
                                 }
                             });
-                            builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                            builder.setNegativeButton(gs(R.string.no), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
@@ -2465,7 +2492,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                 // outer
                 }});
 
-            builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+            builder.setNegativeButton(gs(R.string.no), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();

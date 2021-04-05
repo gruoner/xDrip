@@ -10,9 +10,9 @@ import com.eveningoutpost.dexdrip.Models.BgReading;
 import com.eveningoutpost.dexdrip.Models.JoH;
 import com.eveningoutpost.dexdrip.Models.Treatments;
 import com.eveningoutpost.dexdrip.Models.UserError;
+import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.UtilityModels.Constants;
 import com.eveningoutpost.dexdrip.UtilityModels.Inevitable;
-import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 import com.eveningoutpost.dexdrip.UtilityModels.StatusItem;
 import com.eveningoutpost.dexdrip.UtilityModels.StatusItem.Highlight;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.utils.Anticipate;
@@ -25,11 +25,11 @@ import com.eveningoutpost.dexdrip.xdrip;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.eveningoutpost.dexdrip.UtilityModels.BgGraphBuilder.DEXCOM_PERIOD;
 import static com.eveningoutpost.dexdrip.utils.DexCollectionType.NSFollow;
+import static com.eveningoutpost.dexdrip.xdrip.gs;
 
 /**
  * jamorham
@@ -57,6 +57,8 @@ public class NightscoutFollowService extends ForegroundService {
     private static volatile Treatments lastTreatment;
     private static volatile long lastTreatmentTime = 0;
     private static volatile long treatmentReceivedDelay = 0;
+
+    private static volatile long lastInsulinDownloaded = 0;
 
     private void buggySamsungCheck() {
         if (buggySamsung == null) {
@@ -124,6 +126,10 @@ public class NightscoutFollowService extends ForegroundService {
         }
     }
 
+    static void updateInsulinDownloaded() {
+        lastInsulinDownloaded = JoH.tsl();
+    }
+
     static void scheduleWakeUp() {
         final BgReading lastBg = BgReading.lastNoSenssor();
         final long last = lastBg != null ? lastBg.timestamp : 0;
@@ -187,6 +193,13 @@ public class NightscoutFollowService extends ForegroundService {
             ageOfTreatmentWhenReceived = JoH.niceTimeScalar(treatmentReceivedDelay);
         }
 
+        // Status for Insulin
+        String ageLastInsulin = "n/a";
+        if(lastInsulinDownloaded != 0) {
+            long age = JoH.msSince(lastInsulinDownloaded);
+            ageLastInsulin = JoH.niceTimeScalar(age);
+        }
+
         // Build status
         List<StatusItem> statuses = new ArrayList<>();
 
@@ -199,6 +212,11 @@ public class NightscoutFollowService extends ForegroundService {
             statuses.add(new StatusItem("Treatment receive delay", ageOfTreatmentWhenReceived));
         }
 
+        if(NightscoutFollow.insulinDownloadEnabled()) {
+            statuses.add(new StatusItem());
+            statuses.add(new StatusItem("Latest Insulin Download", ageLastInsulin + " ago"));
+        }
+
         statuses.add(new StatusItem());
         statuses.add(new StatusItem("Last poll", lastPollText + (lastPoll > 0 ? " ago" : "")));
         statuses.add(new StatusItem("Next poll in", JoH.niceTimeScalar(wakeup_time - JoH.tsl())));
@@ -207,8 +225,8 @@ public class NightscoutFollowService extends ForegroundService {
         }
         statuses.add(new StatusItem("Next poll time", JoH.dateTimeText(wakeup_time)));
         statuses.add(new StatusItem());
-        statuses.add(new StatusItem("Buggy Samsung", JoH.buggy_samsung ? "Yes" : "No"));
-        statuses.add(new StatusItem("Download treatments", NightscoutFollow.treatmentDownloadEnabled() ? "Yes" : "No"));
+        statuses.add(new StatusItem("Buggy Samsung", JoH.buggy_samsung ? gs(R.string.yes) : gs(R.string.no)));
+        statuses.add(new StatusItem("Download treatments", NightscoutFollow.treatmentDownloadEnabled() ? gs(R.string.yes) : gs(R.string.no)));
 
         if (StringUtils.isNotBlank(lastState)) {
             statuses.add(new StatusItem());

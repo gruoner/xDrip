@@ -56,6 +56,18 @@
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:dependency="cloud_storage_api_download_enable"
+                    android:key="cloud_storage_api_download_treatments_enable"
+                    android:summary="@string/summary_cloud_storage_api_download_treatments_enable"
+                    android:title="@string/title_cloud_storage_api_download_treatments_enable" />
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:dependency="cloud_storage_api_download_enable"
+                    android:key="cloud_storage_api_download_insulin_enable"
+                    android:summary="@string/summary_cloud_storage_api_download_insulin_enable"
+                    android:title="@string/title_cloud_storage_api_download_insulin_enable" />
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:dependency="cloud_storage_api_download_enable"
                     android:key="bluetooth_meter_for_calibrations_auto"
                     android:summary="@string/summary_bluetooth_meter_for_calibrations_auto"
                     android:title="@string/title_bluetooth_meter_for_calibrations_auto" />
@@ -88,6 +100,12 @@
                         android:key="nightscout_device_append_source_info"
                         android:summary="@string/summary_nightscout_device_append_source_info"
                         android:title="@string/title_nightscout_device_append_source_info" />
+                    <CheckBoxPreference
+                        android:defaultValue="false"
+                        android:dependency="multiple_insulin_types"
+                        android:key="nightscout_upload_insulin_profiles"
+                        android:summary="@string/summary_nightscout_upload_insulin_profiles"
+                        android:title="@string/title_nightscout_upload_insulin_profiles" />
                     <Preference
                         android:summary="@string/summary_tap_to_send_historical_data"
                         android:title="@string/title_back_fill_data">
@@ -297,6 +315,42 @@
                     android:title="Don't upload treatments" />
 
             </PreferenceScreen>
+
+            <PreferenceScreen
+                android:key="cloud_storage_web_deposit"
+                android:summary="Simple batch API currently used for diagnostics"
+                android:title="Web Deposit">
+
+                <EditTextPreference
+                    android:defaultValue="http://192.168.0.5:2080/"
+                    android:dependency="engineering_mode"
+                    android:dialogMessage="This is the base URL, it should have a trailing /"
+                    android:dialogTitle="Enter Deposit URL"
+                    android:inputType="textUri"
+                    android:key="web_deposit_url"
+                    android:title="Web Deposit URL" />
+                <EditTextPreference
+                    android:defaultValue="ABC123"
+                    android:dependency="engineering_mode"
+                    android:dialogMessage="This is the identifier sent with each deposit request"
+                    android:dialogTitle="Enter serial identifier"
+                    android:inputType="text"
+                    android:key="web_deposit_serial"
+                    android:title="Serial Information" />
+
+                <Preference
+                    android:key="start_web_deposit"
+                    android:summary=""
+                    android:dependency="engineering_mode"
+                    android:title="Start Web Deposit">
+                    <intent
+                        android:action="android.intent.action.MAIN"
+                        android:targetClass="com.eveningoutpost.dexdrip.deposit.DepositActivity"
+                        android:targetPackage="@string/local_target_package" />
+                </Preference>
+
+            </PreferenceScreen>
+
         </PreferenceScreen>
         <PreferenceScreen
             android:icon="@drawable/ic_touch_app_grey600_48dp"

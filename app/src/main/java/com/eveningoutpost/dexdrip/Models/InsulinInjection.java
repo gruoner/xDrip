@@ -10,7 +10,6 @@ public class InsulinInjection {
     private Insulin profile;
 
     @Expose
-    @Getter
     private double units;
 
     @Expose
@@ -20,7 +19,7 @@ public class InsulinInjection {
     public InsulinInjection(final Insulin p, final double u) {
         profile = p;
         units = u;
-        insulin = p.getName();
+        insulin = (p != null) ? p.getName() : "unknown";
     }
 
 
@@ -35,7 +34,9 @@ public class InsulinInjection {
     // This is just a rough way to decide if it is a basal insulin without user needing to set it
     // question as to whether this should be here or call to encapsulated method in Insulin
     public boolean isBasal() {
-        return getProfile().getMaxEffect() > 1000;
+//        return getProfile().getMaxEffect() > 1000;
+        return  getProfile() == InsulinManager.getBasalProfile();   // basal is when profile is defined as basal by InsulinManager
     }
 
+    public double getUnits() { return units; }
 }

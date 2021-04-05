@@ -1,74 +1,64 @@
 package com.eveningoutpost.dexdrip.insulin;
 
-import android.util.Log;
-
-import com.google.gson.JsonObject;
-
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Insulin {
-    private static final String TAG = "InsulinManager";
-    private final String name;
-    private final String displayName;
-    private final ArrayList<String> pharmacyProductNumber;
+    private static final String TAG = "gruoner " + Insulin.class.getSimpleName();
     private Boolean enabled;
-    protected double concentration;
     protected long maxEffect;
 
-    public Insulin(String n, String dn, ArrayList<String> ppn, String c, JsonObject curveData) {
+    private long lastupdate;
+    private String displayName;
+    private String name;
+    private ArrayList<String> pharmacyProductNumber;
+    private InsulinManager.insulinCurve curve;
+    private Boolean deleted;
+
+    public Insulin() {
+        name = null;
+        displayName = null;
+        pharmacyProductNumber = null;
+        curve = null;
+        enabled = false;
+        deleted = false;
+    }
+
+    public Insulin(String n, String dn, List<String> ppn, InsulinManager.insulinCurve curveData, Boolean del) {
         name = n;
         displayName = dn;
-        pharmacyProductNumber = ppn;
+        pharmacyProductNumber = (ArrayList<String>) ppn;
         maxEffect = 0;
-        enabled = true;
-        concentration = 1;
-        switch (c.toLowerCase()) {
-            case "u100":
-                concentration = 1;
-                break;
-            case "u200":
-                concentration = 2;
-                break;
-            case "u300":
-                concentration = 3;
-                break;
-            case "u400":
-                concentration = 4;
-                break;
-            case "u500":
-                concentration = 5;
-                break;
-            default:
-                Log.d(TAG, "unknown insulin concentration code " + c);
-        }
+        enabled = false;
+        curve = curveData;
+        deleted = del;
     }
 
     public String getName() {
         return name;
     }
-
     public String getDisplayName() {
         return displayName;
     }
-
+    public ArrayList<String> getPharmacyProductNumber() {
+        return pharmacyProductNumber;
+    }
+    public InsulinManager.insulinCurve getCurve() {
+        return curve;
+    }
     public void enable() {
         enabled = true;
     }
-
     public void disable() {
         enabled = false;
     }
-
     public boolean isEnabled() {
         return enabled;
     }
+    public boolean isDeleted() { return deleted; }
 
     public long getMaxEffect() {
         return maxEffect;
-    }
-
-    public ArrayList<String> getPharmacyProductNumber() {
-        return pharmacyProductNumber;
     }
 
     public double calculateIOB(double time) {
@@ -77,5 +67,19 @@ public abstract class Insulin {
 
     public double calculateActivity(double time) {
         return -1;
+    }
+
+    public ArrayList<Double> getIOBList(int timesliceSize)
+    {
+        ArrayList<Double> ret = new ArrayList<>();
+        double time = 0;
+        double iob = 1;
+        while (iob > 1.0/1000000)
+        {
+            iob = calculateIOB(time);
+            ret.add(iob);
+            time = time + timesliceSize;
+        }
+        return ret;
     }
 }
