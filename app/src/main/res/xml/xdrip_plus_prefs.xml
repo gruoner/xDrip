@@ -609,16 +609,16 @@
                     android:switchTextOff="@string/short_off_text_for_switches"
                     android:switchTextOn="@string/short_on_text_for_switches"
                     android:title="Multiple Insulin Types" />
-            <Preference
-                android:key="insulin_profiles"
-                android:dependency="multiple_insulin_types"
-                android:summary="@string/desc_enable_dedicated_insulin_profiles"
-                android:title="@string/enable_dedicated_insulin_profiles">
-                <intent
-                    android:action="android.intent.action.MAIN"
-                    android:targetClass="com.eveningoutpost.dexdrip.insulin.InsulinProfileEditor"
-                    android:targetPackage="@string/local_target_package" />
-            </Preference>
+                <Preference
+                    android:key="insulin_profiles"
+                    android:dependency="multiple_insulin_types"
+                    android:summary="@string/desc_enable_dedicated_insulin_profiles"
+                    android:title="@string/enable_dedicated_insulin_profiles">
+                    <intent
+                        android:action="android.intent.action.MAIN"
+                        android:targetClass="com.eveningoutpost.dexdrip.insulin.InsulinProfileEditor"
+                        android:targetPackage="@string/local_target_package" />
+                </Preference>
 
                 <CheckBoxPreference
                     android:defaultValue="false"
@@ -628,6 +628,33 @@
 
             </PreferenceScreen>
 
+            <PreferenceScreen
+                android:title="Multiple Carbs Types"
+                android:summary="Options for working with multiple Carbs types">
+                <SwitchPreference
+                    android:defaultValue="false"
+                    android:key="multiple_carbs_types"
+                    android:switchTextOff="@string/short_off_text_for_switches"
+                    android:switchTextOn="@string/short_on_text_for_switches"
+                    android:title="Multiple Carbs Types" />
+                <Preference
+                    android:key="carbs_profiles"
+                    android:dependency="multiple_carbs_types"
+                    android:summary="@string/desc_enable_dedicated_carbs_profiles"
+                    android:title="@string/enable_dedicated_carbs_profiles">
+                    <intent
+                        android:action="android.intent.action.MAIN"
+                        android:targetClass="com.eveningoutpost.dexdrip.insulin.InsulinProfileEditor"
+                        android:targetPackage="@string/local_target_package" />
+                </Preference>
+
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:key="multiple_carbs_use_for_prediction"
+                    android:summary="use extended carbs profiles as predictive model"
+                    android:title="Use in prediction"/>
+
+            </PreferenceScreen>
 
             <Preference
                 android:key="profile_carb_ratio_default"

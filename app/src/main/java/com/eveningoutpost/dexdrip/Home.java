@@ -104,6 +104,7 @@ import com.eveningoutpost.dexdrip.databinding.ActivityHomeBinding;
 import com.eveningoutpost.dexdrip.databinding.ActivityHomeShelfSettingsBinding;
 import com.eveningoutpost.dexdrip.databinding.PopupInitialStatusHelperBinding;
 import com.eveningoutpost.dexdrip.eassist.EmergencyAssistActivity;
+import com.eveningoutpost.dexdrip.food.MultipleCarbs;
 import com.eveningoutpost.dexdrip.insulin.Insulin;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
@@ -252,6 +253,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     private static double last_speech_time = 0;
     private static float hours = DEFAULT_CHART_HOURS;
     private PreviewLineChartView previewChart;
+    private ImageButton foodButton;
     private Button stepsButton;
     private Button bpmButton;
     private TextView dexbridgeBattery;
@@ -461,6 +463,11 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             promptSpeechInput();
             return true;
         });
+
+        this.foodButton = (ImageButton) findViewById(R.id.foodButton);
+        if (MultipleCarbs.isAvailable())
+            foodButton.setVisibility(View.VISIBLE);
+        else foodButton.setVisibility(View.INVISIBLE);
 
         this.btnNote = (ImageButton) findViewById(R.id.btnNote);
         btnNote.setOnLongClickListener(v -> {
@@ -1869,6 +1876,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         activityVisible = true;
         updateCurrentBgInfo("generic on resume");
         updateHealthInfo("generic on resume");
+
+        if (MultipleCarbs.isAvailable())
+            foodButton.setVisibility(View.VISIBLE);
+        else foodButton.setVisibility(View.INVISIBLE);
 
         if (NFCReaderX.useNFC()) {
             NFCReaderX.doNFC(this);
