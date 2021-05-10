@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.text.SpannableString;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
 import android.util.Log;
@@ -112,9 +113,11 @@ public class BestGlucose {
             if (color) {
                 if (isLow()) {
                     // TODO should colors be configurable?
-                    wholeSpan(ret, new ForegroundColorSpan(Color.parseColor("#C30909")));
+                    wholeSpan(ret, new BackgroundColorSpan(Color.parseColor("#C30909")));
+                    wholeSpan(ret, new ForegroundColorSpan(Color.parseColor("#ffffff")));
                 } else if (isHigh()) {
-                    wholeSpan(ret, new ForegroundColorSpan(Color.parseColor("#FFBB33")));
+                    wholeSpan(ret, new BackgroundColorSpan(Color.parseColor("#FFBB33")));
+                    wholeSpan(ret, new ForegroundColorSpan(Color.parseColor("#0909C3")));
                 } // else default to whatever default is?
             }
             return ret;
