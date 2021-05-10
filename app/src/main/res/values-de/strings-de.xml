@@ -1160,6 +1160,10 @@
     <string name="use_mobile_data">Mobile Daten verwenden</string>
     <string name="summary_cloud_storage_api_download_enable">Versuche Daten von Nightscout herunterzuladen</string>
     <string name="title_cloud_storage_api_download_enable">Daten herunterladen</string>
+    <string name="summary_cloud_storage_api_download_treatments_enable">Versuche Behandlungen von Nightscout herunterzuladen</string>
+    <string name="title_cloud_storage_api_download_treatments_enable">Behandlungen herunterladem</string>
+    <string name="summary_cloud_storage_api_download_insulin_enable">Versuche die Insulin Konfiguration von Nightscout herunterzuladen</string>
+    <string name="title_cloud_storage_api_download_insulin_enable">Insuline herunterladem</string>
     <string name="summary_bluetooth_meter_for_calibrations_auto">Ohne zu fragen mit einem neuen Blutzuckerwert kalibrieren, wenn die Bedingungen gut scheinen (experimentell)</string>
     <string name="title_bluetooth_meter_for_calibrations_auto">Automatische Kalibrierung</string>
     <string name="title_rest_api_extra_options">Zusätzliche Optionen</string>
@@ -1171,6 +1175,8 @@
     <string name="title_warn_nightscout_failures">Alarm bei Fehlern</string>
     <string name="summary_nightscout_device_append_source_info">Für G5, sendet Sammlertyp (z.B. OB1) und lese Nachfüll-Status (native) an Nightscout.</string>
     <string name="title_nightscout_device_append_source_info">Quell-Info an Gerätename anhängen</string>
+    <string name="summary_nightscout_upload_insulin_profiles">Wenn der Nightscout Server die Uploads von Insulin Profilen erlaubt, können hier die Profile und die Multi-Insulin Konfiguration hochgeladen werden.</string>
+    <string name="title_nightscout_upload_insulin_profiles">Insulin Profile auf Nightscout hochladen</string>
     <string name="summary_tap_to_send_historical_data">Klicken um historische Daten an Nightscout zu senden</string>
     <string name="title_back_fill_data">Back-fill Daten</string>
     <string name="summary_tidepool_upload_screen">Daten zum Tidepool-Dienst hochladen</string>
