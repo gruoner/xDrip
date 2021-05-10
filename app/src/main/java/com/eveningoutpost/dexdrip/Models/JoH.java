@@ -1063,6 +1063,15 @@ public class JoH {
             JoH.getWakeLock("joh-playsound", 10000);
             final MediaPlayer player = MediaPlayer.create(xdrip.getAppContext(), Uri.parse(soundUri));
             player.setLooping(false);
+            player.setOnCompletionListener(mp -> {
+                UserError.Log.i(TAG, "playSoundUri: onCompletion called (finished playing) ");
+                try {
+                    player.stop();
+                } catch (IllegalStateException e) {
+                    //
+                }
+                player.release();
+            });
             player.start();
             return player;
         } catch (Exception e) {
