@@ -191,6 +191,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     public final static String BLUETOOTH_METER_CALIBRATION = "BLUETOOTH_METER_CALIBRATION";
     public final static String ACTIVITY_SHOWCASE_INFO = "ACTIVITY_SHOWCASE_INFO";
     public final static String ENABLE_STREAMING_DIALOG = "ENABLE_STREAMING_DIALOG";
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     public final static int SENSOR_READY_ID = 4912;
     private final UiPing ui = new UiPing();
     public static boolean activityVisible = false;
@@ -601,6 +602,11 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
 
         currentBgValueText.setText(""); // clear any design prototyping default
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
+        }
+
     }
 
     private boolean firstRunDialogs(final boolean checkedeula) {

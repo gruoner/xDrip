@@ -6,6 +6,7 @@
     android:installLocation="internalOnly">
     <!-- To receive data from HAPP. -->
     <uses-permission android:name="com.eveningoutpost.dexdrip.permissions.RECEIVE_EXTERNAL_STATUSLINE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <uses-feature
         android:name="android.hardware.bluetooth_le"
@@ -72,7 +73,7 @@
             android:value="41" />
         <meta-data
             android:name="AA_MODELS"
-            android:value="com.eveningoutpost.dexdrip.Models.ActiveBgAlert,com.eveningoutpost.dexdrip.Models.ActiveBluetoothDevice,com.eveningoutpost.dexdrip.Models.AlertType,com.eveningoutpost.dexdrip.Models.BgReading,com.eveningoutpost.dexdrip.Models.BgReadingArchive,com.eveningoutpost.dexdrip.Models.BgReading,com.eveningoutpost.dexdrip.Models.Calibration,com.eveningoutpost.dexdrip.Models.Calibration,com.eveningoutpost.dexdrip.Models.CalibrationRequest,com.eveningoutpost.dexdrip.Models.Sensor,com.eveningoutpost.dexdrip.Models.TransmitterData,com.eveningoutpost.dexdrip.Models.Treatments,com.eveningoutpost.dexdrip.Models.UserError,com.eveningoutpost.dexdrip.Models.UserNotification,com.eveningoutpost.dexdrip.ShareModels.Models,com.eveningoutpost.dexdrip.UtilityModels.BgSendQueue,com.eveningoutpost.dexdrip.UtilityModels.CalibrationSendQueue,com.eveningoutpost.dexdrip.UtilityModels.SensorSendQueue,com.eveningoutpost.dexdrip.Models.HeartRate,com.eveningoutpost.dexdrip.Models.StepCounter,com.eveningoutpost.dexdrip.UtilityModels.UploaderQueue,com.eveningoutpost.dexdrip.Models.BloodTest,com.eveningoutpost.dexdrip.Models.Accuracy,com.eveningoutpost.dexdrip.Models.Reminder,com.eveningoutpost.dexdrip.Models.LibreData,com.eveningoutpost.dexdrip.Models.LibreBlock,com.eveningoutpost.dexdrip.Models.APStatus,com.eveningoutpost.dexdrip.Models.Prediction,com.eveningoutpost.dexdrip.Models.DesertSync,com.eveningoutpost.dexdrip.Models.PenData,com.eveningoutpost.dexdrip.Models.Libre2RawValue,com.eveningoutpost.dexdrip.Models.Libre2Sensor" />
+            android:value="com.eveningoutpost.dexdrip.Models.ActiveBgAlert,com.eveningoutpost.dexdrip.Models.ActiveBluetoothDevice,com.eveningoutpost.dexdrip.Models.AlertType,com.eveningoutpost.dexdrip.Models.BgReading,com.eveningoutpost.dexdrip.Models.BgReadingArchive,com.eveningoutpost.dexdrip.Models.BgReading,com.eveningoutpost.dexdrip.Models.Calibration,com.eveningoutpost.dexdrip.Models.Calibration,com.eveningoutpost.dexdrip.Models.CalibrationRequest,com.eveningoutpost.dexdrip.Models.Sensor,com.eveningoutpost.dexdrip.Models.TransmitterData,com.eveningoutpost.dexdrip.Models.Treatments,com.eveningoutpost.dexdrip.Models.UserError,com.eveningoutpost.dexdrip.Models.UserNotification,com.eveningoutpost.dexdrip.ShareModels.Models,com.eveningoutpost.dexdrip.UtilityModels.BgSendQueue,com.eveningoutpost.dexdrip.UtilityModels.CalibrationSendQueue,com.eveningoutpost.dexdrip.UtilityModels.SensorSendQueue,com.eveningoutpost.dexdrip.Models.HeartRate,com.eveningoutpost.dexdrip.Models.StepCounter,com.eveningoutpost.dexdrip.UtilityModels.UploaderQueue,com.eveningoutpost.dexdrip.Models.BloodTest,com.eveningoutpost.dexdrip.Models.Accuracy,com.eveningoutpost.dexdrip.Models.Reminder,com.eveningoutpost.dexdrip.Models.LibreData,com.eveningoutpost.dexdrip.Models.LibreBlock,com.eveningoutpost.dexdrip.Models.APStatus,com.eveningoutpost.dexdrip.Models.Prediction,com.eveningoutpost.dexdrip.Models.DesertSync,com.eveningoutpost.dexdrip.Models.PenData,com.eveningoutpost.dexdrip.Models.Libre2RawValue,com.eveningoutpost.dexdrip.Models.Libre2Sensor,com.eveningoutpost.dexdrip.Models.AudioRecorder" />
 
         <provider
             android:name="com.activeandroid.content.ContentProvider"
@@ -173,6 +174,10 @@
             android:name=".NewSensorLocation"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_new_sensor_location" />
+        <activity
+            android:name=".Recorder.ManageRecorder"
+            android:configChanges="orientation|screenSize"
+            android:label="Recorder verwalten" />
         <activity
             android:name=".StopSensor"
             android:configChanges="orientation|screenSize"
