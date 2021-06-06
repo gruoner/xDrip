@@ -1,29 +1,15 @@
 package com.eveningoutpost.dexdrip.Recorder;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 
-import com.eveningoutpost.dexdrip.G5Model.Ob1G5StateMachine;
 import com.eveningoutpost.dexdrip.Home;
-import com.eveningoutpost.dexdrip.LibreAlarmReceiver;
 import com.eveningoutpost.dexdrip.Models.AudioRecorder;
-import com.eveningoutpost.dexdrip.Models.Calibration;
 import com.eveningoutpost.dexdrip.Models.JoH;
-import com.eveningoutpost.dexdrip.Models.Sensor;
 import com.eveningoutpost.dexdrip.R;
-import com.eveningoutpost.dexdrip.StartNewSensor;
-import com.eveningoutpost.dexdrip.UtilityModels.AlertPlayer;
-import com.eveningoutpost.dexdrip.UtilityModels.CollectionServiceStarter;
-import com.eveningoutpost.dexdrip.UtilityModels.Inevitable;
-import com.eveningoutpost.dexdrip.UtilityModels.NanoStatus;
-import com.eveningoutpost.dexdrip.calibrations.PluggableCalibration;
+
 import com.eveningoutpost.dexdrip.ui.dialog.GenericConfirmDialog;
 import com.eveningoutpost.dexdrip.utils.ActivityWithMenu;
-import com.eveningoutpost.dexdrip.xdrip;
 
 import lombok.val;
 
