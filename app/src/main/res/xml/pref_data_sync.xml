@@ -102,6 +102,11 @@
                         android:title="@string/title_nightscout_device_append_source_info" />
                     <CheckBoxPreference
                         android:defaultValue="false"
+                        android:key="nightscout_device_append_location_info"
+                        android:summary="@string/summary_nightscout_device_append_location_info"
+                        android:title="@string/title_nightscout_device_append_location_info" />
+                    <CheckBoxPreference
+                        android:defaultValue="false"
                         android:dependency="multiple_insulin_types"
                         android:key="nightscout_upload_insulin_profiles"
                         android:summary="@string/summary_nightscout_upload_insulin_profiles"

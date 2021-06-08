@@ -5,6 +5,7 @@
     package="com.eveningoutpost.dexdrip"
     android:installLocation="internalOnly">
     <!-- To receive data from HAPP. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="com.eveningoutpost.dexdrip.permissions.RECEIVE_EXTERNAL_STATUSLINE" />
 
     <uses-feature
