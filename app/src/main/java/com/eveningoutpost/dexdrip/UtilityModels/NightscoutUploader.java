@@ -331,7 +331,7 @@ public class NightscoutUploader {
         try {
             uri = new URI(baseURI);
         } catch (URISyntaxException e) {
-            Log.e(TAG, "Error URISyntaxException for " + baseURI, e);
+            Log.e(TAG, "Error URISyntaxException for the base URL", e);
             return baseURI;
         }
         String host = uri.getHost();
@@ -449,7 +449,7 @@ public class NightscoutUploader {
                             PersistentStore.setString(LAST_MODIFIED_KEY, last_modified_string);
                             checkGzipSupport(r);
                         } else {
-                            Log.d(TAG, "Failed to get treatments from: " + baseURI);
+                            Log.d(TAG, "Failed to get treatments from the base URL");
                         }
 
                     } else {
@@ -459,7 +459,7 @@ public class NightscoutUploader {
 
 
             } catch (Exception e) {
-                String msg = "Unable to do REST API Download " + e + " " + e.getMessage() + " url: " + baseURI;
+                String msg = "Unable to do REST API Download " + e + e.getMessage();
                 handleRestFailure(msg);
             }
         }
@@ -631,7 +631,7 @@ public class NightscoutUploader {
                     last_success_time = JoH.tsl();
                     last_exception_count = 0;
                 } catch (Exception e) {
-                    String msg = "Unable to do REST API Upload: " + e.getMessage() + " url: " + baseURI + " marking record: " + (any_successes ? "succeeded" : "failed");
+                    String msg = "Unable to do REST API Upload: " + e.getMessage() + " marking record: " + (any_successes ? "succeeded" : "failed");
                     handleRestFailure(msg);
                 }
             }
