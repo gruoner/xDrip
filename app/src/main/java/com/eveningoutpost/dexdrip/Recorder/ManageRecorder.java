@@ -8,6 +8,7 @@ import com.eveningoutpost.dexdrip.Models.AudioRecorder;
 import com.eveningoutpost.dexdrip.Models.JoH;
 import com.eveningoutpost.dexdrip.R;
 
+import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 import com.eveningoutpost.dexdrip.ui.dialog.GenericConfirmDialog;
 import com.eveningoutpost.dexdrip.utils.ActivityWithMenu;
 
@@ -57,9 +58,11 @@ public class ManageRecorder extends ActivityWithMenu {
 
     public synchronized static void AudioRecorderStart() {
         AudioRecorder r = AudioRecorder.create(getAppContext());
+        Pref.setBoolean("audio_recorder_started", true);
         Home.staticRefreshBGCharts();
     }
     public synchronized static void AudioRecorderStop() {
+        Pref.setBoolean("audio_recorder_started", false);
         AudioRecorder.stopAudioRecorder();
         Home.staticRefreshBGCharts();
     }

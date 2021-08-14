@@ -195,6 +195,12 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/note_search" />
 
+        <receiver android:name=".utils.RebootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_SHUTDOWN" />
+                <action android:name="android.intent.action.REBOOT" />
+            </intent-filter>
+        </receiver>
         <receiver android:name=".AutoStart">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

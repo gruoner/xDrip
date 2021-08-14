@@ -109,23 +109,6 @@ public class AudioRecorder extends Model {
         return gson.toJson(this);
     }
 
-    public static AudioRecorder lastStopped() {
-        fixUpTable();                                                                                                                                                                   
-        AudioRecorder r = new Select()
-                .from(AudioRecorder.class)
-                .where("started_at != 0")
-                .where("stopped_at != 0")
-                .orderBy("_ID desc")
-                .limit(1)
-                .executeSingle();
-        return r;
-    }
-
-    public static boolean stoppedRecently() {
-        final AudioRecorder last = lastStopped();
-        return last != null && last.stopped_at < JoH.tsl() && (JoH.msSince(last.stopped_at) < (Constants.HOUR_IN_MS * 2));
-    }
-
     public static AudioRecorder currentAudioRecorder() {
         fixUpTable();
         AudioRecorder r = new Select()
