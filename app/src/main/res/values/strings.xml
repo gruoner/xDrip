@@ -1,5 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="monday">MON</string>
+    <string name="tuesday">TUE</string>
+    <string name="wednesday">WED</string>
+    <string name="thursday">THU</string>
+    <string name="friday">FRI</string>
+    <string name="saturday">SAT</string>
+    <string name="sunday">SUN</string>
+    <string name="select_days_for_alert_colon">Select the days of week</string>
 
     <string name="title_activity_bluetooth_scan">Bluetooth Scan</string>
     <string name="connected">Connected</string>
@@ -1194,8 +1202,12 @@
     <string name="manual_overwrite_not_possible">Manual overwrite not possible!</string>
     <string name="upload_even_when_using_mobile_data">Upload even when using mobile data</string>
     <string name="use_mobile_data">Use mobile data</string>
-    <string name="summary_cloud_storage_api_download_enable">Also try to download treatments from Nightscout</string>
-    <string name="title_cloud_storage_api_download_enable">Download treatments</string>
+    <string name="summary_cloud_storage_api_download_enable">Also try to download data from Nightscout</string>
+    <string name="title_cloud_storage_api_download_enable">Download data</string>
+    <string name="summary_cloud_storage_api_download_treatments_enable">try to download treatments from Nightscout</string>
+    <string name="title_cloud_storage_api_download_treatments_enable">Download treatments</string>
+    <string name="summary_cloud_storage_api_download_insulin_enable">try to download insulin profiles from Nightscout</string>
+    <string name="title_cloud_storage_api_download_insulin_enable">Download insulin profiles</string>
     <string name="summary_bluetooth_meter_for_calibrations_auto">Calibrate using new blood glucose readings if the conditions appear right to do so without asking confirmation (experimental)</string>
     <string name="title_bluetooth_meter_for_calibrations_auto">Automatic Calibration</string>
     <string name="title_rest_api_extra_options">Extra Options</string>
@@ -1207,6 +1219,10 @@
     <string name="title_warn_nightscout_failures">Alert on failures</string>
     <string name="summary_nightscout_device_append_source_info">For G5, sends collector type (e.g. OB1) and reading backfill status (for native) to Nightscout.</string>
     <string name="title_nightscout_device_append_source_info">Append source info to device name</string>
+    <string name="summary_nightscout_device_append_location_info">send also location information to Nightscout.</string>
+    <string name="title_nightscout_device_append_location_info">add location info to device name</string>
+    <string name="summary_nightscout_upload_insulin_profiles">If Nightscout Server is supporting uploads of insulin profiles, here one can upload profiles and Multi-Insulin configuration.</string>
+    <string name="title_nightscout_upload_insulin_profiles">Upload insulin profiles to nightscout</string>
     <string name="summary_tap_to_send_historical_data">Tap to send historical data to Nightscout</string>
     <string name="title_back_fill_data">Back-fill data</string>
     <string name="summary_tidepool_upload_screen">Upload data to the Tidepool service</string>
@@ -1314,8 +1330,12 @@
     <string name="title_medtrum_a_hex">Medtrum Debug</string>
     <string name="summary_nsfollow_url">Web address for following</string>
     <string name="title_nsfollow_url">Nightscout Follow URL</string>
+    <string name="summary_nsfollow_download_insulin">Also download insulin profiles from Nightscout as follower</string>
+    <string name="title_nsfollow_download_insulin">Download Insulin Profiles</string>
     <string name="summary_nsfollow_download_treatments">Also download treatments from Nightscout as follower</string>
     <string name="title_nsfollow_download_treatments">Download Treatments</string>
+    <string name="summary_nsfollow_download_treatments_even_xdrip">Also download treatments from Nightscout as follower even if it comes from xdrip</string>
+    <string name="title_nsfollow_download_treatments_even_xdrip">Download Treatments XDrip+</string>
     <string name="title_ob1_options">OB1 G5/G6 Collector Settings</string>
     <string name="summary_use_ob1_g5_collector_service">Complete re-write, should work on Android 4.4 - 9, supports native mode and more</string>
     <string name="title_use_ob1_g5_collector_service">Use the OB1 Collector</string>

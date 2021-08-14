@@ -1146,7 +1146,9 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     return true;
             });
 
-            final Preference nsFollowDownload = findPreference("nsfollow_download_treatments");
+            final Preference nsFollowDownloadInsulin = findPreference("nsfollow_download_insulin");
+            final Preference nsFollowDownloadTreatment = findPreference("nsfollow_download_treatments");
+            final Preference nsFollowDownloadTreatmentXDrip = findPreference("nsfollow_download_treatments_even_xdrip");
             final Preference nsFollowUrl = findPreference("nsfollow_url");
             try {
                 nsFollowUrl.setOnPreferenceChangeListener((preference, newValue) -> {
@@ -1507,7 +1509,9 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             if (collectionType != DexCollectionType.NSFollow) {
                 try {
                     collectionCategory.removePreference(nsFollowUrl);
-                    collectionCategory.removePreference(nsFollowDownload);
+                    collectionCategory.removePreference(nsFollowDownloadInsulin);
+                    collectionCategory.removePreference(nsFollowDownloadTreatment);
+                    collectionCategory.removePreference(nsFollowDownloadTreatmentXDrip);
                 } catch (Exception e) {
                     //
                 }
@@ -2150,7 +2154,9 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
 
                     if (collectionType == DexCollectionType.NSFollow) {
                         collectionCategory.addPreference(nsFollowUrl);
-                        collectionCategory.addPreference(nsFollowDownload);
+                        collectionCategory.addPreference(nsFollowDownloadInsulin);
+                        collectionCategory.addPreference(nsFollowDownloadTreatment);
+                        collectionCategory.addPreference(nsFollowDownloadTreatmentXDrip);
                     }
 
 
