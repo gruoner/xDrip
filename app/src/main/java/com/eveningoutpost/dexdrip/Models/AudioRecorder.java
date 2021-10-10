@@ -51,7 +51,8 @@ public class AudioRecorder extends Model {
         AudioRecorder r = new AudioRecorder();
         r.started_at = started_at;
         r.uuid = UUID.randomUUID().toString();
-        r.audio_file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
+//        r.audio_file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
+        r.audio_file = c.getFilesDir() +
                 "/audiorecord-" + JoH.dateTimeText(JoH.tsl()).replace(" ", "_") + ".3gp";
         r.save();
         /// todo: hier muss der Recordercode zum Starten rein

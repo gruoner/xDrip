@@ -13,7 +13,6 @@ import com.eveningoutpost.dexdrip.Models.Calibration;
 import com.eveningoutpost.dexdrip.Models.JoH;
 import com.eveningoutpost.dexdrip.Models.Sensor;
 import com.eveningoutpost.dexdrip.Models.Treatments;
-import com.eveningoutpost.dexdrip.Recorder.ManageRecorder;
 import com.eveningoutpost.dexdrip.Services.Ob1G5CollectionService;
 import com.eveningoutpost.dexdrip.Tables.BgReadingTable;
 import com.eveningoutpost.dexdrip.Tables.CalibrationDataTable;
@@ -111,9 +110,6 @@ public class NavDrawerBuilder {
                 this.nav_drawer_intents.add(new Intent(context, BluetoothScan.class));
             }
         }
-
-        this.nav_drawer_options.add("Recorder verwalten");
-        this.nav_drawer_intents.add(new Intent(context, ManageRecorder.class));
 
         //if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
         this.nav_drawer_options.add(context.getString(R.string.system_status));
