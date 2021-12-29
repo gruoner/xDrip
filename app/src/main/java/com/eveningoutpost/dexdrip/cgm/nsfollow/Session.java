@@ -21,6 +21,7 @@ public class Session {
     public BaseCallback<List<Entry>> entriesCallback;
     public BaseCallback<ResponseBody> treatmentsCallback;
     public BaseCallback<List<NightscoutFollow.NightscoutInsulinStructure>> insulinCallback;
+    public BaseCallback<List<NightscoutFollow.NightscoutFoodStructure>> foodCallback;
 
 
     // most recent set of entries
@@ -28,6 +29,7 @@ public class Session {
     // most recent treatments raw json
     public ResponseBody treatments;
     public List<NightscoutFollow.NightscoutInsulinStructure> insulin;
+    public List<NightscoutFollow.NightscoutFoodStructure> food;
 
 
     // populate session data from a response object which could be any supported type
@@ -39,6 +41,8 @@ public class Session {
                 entries = (List<Entry>)object;
             } else if (!someList.isEmpty() && someList.get(0) instanceof NightscoutFollow.NightscoutInsulinStructure) {
                 insulin = (List<NightscoutFollow.NightscoutInsulinStructure>)object;
+            } else if (!someList.isEmpty() && someList.get(0) instanceof NightscoutFollow.NightscoutFoodStructure) {
+                food = (List<NightscoutFollow.NightscoutFoodStructure>)object;
             }
 
         } else if (object instanceof ResponseBody) {

@@ -104,6 +104,7 @@ import com.eveningoutpost.dexdrip.databinding.ActivityHomeBinding;
 import com.eveningoutpost.dexdrip.databinding.ActivityHomeShelfSettingsBinding;
 import com.eveningoutpost.dexdrip.databinding.PopupInitialStatusHelperBinding;
 import com.eveningoutpost.dexdrip.eassist.EmergencyAssistActivity;
+import com.eveningoutpost.dexdrip.food.FoodManager;
 import com.eveningoutpost.dexdrip.food.MultipleCarbs;
 import com.eveningoutpost.dexdrip.insulin.Insulin;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
@@ -451,6 +452,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
         if (MultipleInsulins.isEnabled())   // alway load all Insulin profiles because even in single mode we store injections with the default bolus
             InsulinManager.getDefaultInstance();
+        if (MultipleCarbs.isEnabled())   // alway load all Food profiles
+            FoodManager.getDefaultInstance();
 
         this.btnSpeak = (ImageButton) findViewById(R.id.btnTreatment);
         btnSpeak.setOnClickListener(v -> promptTextInput());
