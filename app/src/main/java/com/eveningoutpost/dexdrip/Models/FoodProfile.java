@@ -6,9 +6,8 @@ import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 import com.activeandroid.query.Select;
 import com.activeandroid.util.SQLiteUtils;
-import com.eveningoutpost.dexdrip.food.FoodManager;
-import com.google.gson.Gson;
 import java.util.List;
+import java.util.Objects;
 
 @Table(name = "FoodProfiles", id = BaseColumns._ID)
 public class FoodProfile extends Model {
@@ -22,6 +21,16 @@ public class FoodProfile extends Model {
     private String name;
     @Column(name = "type")
     private String type;
+    @Column(name = "gi")
+    private String gi;
+    @Column(name = "energy")
+    private int energy;
+    @Column(name = "protein")
+    private int protein;
+    @Column(name = "fat")
+    private int fat;
+    @Column(name = "carbs")
+    private int carbs;
     @Column(name = "unit")
     private String unit;
     @Column(name = "portionSize")
@@ -30,51 +39,66 @@ public class FoodProfile extends Model {
     private Integer deleted;
     @Column(name = "hidden")
     private Integer hidden;
+    @Column(name = "ingredients")
+    private String ingredients;
 
     public FoodProfile() {
         super();
     }
-    public FoodProfile(String id, String n, String type, String u, int portion, Boolean del, Boolean h) {
+    public FoodProfile(String id, String n, String type, String g, int e, int p, int f, int c, String u, int portion, Boolean del, Boolean h, String i) {
         this.foodID = id;
         name = n;
         this.type = type;
-
+        gi = g;
+        energy = e;
+        protein = p;
+        fat = f;
+        carbs = c;
         unit = u;
         this.portionSize = portion;
         if (del) deleted = 1;
         else deleted = 0;
         if (h) hidden = 1;
         else hidden = 0;
+        ingredients = i;
     }
 
-    public static FoodProfile create(String id, String dn, String type, String u, int portion, Boolean del, Boolean h)
+    public static FoodProfile create(String id, String dn, String type, String g, int e, int p, int f, int c, String u, int portion, Boolean del, Boolean h, String i)
     {
-        FoodProfile ret = new FoodProfile(id, dn, type, u, portion, del, h);
-        try {
-            ret.save();
-        } catch (android.database.sqlite.SQLiteException e) {
-            fixUpTable();
-            ret.save();
-        }
+        FoodProfile ret = new FoodProfile(id, dn, type, g, e, p, f, c, u, portion, del, h, i);
+        try { ret.save(); } catch (android.database.sqlite.SQLiteException ex) { fixUpTable(); ret.save(); }
+
         return ret;
     }
 
-    public String getFoodID() {
-        return foodID;
-    }
+    public String getFoodID() { return Objects.toString(foodID, ""); }
     public String getName() {
-        return name;
+        return Objects.toString(name, "");
     }
     public String getType() {
-        return type;
+        return Objects.toString(type, "");
+    }
+    public String getGI() {
+        return Objects.toString(gi, "");
+    }
+    public int getEnergy() {
+        return energy;
+    }
+    public int getProtein() {
+        return protein;
+    }
+    public int getfat() {
+        return fat;
+    }
+    public int getCarbs() {
+        return carbs;
     }
     public String getUnit() {
-        return unit;
+        return Objects.toString(unit, "");
     }
     public int getPortionSize() {
         return portionSize;
     }
-
     public Boolean isDeleted() {
         if (deleted == null) return false;
         if (deleted == 0) return false;
@@ -85,62 +109,59 @@ public class FoodProfile extends Model {
         if (hidden == 0) return false;
         else return true;
     }
+    public String getIngredients() {
+        return Objects.toString(ingredients, "");
+    }
 
     public void setName(String n) {
         name = n;
-        try {
-            save();
-        } catch (android.database.sqlite.SQLiteException e) {
-            fixUpTable();
-            save();
-        }
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
     }
     public void setType(String t) {
         type = t;
-        try {
-            save();
-        } catch (android.database.sqlite.SQLiteException e) {
-            fixUpTable();
-            save();
-        }
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
+    }
+    public void setGI(String s) {
+        gi = s;
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
+    }
+    public void setEnergy(int i) {
+        energy = i;
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
+    }
+    public void setProtein(int i) {
+        protein = i;
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
+    }
+    public void setFat(int i) {
+        fat = i;
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
+    }
+    public void setCarbs(int i) {
+        carbs = i;
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
     }
     public void setUnit(String n) {
         unit = n;
-        try {
-            save();
-        } catch (android.database.sqlite.SQLiteException e) {
-            fixUpTable();
-            save();
-        }
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
     }
     public void setPortionSize(int n) {
         portionSize = n;
-        try {
-            save();
-        } catch (android.database.sqlite.SQLiteException e) {
-            fixUpTable();
-            save();
-        }
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
     }
     public void setDeleted(Boolean del) {
         if (del) deleted = 1;
         else deleted = 0;
-        try {
-            save();
-        } catch (android.database.sqlite.SQLiteException e) {
-            fixUpTable();
-            save();
-        }
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
     }
     public void setHidden(Boolean h) {
         if (h) hidden = 1;
         else hidden = 0;
-        try {
-            save();
-        } catch (android.database.sqlite.SQLiteException e) {
-            fixUpTable();
-            save();
-        }
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
+    }
+    public void setIngredients(String s) {
+        ingredients = s;
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
     }
 
     // This shouldn't be needed but itportionSize seems it is
@@ -151,10 +172,16 @@ public class FoodProfile extends Model {
                 "ALTER TABLE FoodProfiles ADD COLUMN foodID TEXT;",
                 "ALTER TABLE FoodProfiles ADD COLUMN name TEXT;",
                 "ALTER TABLE FoodProfiles ADD COLUMN type TEXT;",
-                "ALTER TABLE FoodProfiles ADD COLUMN unit TEXT;",
+                "ALTER TABLE FoodProfiles ADD COLUMN gi TEXT;",
+                "ALTER TABLE FoodProfiles ADD COLUMN energy INTEGER DEFAULT 0;",
+                "ALTER TABLE FoodProfiles ADD COLUMN protein INTEGER DEFAULT 0;",
+                "ALTER TABLE FoodProfiles ADD COLUMN fat INTEGER DEFAULT 0;",
+                "ALTER TABLE FoodProfiles ADD COLUMN carbs INTEGER DEFAULT 0;",
+                "ALTER TABLE FoodProfiles ADD COLUMN unit TEXT DEFAULT 'g';",
                 "ALTER TABLE FoodProfiles ADD COLUMN deleted INTEGER DEFAULT 0;",
                 "ALTER TABLE FoodProfiles ADD COLUMN hidden INTEGER DEFAULT 0;",
                 "ALTER TABLE FoodProfiles ADD COLUMN portionSize INTEGER DEFAULT 0;",
+                "ALTER TABLE FoodProfiles ADD COLUMN ingredients TEXT;",
                 "CREATE UNIQUE INDEX index_FoodProfiles_id on FoodProfiles(id);",
                 "CREATE UNIQUE INDEX index_FoodProfiles_name on FoodProfiles(name);"};
 

@@ -3,6 +3,8 @@ package com.eveningoutpost.dexdrip.food;
 import android.util.Log;
 import com.eveningoutpost.dexdrip.Models.FoodProfile;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
+import com.google.common.base.Strings;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,28 +21,61 @@ public class FoodManager {
         {
             profilesGot.add(profile._id);
 
+            int energy = 0;
+            int protein = 0;
+            int fat = 0;
+            int carbs = 0;
             int portion = 1;
-            if (profile.portion != null)
-                portion = Integer.parseInt(profile.portion);
+            try {
+                if (!Strings.isNullOrEmpty(profile.energy)) energy = Integer.parseInt(profile.energy);
+            } catch (Exception ex) { }
+            try {
+                if (!Strings.isNullOrEmpty(profile.protein)) protein = Integer.parseInt(profile.protein);
+            } catch (Exception ex) { }
+            try {
+                if (!Strings.isNullOrEmpty(profile.fat)) fat = Integer.parseInt(profile.fat);
+            } catch (Exception ex) { }
+            try {
+                if (!Strings.isNullOrEmpty(profile.carbs)) carbs = Integer.parseInt(profile.carbs);
+            } catch (Exception ex) { }
+            try {
+                if (!Strings.isNullOrEmpty(profile.portion)) portion = Integer.parseInt(profile.portion);
+            } catch (Exception ex) { }
             boolean hidden = false;
             if (profile.hidden != null)
             {
                 if (profile.hidden.toUpperCase().equals("true")) hidden = true;
                 else hidden = false;
             }
+            String ingredients = "";
+            if (profile.foods != null)
+            {
+                String sep = "";
+                for (NightscoutFollow.NightscoutFoodStructure i: profile.foods)
+                {
+                    ingredients = ingredients + sep + i._id + ";" + i.portions;
+                    sep = "|";
+                }
+            }
 
             if (FoodProfile.byFoodID(profile._id) == null)   // its a new profile --> create it
             {
-                FoodProfile.create(profile._id, profile.name, profile.type, profile.unit, portion, false, hidden);
+                FoodProfile.create(profile._id, profile.name, profile.type, profile.gi, energy, protein, fat, carbs, profile.unit, portion, false, hidden, ingredients);
                 somethingChanged = true;
             } else {        // its a known profile --> update it
                 FoodProfile o = FoodProfile.byFoodID(profile._id);
                 if (!o.getName().equals(profile.name)) {   o.setName(profile.name); somethingChanged = true; }
                 if (!o.getType().equals(profile.type)) {   o.setType(profile.type); somethingChanged = true; }
-                if (!o.getUnit().equals(profile.unit)) {   o.setUnit(profile.unit); somethingChanged = true; }
+                if (o.getEnergy() != energy) {   o.setEnergy(energy); somethingChanged = true; }
+                if (o.getfat() != fat) {   o.setFat(fat); somethingChanged = true; }
+                if (o.getProtein() != protein) {   o.setProtein(protein); somethingChanged = true; }
+                if (o.getCarbs() != carbs) {   o.setCarbs(carbs); somethingChanged = true; }
+                if (!Strings.isNullOrEmpty(profile.gi) && !o.getGI().equals(profile.gi)) {   o.setGI(profile.gi); somethingChanged = true; }
+                if (!Strings.isNullOrEmpty(profile.unit) && !o.getUnit().equals(profile.unit)) {   o.setUnit(profile.unit); somethingChanged = true; }
                 if (o.getPortionSize() != portion) {   o.setPortionSize(portion); somethingChanged = true; }
                 if (o.isHidden() != hidden) {   o.setHidden(hidden); somethingChanged = true; }
                 if (o.isDeleted()) { o.setDeleted(false); somethingChanged = true; }
+                if (!o.getIngredients().equals(ingredients)) {   o.setIngredients(ingredients); somethingChanged = true; }
             }
         }
         for (FoodProfile toDel: FoodProfile.all())
@@ -48,30 +83,18 @@ public class FoodManager {
                 toDel.setDeleted(true);
                 somethingChanged = true;
             }
-        if (somethingChanged) profiles = getFood();
+        if (somethingChanged) getDefaultInstance();
 //        LoadDisabledProfilesFromPrefs();
         Log.d(TAG, "FoodManager initialized from nightscout");
         return somethingChanged;
     }
 
-    private static ArrayList<Food> getFood() {
-        ArrayList<Food> ret = null;
-        for (FoodProfile d : FoodProfile.all()) {
-            Food food = new Food(d.getFoodID(), d.getName(), d.getType(), d.getUnit(), d.getPortionSize(), d.isHidden(), d.isDeleted());
-            Log.d(TAG, "initialized Food " + d.getName());
-            ret.add(food);
-        }
-        return ret;
-    }
-    private static void checkInitialized() {
-        if (profiles == null)
-           getDefaultInstance();
-    }
-
     // populate the data set with predefined resource as otherwise the static reference could be lost
     // as we are not really safely handling it
     public static List<Food> getDefaultInstance() {
-        profiles = getFood();
+        profiles = new ArrayList<>();
+        for (FoodProfile d : FoodProfile.all())
+            getFood(d.getFoodID());
         //LoadDisabledProfilesFromPrefs();
         return profiles;
     }
@@ -84,17 +107,24 @@ public class FoodManager {
     }
 
     public static Food getFood(String id) {
-        checkInitialized();
-        if (profiles == null) {
-            Log.d(TAG, "FoodManager seems not load Profiles beforehand");
-            return null;
-        }
+        if (profiles == null)
+            profiles = new ArrayList<>();
         for (Food f : profiles)
             if (f.getID().equalsIgnoreCase(id))
                 return f;
         for (Food f : profiles)
             if (f.getName().equalsIgnoreCase(id))
                 return f;
+        FoodProfile p = FoodProfile.byFoodID(id);
+        if (p == null)
+            p = FoodProfile.byName(id);
+        if (p != null)
+        {
+            Food food = new Food(p);
+            Log.d(TAG, "initialized Food " + food.getName());
+            profiles.add(food);
+            return food;
+        }
         return null;
     }
 
