@@ -882,6 +882,9 @@ public class NightscoutUploader {
         record.put("notes", treatment.notes);
         record.put("uuid", treatment.uuid);
         record.put("carbs", treatment.carbs);
+        if (treatment.foodJSON != null) {
+            record.put("foodIntake", treatment.foodJSON);
+        }
         record.put("insulin", treatment.insulin);
         if (treatment.insulinJSON != null) {
             record.put("insulinInjections", treatment.insulinJSON);
@@ -1434,6 +1437,9 @@ public class NightscoutUploader {
                                         if (treatment.notes != null) record.put("notes", treatment.notes);
                                         record.put("uuid", treatment.uuid);
                                         record.put("carbs", treatment.carbs);
+                                        if (treatment.foodJSON != null) {
+                                            record.put("foodIntake", treatment.foodJSON);
+                                        }
                                         record.put("insulin", treatment.insulin);
                                         if (treatment.insulinJSON != null) {
                                             record.put("insulinInjections", treatment.insulinJSON);

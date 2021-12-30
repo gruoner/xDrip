@@ -510,7 +510,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                     textInsulinDose[finalI].setVisibility(View.INVISIBLE);
                     btnInsulinDose[finalI].setVisibility(View.INVISIBLE);
                     // create individual treatment just for this entry
-                    Treatments.create(0, thisinsulinnumber[finalI], Treatments.convertLegacyDoseToInjectionListByName(thisinsulinprofile[finalI].getName(), thisinsulinnumber[finalI]), Treatments.getTimeStampWithOffset(thistimeoffset));
+                    Treatments.create(0, null, thisinsulinnumber[finalI], Treatments.convertLegacyDoseToInjectionListByName(thisinsulinprofile[finalI].getName(), thisinsulinnumber[finalI]), Treatments.getTimeStampWithOffset(thistimeoffset));
 
                     thisinsulinnumber[finalI] = 0;
                     insulinset[finalI] = false;
@@ -530,7 +530,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             textCarbohydrates.setVisibility(View.INVISIBLE);
             btnCarbohydrates.setVisibility(View.INVISIBLE);
             reset_viewport = true;
-            Treatments.create(thiscarbsnumber, 0, new ArrayList<InsulinInjection>(), Treatments.getTimeStampWithOffset(thistimeoffset));
+            Treatments.create(thiscarbsnumber, null,0, new ArrayList<InsulinInjection>(), Treatments.getTimeStampWithOffset(thistimeoffset));
             thiscarbsnumber = 0;
             if (hideTreatmentButtonsIfAllDone()) {
                 updateCurrentBgInfo("carbs button");
@@ -885,7 +885,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                             injections.add(injection);
                         }
                     Log.d(TAG, "processAndApproveTreatment create watchkeypad Treatment carbs=" + thiscarbsnumber + " insulin=" + thisInsulinSumNumber + " timestamp=" + JoH.dateTimeText(time) + " uuid=" + thisuuid);
-                    Treatments.create(thiscarbsnumber, thisInsulinSumNumber, injections, time, thisuuid);
+                    Treatments.create(thiscarbsnumber, null, thisInsulinSumNumber, injections, time, thisuuid);
 // gruoner: changed pendiq handling 09/12/19        TODO remove duplicate code with helper function
 // in case of multiple injections in a treatment, select the injection with the primary insulin profile defined in the profile editor; if not found, take 0
 // in case of a single injection in a treatment, assume thats the #units to send to pendiq
@@ -908,7 +908,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                     InsulinInjection injection = new InsulinInjection(thisinsulinprofile[i], thisinsulinnumber[i]);
                     injections.add(injection);
                 }
-            Treatments.create(thiscarbsnumber, thisInsulinSumNumber, injections, Treatments.getTimeStampWithOffset(mytimeoffset));
+            Treatments.create(thiscarbsnumber, null, thisInsulinSumNumber, injections, Treatments.getTimeStampWithOffset(mytimeoffset));
 // gruoner: changed pendiq handling 09/12/19   TODO remove duplicate code with helper function
 // in case of multiple injections in a treatment, select the injection with the primary insulin profile defined in the profile editor; if not found, take 0
 // in case of a single injection in a treatment, assume thats the #units to send to pendiq
