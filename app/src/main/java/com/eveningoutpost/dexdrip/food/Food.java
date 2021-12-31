@@ -3,6 +3,8 @@ package com.eveningoutpost.dexdrip.food;
 import android.support.v4.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.eveningoutpost.dexdrip.Models.FoodIntake;
 import com.eveningoutpost.dexdrip.Models.FoodProfile;
 import com.google.common.base.Strings;
 
@@ -18,7 +20,7 @@ public class Food {
     private int carbs;
     private Boolean hidden;
     private Boolean deleted;
-    private List<Pair<Food, Double>> ingredients;
+    private FoodIntake ingredients;
 
     public Food(FoodProfile p) {
         ID = p.getFoodID();
@@ -32,13 +34,13 @@ public class Food {
         pSize = p.getPortionSize();
         hidden = p.isHidden();
         deleted = p.isDeleted();
-        ingredients = new ArrayList<>();
+        ingredients = new FoodIntake();
         if (!Strings.isNullOrEmpty(p.getIngredients())) {
             String[] ingr = p.getIngredients().split("\\|");
             for (String i : ingr) {
                 Food f = FoodManager.getFood(i.split(";")[0]);
                 Double portions = Double.parseDouble(i.split(";")[1]);
-                ingredients.add(new Pair<Food, Double>(f, portions));
+                ingredients.addIngredient(f, portions);
             }
         }
     }
