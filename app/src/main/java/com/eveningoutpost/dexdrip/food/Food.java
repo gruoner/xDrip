@@ -15,7 +15,8 @@ public class Food {
     private String name;
     private Types type;
     private String unit;
-    private String gi;
+    private int GIupperBound, GIlowerBound;
+    private Boolean GIisRange;
     private int pSize;
     private int carbs;
     private Boolean hidden;
@@ -29,7 +30,6 @@ public class Food {
         else if (p.getType().equalsIgnoreCase("quickpick")) type = Types.Meal;
         else type = Types.unknown;
         carbs = p.getCarbs();
-        gi = p.getGI();
         unit = p.getUnit();
         pSize = p.getPortionSize();
         hidden = p.isHidden();
@@ -43,6 +43,41 @@ public class Food {
                 ingredients.addIngredient(f, portions);
             }
         }
+        String gi = p.getGI();
+        if (gi.equalsIgnoreCase("low")) {
+            GIisRange = true;
+            GIupperBound = 55;
+            GIlowerBound = 0;
+        } else if (gi.equalsIgnoreCase("med") || gi.equalsIgnoreCase("medium")) {
+            GIisRange = true;
+            GIupperBound = 69;
+            GIlowerBound = 56;
+        } else if (gi.equalsIgnoreCase("hi") || gi.equalsIgnoreCase("high")) {
+            GIisRange = true;
+            GIupperBound = 100;
+            GIlowerBound = 70;
+        } else if (gi.contains("-"))
+        try
+        {
+            GIisRange = true;
+            GIlowerBound = Integer.parseInt(gi.split("-")[0]);
+            GIupperBound = Integer.parseInt(gi.split("-")[1]);
+        } catch (Exception ex)
+        {
+            GIupperBound = 69;
+            GIlowerBound = 56;
+        }
+        else
+            try
+            {
+                GIisRange = false;
+                GIlowerBound = Integer.parseInt(gi);
+                GIupperBound = GIlowerBound;
+            } catch (Exception ex)
+            {
+                GIupperBound = 62;
+                GIlowerBound = 62;
+            }
     }
 
     public String getID() {
@@ -65,5 +100,17 @@ public class Food {
     }
     public Boolean isDeleted() {
         return deleted;
+    }
+    public Boolean isGIaRange()
+    {
+        return GIisRange;
+    }
+    public int getGI() {
+        if (GIisRange)
+            return (GIlowerBound+GIupperBound)/2;
+        else return GIlowerBound;
+    }
+    public String getGIasRange() {
+        return GIlowerBound + "-" + GIupperBound;
     }
 }
