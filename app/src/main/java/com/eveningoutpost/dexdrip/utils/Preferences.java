@@ -1166,6 +1166,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
 
             final Preference nsFollowDownloadInsulin = findPreference("nsfollow_download_insulin");
             final Preference nsFollowDownloadTreatment = findPreference("nsfollow_download_treatments");
+            final Preference nsFollowDownloadTreatmentXDrip = findPreference("nsfollow_download_treatments_even_xdrip");
             final Preference nsFollowUrl = findPreference("nsfollow_url");
             try {
                 nsFollowUrl.setOnPreferenceChangeListener((preference, newValue) -> {
@@ -1528,6 +1529,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     collectionCategory.removePreference(nsFollowUrl);
                     collectionCategory.removePreference(nsFollowDownloadInsulin);
                     collectionCategory.removePreference(nsFollowDownloadTreatment);
+                    collectionCategory.removePreference(nsFollowDownloadTreatmentXDrip);
                 } catch (Exception e) {
                     //
                 }
@@ -2172,6 +2174,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                         collectionCategory.addPreference(nsFollowUrl);
                         collectionCategory.addPreference(nsFollowDownloadInsulin);
                         collectionCategory.addPreference(nsFollowDownloadTreatment);
+                        collectionCategory.addPreference(nsFollowDownloadTreatmentXDrip);
                     }
 
 
