@@ -271,7 +271,7 @@ public class NightscoutUploader {
                     if (treatmensDownloadEnabled())
                         if (doRESTtreatmentDownload(prefs))
                             refresh = true;
-                    if (insulinDownloadEnabled() && MultipleInsulins.isEnabled())
+                    if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
                         if (doRESTinsulinDownload(prefs))
                             refresh = true;
                     if (refresh) {
@@ -301,7 +301,7 @@ public class NightscoutUploader {
                 if (treatmensDownloadEnabled())
                     if (doRESTtreatmentDownload(prefs))
                         substatus = true;
-                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled())
+                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
                     if (doRESTinsulinDownload(prefs))
                         substatus = true;
                 if (substatus) {
