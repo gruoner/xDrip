@@ -71,6 +71,7 @@ import com.eveningoutpost.dexdrip.Models.Sensor;
 import com.eveningoutpost.dexdrip.Models.StepCounter;
 import com.eveningoutpost.dexdrip.Models.Treatments;
 import com.eveningoutpost.dexdrip.Models.UserError;
+import com.eveningoutpost.dexdrip.Recorder.ManageRecorder;
 import com.eveningoutpost.dexdrip.Services.ActivityRecognizedService;
 import com.eveningoutpost.dexdrip.Services.DexCollectionService;
 import com.eveningoutpost.dexdrip.Services.Ob1G5CollectionService;
@@ -406,6 +407,15 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         dexbridgeBattery.setText("");
         parakeetBattery.setText("");
         sensorAge.setText("");
+
+        this.currentBgValueText.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Intent myIntent = new Intent(view.getContext(), ManageRecorder.class);
+                startActivity(myIntent);
+                return false;
+            }
+        });
 
         if (BgGraphBuilder.isXLargeTablet(getApplicationContext())) {
             this.currentBgValueText.setTextSize(100);
