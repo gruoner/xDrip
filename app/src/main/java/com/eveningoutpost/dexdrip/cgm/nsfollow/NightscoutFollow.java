@@ -1,5 +1,6 @@
 package com.eveningoutpost.dexdrip.cgm.nsfollow;
 
+import com.activeandroid.ActiveAndroid;
 import com.eveningoutpost.dexdrip.BuildConfig;
 import com.eveningoutpost.dexdrip.Models.JoH;
 import com.eveningoutpost.dexdrip.Models.UserError;
@@ -10,6 +11,8 @@ import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.messages.Entry;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.utils.NightscoutUrl;
 import com.eveningoutpost.dexdrip.evaluators.MissedReadingsEstimator;
+import com.eveningoutpost.dexdrip.insulin.InsulinManager;
+import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
 import com.eveningoutpost.dexdrip.tidepool.InfoInterceptor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -55,6 +58,16 @@ public class NightscoutFollow {
     private static Retrofit retrofit;
     private static Nightscout service;
 
+    public static class NightscoutInsulinStructure {
+        public String _id;
+        public String displayName;
+        public String name;
+        public List<String> pharmacyProductNumber;
+        public String enabled;
+        public String type;
+        public List<Double> IOB1Min;
+    }
+
 
     public interface Nightscout {
         @Headers({
@@ -66,6 +79,9 @@ public class NightscoutFollow {
 
         @GET("/api/v1/treatments")
         Call<ResponseBody> getTreatments(@Header("api-secret") String secret);
+
+        @GET("/api/v1/insulin")
+        Call<List<NightscoutInsulinStructure>> getInsulinProfiles(@Header("api-secret") String secret);
     }
 
     private static Nightscout getService() {
@@ -109,6 +125,20 @@ public class NightscoutFollow {
         })
                 .setOnFailure(() -> msg(session.treatmentsCallback.getStatus()));
 
+        if (MultipleInsulins.isEnabled())
+            // set up processing callback for treatments
+            session.insulinCallback = new NightscoutCallback<List<NightscoutInsulinStructure>>("NS insulin download", session, () -> {
+                // process data
+                try {
+                    if (InsulinManager.updateFromNightscout(session.insulin)) ActiveAndroid.clearCache();   // when at least one profile has been changed ActiveAndroid Cache will be cleared to reload all insulin injections from scratch
+                    NightscoutFollowService.updateInsulinDownloaded();
+                } catch (Exception e) {
+                    JoH.clearRatelimit("nsfollow-insulin-download");
+                    msg("Insulin: " + e);
+                }
+            })
+                    .setOnFailure(() -> msg(session.insulinCallback.getStatus()));
+
         if (!emptyString(urlString)) {
             try {
                 int count = Math.min(MissedReadingsEstimator.estimate() + 1, (int) (Constants.DAY_IN_MS / DEXCOM_PERIOD));
@@ -126,6 +156,17 @@ public class NightscoutFollow {
                     } catch (Exception e) {
                         UserError.Log.e(TAG, "Exception in treatments work() " + e);
                         msg("Nightscout follow treatments error: " + e);
+                    }
+                }
+            }
+            if (insulinDownloadEnabled()) {
+                if (JoH.ratelimit("nsfollow-insulin-download", 60*60)) {    // load insulin every hour
+                    try {
+                        getService().getInsulinProfiles(session.url.getHashedSecret()).enqueue(session.insulinCallback);
+                    } catch (Exception e) {
+                        JoH.clearRatelimit("nsfollow-insulin-download");
+                        UserError.Log.e(TAG, "Exception in insulin work() " + e);
+                        msg("Nightscout follow insulin error: " + e);
                     }
                 }
             }
@@ -175,6 +216,10 @@ public class NightscoutFollow {
         }
     };
     public static final TypeAdapterFactory UNRELIABLE_INTEGER_FACTORY = TypeAdapters.newFactory(int.class, Integer.class, UNRELIABLE_INTEGER);
+
+    public static boolean insulinDownloadEnabled() {
+        return Pref.getBooleanDefaultFalse("nsfollow_download_insulin");
+    }
 
     // TODO make reusable
     public static Retrofit getRetrofitInstance() throws IllegalArgumentException {
