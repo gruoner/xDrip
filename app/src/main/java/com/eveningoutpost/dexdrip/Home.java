@@ -466,6 +466,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         if (MultipleCarbs.isAvailable())
             foodButton.setVisibility(View.VISIBLE);
         else foodButton.setVisibility(View.INVISIBLE);
+        foodButton.setOnClickListener(v -> promptFoodInput());
 
         this.btnNote = (ImageButton) findViewById(R.id.btnNote);
         btnNote.setOnLongClickListener(v -> {
@@ -1263,6 +1264,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         myPopUp.showAtLocation(findViewById(R.id.chart), Gravity.CENTER, 0, 0);*/
 
         startActivity(new Intent(this, PhoneKeypadInputActivity.class));
+    }
+    private void promptFoodInput() {
+        Log.d(TAG, "Showing pop-up");
+        startActivity(new Intent(this, FoodInputActivity.class));
     }
 
     private void promptTextInput() {

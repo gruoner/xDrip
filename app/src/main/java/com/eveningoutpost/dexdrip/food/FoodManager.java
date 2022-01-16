@@ -26,26 +26,33 @@ public class FoodManager {
             int fat = 0;
             int carbs = 0;
             int portion = 1;
+            double defaultPortion = 1;
+            double portionIncrement = 0.1;
             try {
                 if (!Strings.isNullOrEmpty(profile.energy)) energy = Integer.parseInt(profile.energy);
-            } catch (Exception ex) { }
+            } catch (Exception ignored) { }
             try {
                 if (!Strings.isNullOrEmpty(profile.protein)) protein = Integer.parseInt(profile.protein);
-            } catch (Exception ex) { }
+            } catch (Exception ignored) { }
             try {
                 if (!Strings.isNullOrEmpty(profile.fat)) fat = Integer.parseInt(profile.fat);
-            } catch (Exception ex) { }
+            } catch (Exception ignored) { }
             try {
                 if (!Strings.isNullOrEmpty(profile.carbs)) carbs = Integer.parseInt(profile.carbs);
-            } catch (Exception ex) { }
+            } catch (Exception ignored) { }
             try {
                 if (!Strings.isNullOrEmpty(profile.portion)) portion = Integer.parseInt(profile.portion);
-            } catch (Exception ex) { }
+            } catch (Exception ignored) { }
+            try {
+                if (!Strings.isNullOrEmpty(profile.defaultPortion)) defaultPortion = Double.parseDouble(profile.defaultPortion);
+            } catch (Exception ignored) { }
+            try {
+                if (!Strings.isNullOrEmpty(profile.portionIncrement)) portionIncrement = Double.parseDouble(profile.portionIncrement);
+            } catch (Exception ignored) { }
             boolean hidden = false;
             if (profile.hidden != null)
             {
-                if (profile.hidden.toUpperCase().equals("true")) hidden = true;
-                else hidden = false;
+                hidden = profile.hidden.toUpperCase().equals("true");
             }
             String ingredients = "";
             if (profile.foods != null)
@@ -60,14 +67,14 @@ public class FoodManager {
 
             if (FoodProfile.byFoodID(profile._id) == null)   // its a new profile --> create it
             {
-                FoodProfile.create(profile._id, profile.name, profile.type, profile.gi, energy, protein, fat, carbs, profile.unit, portion, false, hidden, ingredients);
+                FoodProfile.create(profile._id, profile.name, profile.type, profile.gi, energy, protein, fat, carbs, profile.unit, portion, defaultPortion, portionIncrement, false, hidden, ingredients);
                 somethingChanged = true;
             } else {        // its a known profile --> update it
                 FoodProfile o = FoodProfile.byFoodID(profile._id);
                 if (!o.getName().equals(profile.name)) {   o.setName(profile.name); somethingChanged = true; }
                 if (!o.getType().equals(profile.type)) {   o.setType(profile.type); somethingChanged = true; }
                 if (o.getEnergy() != energy) {   o.setEnergy(energy); somethingChanged = true; }
-                if (o.getfat() != fat) {   o.setFat(fat); somethingChanged = true; }
+                if (o.getFat() != fat) {   o.setFat(fat); somethingChanged = true; }
                 if (o.getProtein() != protein) {   o.setProtein(protein); somethingChanged = true; }
                 if (o.getCarbs() != carbs) {   o.setCarbs(carbs); somethingChanged = true; }
                 if (!Strings.isNullOrEmpty(profile.gi) && !o.getGI().equals(profile.gi)) {   o.setGI(profile.gi); somethingChanged = true; }
@@ -76,10 +83,12 @@ public class FoodManager {
                 if (o.isHidden() != hidden) {   o.setHidden(hidden); somethingChanged = true; }
                 if (o.isDeleted()) { o.setDeleted(false); somethingChanged = true; }
                 if (!o.getIngredients().equals(ingredients)) {   o.setIngredients(ingredients); somethingChanged = true; }
+                if (o.getDefaultPortion() != defaultPortion) {   o.setDefaultPortion(defaultPortion); somethingChanged = true; }
+                if (o.getPortionIncrement() != portionIncrement) {   o.setPortionIncrement(portionIncrement); somethingChanged = true; }
             }
         }
         for (FoodProfile toDel: FoodProfile.all())
-            if (!profilesGot.contains(toDel.getFoodID())) {
+            if (!profilesGot.contains(toDel.getFoodID()) && !toDel.isDeleted()) {
                 toDel.setDeleted(true);
                 somethingChanged = true;
             }
@@ -106,6 +115,9 @@ public class FoodManager {
         loadConfigFromNightscout = l;
     }
 
+    public static List<Food> getFood() {
+        return profiles;
+    }
     public static Food getFood(String id) {
         if (profiles == null)
             profiles = new ArrayList<>();

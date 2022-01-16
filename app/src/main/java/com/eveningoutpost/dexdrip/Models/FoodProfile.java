@@ -41,11 +41,15 @@ public class FoodProfile extends Model {
     private Integer hidden;
     @Column(name = "ingredients")
     private String ingredients;
+    @Column(name = "defaultPortion")
+    private double defaultPortion;
+    @Column(name = "portionIncrement")
+    private double portionIncrement;
 
     public FoodProfile() {
         super();
     }
-    public FoodProfile(String id, String n, String type, String g, int e, int p, int f, int c, String u, int portion, Boolean del, Boolean h, String i) {
+    public FoodProfile(String id, String n, String type, String g, int e, int p, int f, int c, String u, int portion, double dP, double pI, Boolean del, Boolean h, String i) {
         this.foodID = id;
         name = n;
         this.type = type;
@@ -61,11 +65,13 @@ public class FoodProfile extends Model {
         if (h) hidden = 1;
         else hidden = 0;
         ingredients = i;
+        defaultPortion = dP;
+        portionIncrement = pI;
     }
 
-    public static FoodProfile create(String id, String dn, String type, String g, int e, int p, int f, int c, String u, int portion, Boolean del, Boolean h, String i)
+    public static FoodProfile create(String id, String dn, String type, String g, int e, int p, int f, int c, String u, int portion, double dP, double pI, Boolean del, Boolean h, String i)
     {
-        FoodProfile ret = new FoodProfile(id, dn, type, g, e, p, f, c, u, portion, del, h, i);
+        FoodProfile ret = new FoodProfile(id, dn, type, g, e, p, f, c, u, portion, dP, pI, del, h, i);
         try { ret.save(); } catch (android.database.sqlite.SQLiteException ex) { fixUpTable(); ret.save(); }
 
         return ret;
@@ -87,7 +93,7 @@ public class FoodProfile extends Model {
     public int getProtein() {
         return protein;
     }
-    public int getfat() {
+    public int getFat() {
         return fat;
     }
     public int getCarbs() {
@@ -99,15 +105,16 @@ public class FoodProfile extends Model {
     public int getPortionSize() {
         return portionSize;
     }
+    public double getDefaultPortion() { return defaultPortion; }
+    public double getPortionIncrement() { return portionIncrement; }
+
     public Boolean isDeleted() {
         if (deleted == null) return false;
-        if (deleted == 0) return false;
-        else return true;
+        return deleted != 0;
     }
     public Boolean isHidden() {
         if (hidden == null) return false;
-        if (hidden == 0) return false;
-        else return true;
+        return hidden != 0;
     }
     public String getIngredients() {
         return Objects.toString(ingredients, "");
@@ -149,6 +156,14 @@ public class FoodProfile extends Model {
         portionSize = n;
         try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
     }
+    public void setDefaultPortion(double n) {
+        defaultPortion = n;
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
+    }
+    public void setPortionIncrement(double n) {
+        portionIncrement = n;
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
+    }
     public void setDeleted(Boolean del) {
         if (del) deleted = 1;
         else deleted = 0;
@@ -182,6 +197,8 @@ public class FoodProfile extends Model {
                 "ALTER TABLE FoodProfiles ADD COLUMN hidden INTEGER DEFAULT 0;",
                 "ALTER TABLE FoodProfiles ADD COLUMN portionSize INTEGER DEFAULT 0;",
                 "ALTER TABLE FoodProfiles ADD COLUMN ingredients TEXT;",
+                "ALTER TABLE FoodProfiles ADD COLUMN defaultPortion FLOAT DEFAULT 1;",
+                "ALTER TABLE FoodProfiles ADD COLUMN portionIncrement FLOAT DEFAULT 0.1;",
                 "CREATE UNIQUE INDEX index_FoodProfiles_id on FoodProfiles(id);",
                 "CREATE UNIQUE INDEX index_FoodProfiles_name on FoodProfiles(name);"};
 

@@ -19,9 +19,14 @@ public class Food {
     private Boolean GIisRange;
     private int pSize;
     private int carbs;
+    private long energy;
+    private long fat;
+    private long protein;
     private Boolean hidden;
     private Boolean deleted;
     private FoodIntake ingredients;
+    private double defaultPortion;
+    private double portionIncrement;
 
     public Food(FoodProfile p) {
         ID = p.getFoodID();
@@ -30,6 +35,9 @@ public class Food {
         else if (p.getType().equalsIgnoreCase("quickpick")) type = Types.Meal;
         else type = Types.unknown;
         carbs = p.getCarbs();
+        energy = p.getEnergy();
+        fat = p.getFat();
+        protein = p.getProtein();
         unit = p.getUnit();
         pSize = p.getPortionSize();
         hidden = p.isHidden();
@@ -78,6 +86,8 @@ public class Food {
                 GIupperBound = 62;
                 GIlowerBound = 62;
             }
+        defaultPortion = p.getDefaultPortion();
+        portionIncrement = p.getPortionIncrement();
     }
 
     public String getID() {
@@ -112,5 +122,34 @@ public class Food {
     }
     public String getGIasRange() {
         return GIlowerBound + "-" + GIupperBound;
+    }
+    public double getDefaultPortion() { return defaultPortion; }
+    public double getPortionIncrement() { return portionIncrement; }
+
+    public long getCarbs() {
+        if (ingredients.hasIntakes())
+            return ingredients.getCarbs();
+        else return carbs;
+    }
+    public long getEnergy() {
+        if (ingredients.hasIntakes())
+            return ingredients.getEnergy();
+        else return energy;
+    }
+    public long getFat() {
+        if (ingredients.hasIntakes())
+            return ingredients.getFat();
+        else return fat;
+    }
+    public long getProtein() {
+        if (ingredients.hasIntakes())
+            return ingredients.getProtein();
+        else return protein;
+    }
+
+    public String getDescription(double u) {
+        if (ingredients.hasIntakes()) {
+            return String.format("%.1f", u) + " port. " + name + " (" + ingredients.getFoodIntakeShortString(u) + ")";
+        } else return Math.round(pSize*u) + " " + unit + " " + name;
     }
 }

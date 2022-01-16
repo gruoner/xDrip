@@ -189,6 +189,10 @@
             android:label="Keypad Input"
             android:theme="@style/PopUpKeypad" />
         <activity
+            android:name=".FoodInputActivity"
+            android:label="Food Intake"
+            android:theme="@android:style/Theme.Holo" />
+        <activity
             android:name=".NoteSearch"
             android:configChanges="orientation|screenSize"
             android:label="@string/note_search" />

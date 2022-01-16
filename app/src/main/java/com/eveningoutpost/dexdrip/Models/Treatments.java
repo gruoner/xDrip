@@ -30,6 +30,7 @@ import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
 import com.eveningoutpost.dexdrip.watch.thinjam.BlueJayEntry;
 import com.eveningoutpost.dexdrip.xdrip;
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
@@ -142,9 +143,9 @@ public class Treatments extends Model {
         }
         return sb.toString();
     }
-    private String getFodIntakesShortString() {
+    private String getFodIntakesShortString(double u) {
         if (foodIntake == null) return "";
-        return foodIntake.getFoodIntakeShortString();
+        return foodIntake.getFoodIntakeShortString(u);
     }
 
     private void setInsulinInjections(List<InsulinInjection> i)
@@ -163,9 +164,11 @@ public class Treatments extends Model {
     }
     private void setFoodIntakes(FoodIntake i)
     {
-        // TODO possiblity here to preserve null if Multiple Food is not enabled
         if (i == null) {
             i = new FoodIntake();
+        } else {
+            if (Strings.isNullOrEmpty(notes))
+                notes = i.getFoodIntakeShortString(1);
         }
         foodIntake = i;
         foodJSON = i.toJson();

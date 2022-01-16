@@ -89,6 +89,8 @@ public class NightscoutFollow {
         public String hideafteruse;
         public String hidden;
         public String position;
+        public String defaultPortion;
+        public String portionIncrement;
     }
     public interface Nightscout {
         @Headers({

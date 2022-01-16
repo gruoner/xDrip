@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.eveningoutpost.dexdrip.UtilityModels.Constants.HOUR_IN_MS;
 
@@ -16,7 +17,7 @@ public class FoodIntake {
 
     public FoodIntake(final Food p, final double u) {
         ingredients = new ArrayList<>();
-        ingredients.add(new Pair<Food, Double>(p, u));
+        ingredients.add(new Pair<>(p, u));
     }
     public FoodIntake() {
         ingredients = new ArrayList<>();
@@ -27,36 +28,51 @@ public class FoodIntake {
     }
 
     public void addIngredient(Food f, Double u) {
-        ingredients.add(new Pair<Food, Double>(f, u));
+        double units = getUnits(f.getID());
+        if (units >= 0) {
+            removeIngredient(f.getID());
+            u = u + units;
+        }
+        ingredients.add(new Pair<>(f, u));
+    }
+    public void removeIngredient(String id) {
+        for (Pair<Food, Double> s: ingredients)
+            if (Objects.equals(s.first.getID(), id)) {
+                ingredients.remove(s);
+                break;
+            }
     }
 
+    public ArrayList<Food> getProfiles() {
+        ArrayList<Food> ret = new ArrayList<>();
+        for (Pair<Food, Double> s: ingredients)
+            ret.add(s.first);
+        return ret;
+    }
     public Food getProfile(String id) {
         for (Pair<Food, Double> s: ingredients)
-            if (s.first.getID() == id)
+            if (Objects.equals(s.first.getID(), id))
                 return s.first;
         return null;
     }
     public double getUnits(String id) {
         for (Pair<Food, Double> s: ingredients)
-            if (s.first.getID() == id)
+            if (Objects.equals(s.first.getID(), id))
                 return s.second;
         return -1;
     }
 
     public boolean hasIntakes() {
         if (ingredients == null) return false;
-        if (ingredients.size() == 0) return false;
-        return true;
+        return ingredients.size() != 0;
     }
 
-    public String getFoodIntakeShortString() {
+    public String getFoodIntakeShortString(double u) {
         final StringBuilder sb = new StringBuilder();
         String bind = "";
         for (Pair<Food, Double> i : ingredients) {
             sb.append(bind);
-            sb.append(i.first.getName());
-            sb.append(" ");
-            sb.append(String.format("%.2f portions", i.second));
+            sb.append(i.first.getDescription(u*i.second));
             if (bind.equalsIgnoreCase("")) bind = " mit ";
             else if (bind.equalsIgnoreCase(" mit ")) bind = " und ";
         }
@@ -88,7 +104,7 @@ public class FoodIntake {
             Double p = e.get("portions").getAsDouble();
             if (f == null) ret = false;
             else if (p <= 0) ret = false;
-            else ingredients.add(new Pair<Food, Double>(f, p));
+            else ingredients.add(new Pair<>(f, p));
         }
         return ret;
     }
@@ -101,5 +117,33 @@ public class FoodIntake {
         if (ingredients.size() > 0)
             ret = 6 * HOUR_IN_MS;   // thats the old formula from ioBForGraph_new
         return ret;
+    }
+    public long getCarbs() {
+        double ret = 0;
+        for (Pair<Food, Double> i : ingredients) {
+            ret = ret + i.first.getCarbs() * i.second;
+        }
+        return Math.round(ret);
+    }
+    public long getEnergy() {
+        double ret = 0;
+        for (Pair<Food, Double> i : ingredients) {
+            ret = ret + i.first.getEnergy() * i.second;
+        }
+        return Math.round(ret);
+    }
+    public long getFat() {
+        double ret = 0;
+        for (Pair<Food, Double> i : ingredients) {
+            ret = ret + i.first.getFat() * i.second;
+        }
+        return Math.round(ret);
+    }
+    public long getProtein() {
+        double ret = 0;
+        for (Pair<Food, Double> i : ingredients) {
+            ret = ret + i.first.getProtein() * i.second;
+        }
+        return Math.round(ret);
     }
 }
