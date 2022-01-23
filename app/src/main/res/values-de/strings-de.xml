@@ -1568,4 +1568,8 @@
     <string name="enable_streaming_dialog_text">Möchtest du xDrip mit diesem Sensor verbinden? Das Libre Lesegerät und die LibreLink App werden dann keine Alarme mehr empfangen. Drücke \"Ja\" und scanne erneut für eine Verbindung (wähle \"nicht verbinden\", wenn du xDrip mit der gepatchten Libre App nutzen möchtest)</string>
     <string name="enable_streaming_dialog_title">Verbinde Libre-Sensor mit Bluetooth</string>
     <string name="without_camera_permission_cannot_scan_barcode">Ohne Kamera-Berechtigung können wir keinen Barcode scannen</string>
+    <string name="NameFoodCategory_one">Frühstück</string>
+    <string name="NameFoodCategory_two">Mittag</string>
+    <string name="NameFoodCategory_three">Nacht</string>
+    <string name="NameFoodCategory_four">Snacks</string>
 </resources>

@@ -1627,4 +1627,8 @@
     <string name="title_lower_fuzzer">Lower FUZZER</string>
     <string name="summary_lower_fuzzer">Lower the FUZZER value from 2.5 minutes to 37.5 seconds</string>
     <string name="without_camera_permission_cannot_scan_barcode">Without camera permission we cannot scan a barcode</string>
+    <string name="NameFoodCategory_one">Breakfast</string>
+    <string name="NameFoodCategory_two">Lunch</string>
+    <string name="NameFoodCategory_three">Diner</string>
+    <string name="NameFoodCategory_four">Snacks</string>
 </resources>

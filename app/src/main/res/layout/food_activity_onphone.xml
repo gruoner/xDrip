@@ -125,7 +125,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight=".25"
-            android:text="Frühstück"
+            android:text="@string/NameFoodCategory_one"
             android:textSize="15sp" />
         <Button
             android:id="@+id/cat_button2"
@@ -133,7 +133,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight=".25"
-            android:text="Mittag"
+            android:text="@string/NameFoodCategory_two"
             android:textSize="15sp"/>
         <Button
             android:id="@+id/cat_button3"
@@ -141,7 +141,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight=".25"
-            android:text="z'Nacht"
+            android:text="@string/NameFoodCategory_three"
             android:textSize="15sp"/>
         <Button
             android:id="@+id/cat_button4"
@@ -149,7 +149,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight=".25"
-            android:text="Snack"
+            android:text="@string/NameFoodCategory_four"
             android:textSize="15sp"/>
     </LinearLayout>
 

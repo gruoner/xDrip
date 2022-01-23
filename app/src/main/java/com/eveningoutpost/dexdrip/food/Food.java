@@ -1,8 +1,7 @@
 package com.eveningoutpost.dexdrip.food;
 
-import android.support.v4.util.Pair;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 import com.eveningoutpost.dexdrip.Models.FoodIntake;
 import com.eveningoutpost.dexdrip.Models.FoodProfile;
@@ -27,8 +26,11 @@ public class Food {
     private FoodIntake ingredients;
     private double defaultPortion;
     private double portionIncrement;
+    private ArrayList<String> categories;
+    private FoodProfile originalProfile;
 
     public Food(FoodProfile p) {
+        originalProfile = p;
         ID = p.getFoodID();
         name = p.getName();
         if (p.getType().equalsIgnoreCase("food")) type = Types.Ingredient;
@@ -48,6 +50,7 @@ public class Food {
             for (String i : ingr) {
                 Food f = FoodManager.getFood(i.split(";")[0]);
                 Double portions = Double.parseDouble(i.split(";")[1]);
+                assert f != null;
                 ingredients.addIngredient(f, portions);
             }
         }
@@ -88,6 +91,11 @@ public class Food {
             }
         defaultPortion = p.getDefaultPortion();
         portionIncrement = p.getPortionIncrement();
+        categories = new ArrayList<>();
+        if (!Strings.isNullOrEmpty(p.getFoodCategories())) {
+            String[] cat = p.getFoodCategories().split("\\|");
+            Collections.addAll(categories, cat);
+        }
     }
 
     public String getID() {
@@ -125,6 +133,7 @@ public class Food {
     }
     public double getDefaultPortion() { return defaultPortion; }
     public double getPortionIncrement() { return portionIncrement; }
+    public Boolean isInCategory(String cat) { return categories.contains(cat); }
 
     public long getCarbs() {
         if (ingredients.hasIntakes())
@@ -151,5 +160,28 @@ public class Food {
         if (ingredients.hasIntakes()) {
             return String.format("%.1f", u) + " port. " + name + " (" + ingredients.getFoodIntakeShortString(u) + ")";
         } else return Math.round(pSize*u) + " " + unit + " " + name;
+    }
+
+    public void setCategory(String cat) {
+        if (!isInCategory(cat)) {
+            categories.add(cat);
+            if (Strings.isNullOrEmpty(originalProfile.getFoodCategories()))
+                originalProfile.setFoodCategories(cat);
+            else
+                originalProfile.setFoodCategories(originalProfile.getFoodCategories() + "|" + cat);
+        }
+    }
+
+    public void unsetCategory(String cat) {
+        if (isInCategory(cat)) {
+            categories.remove(cat);
+            String sep = "";
+            String result = "";
+            for (String c: categories) {
+                result = result + sep + c;
+                sep = "|";
+            }
+            originalProfile.setFoodCategories(result);
+        }
     }
 }

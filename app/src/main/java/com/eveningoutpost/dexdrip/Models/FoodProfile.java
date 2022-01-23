@@ -45,6 +45,8 @@ public class FoodProfile extends Model {
     private double defaultPortion;
     @Column(name = "portionIncrement")
     private double portionIncrement;
+    @Column(name = "foodCategories")
+    private String foodCategories;
 
     public FoodProfile() {
         super();
@@ -67,6 +69,7 @@ public class FoodProfile extends Model {
         ingredients = i;
         defaultPortion = dP;
         portionIncrement = pI;
+        foodCategories = "";
     }
 
     public static FoodProfile create(String id, String dn, String type, String g, int e, int p, int f, int c, String u, int portion, double dP, double pI, Boolean del, Boolean h, String i)
@@ -119,6 +122,7 @@ public class FoodProfile extends Model {
     public String getIngredients() {
         return Objects.toString(ingredients, "");
     }
+    public String getFoodCategories() { return Objects.toString(foodCategories, ""); }
 
     public void setName(String n) {
         name = n;
@@ -178,6 +182,10 @@ public class FoodProfile extends Model {
         ingredients = s;
         try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
     }
+    public void setFoodCategories(String s) {
+        foodCategories = s;
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
+    }
 
     // This shouldn't be needed but itportionSize seems it is
     private static void fixUpTable() {
@@ -197,6 +205,7 @@ public class FoodProfile extends Model {
                 "ALTER TABLE FoodProfiles ADD COLUMN hidden INTEGER DEFAULT 0;",
                 "ALTER TABLE FoodProfiles ADD COLUMN portionSize INTEGER DEFAULT 0;",
                 "ALTER TABLE FoodProfiles ADD COLUMN ingredients TEXT;",
+                "ALTER TABLE FoodProfiles ADD COLUMN foodCategories TEXT;",
                 "ALTER TABLE FoodProfiles ADD COLUMN defaultPortion FLOAT DEFAULT 1;",
                 "ALTER TABLE FoodProfiles ADD COLUMN portionIncrement FLOAT DEFAULT 0.1;",
                 "CREATE UNIQUE INDEX index_FoodProfiles_id on FoodProfiles(id);",

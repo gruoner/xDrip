@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -26,22 +25,20 @@ import com.eveningoutpost.dexdrip.UtilityModels.PersistentStore;
 import com.eveningoutpost.dexdrip.food.Food;
 import com.eveningoutpost.dexdrip.food.FoodManager;
 import com.eveningoutpost.dexdrip.ui.dialog.GenericConfirmDialog;
-
 import org.apache.commons.lang3.time.DateUtils;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import static com.eveningoutpost.dexdrip.Home.startHomeWithExtra;
-import static com.eveningoutpost.dexdrip.xdrip.gs;
+import java.util.Objects;
 
+import static com.eveningoutpost.dexdrip.xdrip.gs;
 
 /**
  * Adapted from PhoneKeypadInputActivity
  */
 
-// jamorham xdrip plus
+// gruoner xdrip plus
 
 public class FoodInputActivity extends BaseActivity {
 
@@ -49,8 +46,11 @@ public class FoodInputActivity extends BaseActivity {
     private Button catButton1, catButton2, catButton3, catButton4;
     private ImageButton timetabbutton;
     private Activity meMyselfAndI;
+    final int offColor = Color.DKGRAY;
+    final int onColor = Color.RED;
 
-    private static String currentcat = "cat-1";
+    private String currentcat;
+    private Boolean catChanged;
     private static final String LAST_TAB_STORE = "food-treatment-last-tab";
     private static final String TAG = "FoodInput";
     private static FoodIntake intake = new FoodIntake();
@@ -93,54 +93,46 @@ public class FoodInputActivity extends BaseActivity {
         submitTextView.setOnClickListener(v -> submitAll());
 
         catButton1.setOnClickListener(v -> {
-            currentcat = "Breakfast";
+            currentcat = "FoodCat1";
+            catChanged = true;
             updateTab();
         });
 
         catButton2.setOnClickListener(v -> {
-            currentcat = "Lunch";
+            currentcat = "FoodCat2";
+            catChanged = true;
             updateTab();
         });
 
         catButton3.setOnClickListener(v -> {
-            currentcat = "Dinner";
+            currentcat = "FoodCat3";
+            catChanged = true;
             updateTab();
         });
 
         catButton4.setOnClickListener(v -> {
-            currentcat = "Snacks";
+            currentcat = "FoodCat4";
+            catChanged = true;
             updateTab();
         });
 
         timetabbutton.setOnClickListener(v -> {
             Date now = new Date();
-            TimePickerDialog dia = new TimePickerDialog(v.getContext(), AlertDialog.THEME_HOLO_DARK, new TimePickerDialog.OnTimeSetListener() {
-                @Override
-                public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                    Date n = new Date();
-                    n.setHours(i);
-                    n.setMinutes(i1);
-                    n.setSeconds(0);
-                    if (n.getTime()-now.getTime() > Constants.HOUR_IN_MS)
-                        intakeTimestamp = DateUtils.addDays(n, -1);
-                    else intakeTimestamp = n;
-                    updateTab();
-                }
+            TimePickerDialog dia = new TimePickerDialog(v.getContext(), AlertDialog.THEME_HOLO_DARK, (timePicker, i, i1) -> {
+                Date n = new Date();
+                n.setHours(i);
+                n.setMinutes(i1);
+                n.setSeconds(0);
+                if (n.getTime()-now.getTime() > Constants.HOUR_IN_MS)
+                    intakeTimestamp = DateUtils.addDays(n, -1);
+                else intakeTimestamp = n;
+                updateTab();
             }, now.getHours(), now.getMinutes(), true);
             dia.show();
         });
 
-        for (Food f: FoodManager.getFood())
-            if (!f.isDeleted() && !f.isHidden())
-            {
-                TextView t = new TextView(this);
-                t.setText(f.getDescription(1));
-                t.setTextSize(15);
-                t.setTextColor(0xffffffff);
-                t.setOnClickListener(v -> createNumberPickerDialog(f, f.getDefaultPortion(), false, meMyselfAndI));
-                allFoodView.addView(t);
-            }
-
+        currentcat = "FoodCat1";
+        catChanged = true;
         updateTab();
     }
 
@@ -163,7 +155,7 @@ public class FoodInputActivity extends BaseActivity {
         d.setPositiveButton("Eintragen", (dialogInterface, i) -> {
             double v = (numberPicker.getValue() + 1) * f.getPortionIncrement();
             if (update) intake.removeIngredient(f.getID());
-            intake.addIngredient(FoodManager.getFood(f.getID()), v);
+            intake.addIngredient(Objects.requireNonNull(FoodManager.getFood(f.getID())), v);
             updateTab();
         });
         if (update)
@@ -193,36 +185,39 @@ public class FoodInputActivity extends BaseActivity {
     }
 
     private void updateTab() {
-
-        final int offColor = Color.DKGRAY;
-        final int onColor = Color.RED;
-
         catButton1.setBackgroundColor(offColor);
         catButton2.setBackgroundColor(offColor);
         catButton3.setBackgroundColor(offColor);
         catButton4.setBackgroundColor(offColor);
-        catButton1.setEnabled(true);
-        catButton2.setEnabled(true);
-        catButton3.setEnabled(true);
-        catButton4.setEnabled(true);
-        timetabbutton.setEnabled(true);
+        submitTextView.getBackground().setAlpha(0);
 
-        switch (currentcat.toLowerCase()) {
-            case "breakfast":
+        switch (currentcat) {
+            case "FoodCat1":
                 catButton1.setBackgroundColor(onColor);
                 break;
-            case "lunch":
+            case "FoodCat2":
                 catButton2.setBackgroundColor(onColor);
                 break;
-            case "dinner":
+            case "FoodCat3":
                 catButton3.setBackgroundColor(onColor);
                 break;
-            case "snacks":
+            case "FoodCat4":
                 catButton4.setBackgroundColor(onColor);
                 break;
         }
-
-        submitTextView.getBackground().setAlpha(0);
+        if (catChanged) {
+            allFoodView.removeAllViews();
+            for (Food f : FoodManager.getFood())
+                if (!f.isDeleted() && !f.isHidden() && f.isInCategory(currentcat)) {
+                    TextView t = new TextView(this);
+                    t.setText(f.getDescription(1));
+                    t.setTextSize(15);
+                    t.setTextColor(0xffffffff);
+                    t.setOnClickListener(v -> createNumberPickerDialog(f, f.getDefaultPortion(), false, meMyselfAndI));
+                    allFoodView.addView(t);
+                }
+            catChanged = false;
+        }
 
         selectedFoodView.removeAllViews();
         for (Food f: intake.getProfiles())
@@ -246,11 +241,11 @@ public class FoodInputActivity extends BaseActivity {
         if (intake.hasIntakes()) submitTextView.getBackground().setAlpha(255);
     }
 
-
     @Override
     protected void onResume() {
         final String savedtab = PersistentStore.getString(LAST_TAB_STORE);
         if (savedtab.length() > 0) currentcat = savedtab;
+        catChanged = true;
         updateTab();
         super.onResume();
     }

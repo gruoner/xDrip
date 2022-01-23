@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -23,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="380dp">
             <LinearLayout
-                android:id="@+id/food_view"
+                android:id="@+id/foodprofileeditor_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fadeScrollbars="false"
@@ -36,37 +35,41 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/cat_button1"
+                android:id="@+id/foodcat_button1"
                 style="@style/KeypadButton"
                 android:layout_width="0dp"
                 android:layout_height="30dp"
                 android:layout_weight=".25"
-                android:text="Frühstück"
-                android:textSize="12sp" />
+                android:text="@string/NameFoodCategory_one"
+                android:textSize="12sp"
+                android:onClick="foodCat1Button"/>
             <Button
-                android:id="@+id/cat_button2"
+                android:id="@+id/foodcat_button2"
                 style="@style/KeypadButton"
                 android:layout_width="0dp"
                 android:layout_height="30dp"
                 android:layout_weight=".25"
-                android:text="Mittag"
-                android:textSize="12sp"/>
+                android:text="@string/NameFoodCategory_two"
+                android:textSize="12sp"
+                android:onClick="foodCat2Button"/>
             <Button
-                android:id="@+id/cat_button3"
+                android:id="@+id/foodcat_button3"
                 style="@style/KeypadButton"
                 android:layout_width="0dp"
                 android:layout_height="30dp"
                 android:layout_weight=".25"
-                android:text="z'Nacht"
-                android:textSize="12sp"/>
+                android:text="@string/NameFoodCategory_three"
+                android:textSize="12sp"
+                android:onClick="foodCat3Button"/>
             <Button
-                android:id="@+id/cat_button4"
+                android:id="@+id/foodcat_button4"
                 style="@style/KeypadButton"
                 android:layout_width="0dp"
                 android:layout_height="30dp"
                 android:layout_weight=".25"
-                android:text="Snack"
-                android:textSize="12sp"/>
+                android:text="@string/NameFoodCategory_four"
+                android:textSize="12sp"
+                android:onClick="foodCat4Button"/>
         </LinearLayout>
         <RelativeLayout
             android:layout_width="match_parent"
