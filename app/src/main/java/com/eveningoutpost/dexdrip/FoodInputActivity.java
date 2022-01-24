@@ -43,7 +43,7 @@ import static com.eveningoutpost.dexdrip.xdrip.gs;
 public class FoodInputActivity extends BaseActivity {
 
     private TextView timeTextView, carbsTextView, energyTextView, submitTextView;
-    private Button catButton1, catButton2, catButton3, catButton4;
+    private Button catButton1, catButton2, catButton3, catButton4, catButtonAll;
     private ImageButton timetabbutton;
     private Activity meMyselfAndI;
     final int offColor = Color.DKGRAY;
@@ -86,6 +86,7 @@ public class FoodInputActivity extends BaseActivity {
         catButton2 = (Button) findViewById(R.id.cat_button2);
         catButton3 = (Button) findViewById(R.id.cat_button3);
         catButton4 = (Button) findViewById(R.id.cat_button4);
+        catButtonAll = (Button) findViewById(R.id.cat_buttonall);
         selectedFoodView = (LinearLayout) findViewById(R.id.food_selected_view);
         allFoodView = (LinearLayout) findViewById(R.id.all_food_view);
 
@@ -112,6 +113,12 @@ public class FoodInputActivity extends BaseActivity {
 
         catButton4.setOnClickListener(v -> {
             currentcat = "FoodCat4";
+            catChanged = true;
+            updateTab();
+        });
+
+        catButtonAll.setOnClickListener(v -> {
+            currentcat = "*";
             catChanged = true;
             updateTab();
         });
@@ -189,6 +196,7 @@ public class FoodInputActivity extends BaseActivity {
         catButton2.setBackgroundColor(offColor);
         catButton3.setBackgroundColor(offColor);
         catButton4.setBackgroundColor(offColor);
+        catButtonAll.setBackgroundColor(offColor);
         submitTextView.getBackground().setAlpha(0);
 
         switch (currentcat) {
@@ -203,6 +211,9 @@ public class FoodInputActivity extends BaseActivity {
                 break;
             case "FoodCat4":
                 catButton4.setBackgroundColor(onColor);
+                break;
+            case "*":
+                catButtonAll.setBackgroundColor(onColor);
                 break;
         }
         if (catChanged) {

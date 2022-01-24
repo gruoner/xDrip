@@ -133,7 +133,10 @@ public class Food {
     }
     public double getDefaultPortion() { return defaultPortion; }
     public double getPortionIncrement() { return portionIncrement; }
-    public Boolean isInCategory(String cat) { return categories.contains(cat); }
+    public Boolean isInCategory(String cat) {
+        if (cat.equals("*")) return true;
+        return categories.contains(cat);
+    }
 
     public long getCarbs() {
         if (ingredients.hasIntakes())

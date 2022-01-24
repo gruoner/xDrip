@@ -1572,4 +1572,5 @@
     <string name="NameFoodCategory_two">Mittag</string>
     <string name="NameFoodCategory_three">Nacht</string>
     <string name="NameFoodCategory_four">Snacks</string>
+    <string name="NameFoodCategory_all">alle Kateorien</string>
 </resources>

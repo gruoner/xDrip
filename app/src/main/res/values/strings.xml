@@ -1631,4 +1631,5 @@
     <string name="NameFoodCategory_two">Lunch</string>
     <string name="NameFoodCategory_three">Diner</string>
     <string name="NameFoodCategory_four">Snacks</string>
+    <string name="NameFoodCategory_all">all food</string>
 </resources>

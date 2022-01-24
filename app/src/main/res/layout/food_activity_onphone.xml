@@ -105,7 +105,7 @@
         android:background="#ffffff"/>
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="240dp">
+        android:layout_height="230dp">
         <LinearLayout
             android:id="@+id/all_food_view"
             android:layout_width="match_parent"
@@ -123,7 +123,7 @@
             android:id="@+id/cat_button1"
             style="@style/KeypadButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_weight=".25"
             android:text="@string/NameFoodCategory_one"
             android:textSize="15sp" />
@@ -131,7 +131,7 @@
             android:id="@+id/cat_button2"
             style="@style/KeypadButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_weight=".25"
             android:text="@string/NameFoodCategory_two"
             android:textSize="15sp"/>
@@ -139,7 +139,7 @@
             android:id="@+id/cat_button3"
             style="@style/KeypadButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_weight=".25"
             android:text="@string/NameFoodCategory_three"
             android:textSize="15sp"/>
@@ -147,10 +147,23 @@
             android:id="@+id/cat_button4"
             style="@style/KeypadButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="30dp"
             android:layout_weight=".25"
             android:text="@string/NameFoodCategory_four"
             android:textSize="15sp"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/cat_buttonall"
+            style="@style/KeypadButton"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:text="@string/NameFoodCategory_all"
+            android:textSize="15sp" />
     </LinearLayout>
 
 </LinearLayout>
