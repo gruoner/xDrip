@@ -58,6 +58,7 @@ import com.eveningoutpost.dexdrip.G5Model.Ob1G5StateMachine;
 import com.eveningoutpost.dexdrip.ImportedLibraries.usbserial.util.HexDump;
 import com.eveningoutpost.dexdrip.Models.ActiveBgAlert;
 import com.eveningoutpost.dexdrip.Models.ActiveBluetoothDevice;
+import com.eveningoutpost.dexdrip.Models.AudioRecorder;
 import com.eveningoutpost.dexdrip.Models.BgReading;
 import com.eveningoutpost.dexdrip.Models.BloodTest;
 import com.eveningoutpost.dexdrip.Models.Calibration;
@@ -70,6 +71,7 @@ import com.eveningoutpost.dexdrip.Models.Sensor;
 import com.eveningoutpost.dexdrip.Models.StepCounter;
 import com.eveningoutpost.dexdrip.Models.Treatments;
 import com.eveningoutpost.dexdrip.Models.UserError;
+import com.eveningoutpost.dexdrip.Recorder.ManageRecorder;
 import com.eveningoutpost.dexdrip.Services.ActivityRecognizedService;
 import com.eveningoutpost.dexdrip.Services.DexCollectionService;
 import com.eveningoutpost.dexdrip.Services.Ob1G5CollectionService;
@@ -106,6 +108,7 @@ import com.eveningoutpost.dexdrip.databinding.PopupInitialStatusHelperBinding;
 import com.eveningoutpost.dexdrip.eassist.EmergencyAssistActivity;
 import com.eveningoutpost.dexdrip.food.FoodManager;
 import com.eveningoutpost.dexdrip.food.MultipleCarbs;
+import com.eveningoutpost.dexdrip.eassist.GetLocationByLM;
 import com.eveningoutpost.dexdrip.insulin.Insulin;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
@@ -175,6 +178,7 @@ import static com.eveningoutpost.dexdrip.UtilityModels.ColorCache.getCol;
 import static com.eveningoutpost.dexdrip.UtilityModels.Constants.DAY_IN_MS;
 import static com.eveningoutpost.dexdrip.UtilityModels.Constants.HOUR_IN_MS;
 import static com.eveningoutpost.dexdrip.UtilityModels.Constants.MINUTE_IN_MS;
+import static com.eveningoutpost.dexdrip.xdrip.getAppContext;
 import static com.eveningoutpost.dexdrip.xdrip.gs;
 
 public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPermissionsResultCallback {
@@ -193,6 +197,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     public final static String BLUETOOTH_METER_CALIBRATION = "BLUETOOTH_METER_CALIBRATION";
     public final static String ACTIVITY_SHOWCASE_INFO = "ACTIVITY_SHOWCASE_INFO";
     public final static String ENABLE_STREAMING_DIALOG = "ENABLE_STREAMING_DIALOG";
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     public final static int SENSOR_READY_ID = 4912;
     private final UiPing ui = new UiPing();
     public static boolean activityVisible = false;
@@ -406,6 +411,15 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         parakeetBattery.setText("");
         sensorAge.setText("");
 
+        this.currentBgValueText.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Intent myIntent = new Intent(view.getContext(), ManageRecorder.class);
+                startActivity(myIntent);
+                return false;
+            }
+        });
+
         if (BgGraphBuilder.isXLargeTablet(getApplicationContext())) {
             this.currentBgValueText.setTextSize(100);
         }
@@ -454,6 +468,16 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             InsulinManager.getDefaultInstance();
         if (MultipleCarbs.isEnabled())   // alway load all Food profiles
             FoodManager.getDefaultInstance();
+
+        if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
+                Pref.getBooleanDefaultFalse("nightscout_device_append_location_info")) {
+            if ((ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) &&
+                    (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED))
+            {
+                ActivityCompat.requestPermissions(this, new String[] {android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, GetLocationByLM.MY_PERMISSIONS_REQUEST_GPS);
+            }
+            GetLocationByLM.prepareForLocation();
+        }
 
         this.btnSpeak = (ImageButton) findViewById(R.id.btnTreatment);
         btnSpeak.setOnClickListener(v -> promptTextInput());
@@ -611,6 +635,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
 
         currentBgValueText.setText(""); // clear any design prototyping default
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
+        }
     }
 
     private boolean firstRunDialogs(final boolean checkedeula) {
@@ -3688,6 +3716,11 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                 && permissions.length > 0 && grantResults.length > 0
                 && permissions[0].equals(WRITE_EXTERNAL_STORAGE) && grantResults[0] == 0) {
             SdcardImportExport.restoreSettingsNow(this);
+        }
+        if ((requestCode == GetLocationByLM.MY_PERMISSIONS_REQUEST_GPS)
+                && permissions.length > 0 && grantResults.length > 0
+                && permissions[0].equals(android.Manifest.permission.ACCESS_FINE_LOCATION) && grantResults[0] == 0) {
+            GetLocationByLM.prepareForLocation();
         }
     }
 
