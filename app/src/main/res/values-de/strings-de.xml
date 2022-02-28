@@ -141,6 +141,8 @@
     <string name="blood_test">Bluttest</string>
     <string name="share">Teilen</string>
     <string name="title_activity_profile_editor">Behandlungen ändern</string>
+    <string name="title_activity_insulinprofile_editor">Insulin Profile Editor</string>
+    <string name="title_activity_foodprofile_editor">Food Profile Editor</string>
     <string name="first_use_menu_to_scan">Zuerst sollte nach dem BT-Gerät gescannt werden oder die Datenquelle in den Einstellungen geändert werden.</string>
     <string name="first_configure_ip_address">Zuerst sollte das Wifi-Wixel über IP-Adressen oder Parakeet-URL konfiguriert werden</string>
     <string name="now_start_your_sensor">Jetzt den Sensor starten oder Einstellungen überprüfen.</string>
@@ -1564,6 +1566,11 @@
     <string name="enable_streaming_dialog_text">Möchtest du xDrip mit diesem Sensor verbinden? Das Libre Lesegerät und die LibreLink App werden dann keine Alarme mehr empfangen. Drücke \"Ja\" und scanne erneut für eine Verbindung (wähle \"nicht verbinden\", wenn du xDrip mit der gepatchten Libre App nutzen möchtest)</string>
     <string name="enable_streaming_dialog_title">Verbinde Libre-Sensor mit Bluetooth</string>
     <string name="without_camera_permission_cannot_scan_barcode">Ohne Kamera-Berechtigung können wir keinen Barcode scannen</string>
+    <string name="NameFoodCategory_one">Frühstück</string>
+    <string name="NameFoodCategory_two">Mittag</string>
+    <string name="NameFoodCategory_three">Nacht</string>
+    <string name="NameFoodCategory_four">Snacks</string>
+    <string name="NameFoodCategory_all">alle Kateorien</string>
     <string name="summary_widget_hide_graph">Graph auf Widgets ausblenden (wird beim nächsten Wert aktiv)</string>
     <string name="title_widget_hide_graph">Graph auf Widgets ausblenden</string>
     <string name="no_i_really_know">Nein, ich weiß wirklich, was ich tue</string>
