@@ -211,7 +211,7 @@ public class NightscoutFollow {
                 }
             }
             if (MultipleCarbs.isEnabled()) {
-                if (JoH.ratelimit("nsfollow-food-download", 60*1)) {
+                if (JoH.ratelimit("nsfollow-food-download", 60*10)) {
                     try {
                         getService().getFoodProfiles(session.url.getHashedSecret()).enqueue(session.foodCallback);
                     } catch (Exception e) {

@@ -10,7 +10,7 @@ import java.util.List;
 
 public class FoodManager {
     private static final String TAG = "FoodManager";
-    private static List<Food> profiles;
+    private static List<Food> profiles = new ArrayList<>();
     private static Boolean loadConfigFromNightscout;
 
     public static Boolean updateFromNightscout(List<NightscoutFollow.NightscoutFoodStructure> p) {

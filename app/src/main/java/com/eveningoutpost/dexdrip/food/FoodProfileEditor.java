@@ -1,5 +1,6 @@
 package com.eveningoutpost.dexdrip.food;
 
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
@@ -40,6 +41,7 @@ public class FoodProfileEditor extends BaseAppCompatActivity {
         catButton2 = (Button) findViewById(R.id.foodcat_button2);
         catButton3 = (Button) findViewById(R.id.foodcat_button3);
         catButton4 = (Button) findViewById(R.id.foodcat_button4);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         updateTab();
     }
 
