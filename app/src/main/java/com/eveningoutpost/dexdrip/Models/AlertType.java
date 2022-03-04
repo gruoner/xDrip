@@ -1,41 +1,44 @@
 package com.eveningoutpost.dexdrip.Models;
 
-import android.app.AlarmManager;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 
-import com.activeandroid.util.SQLiteUtils;
-import com.eveningoutpost.dexdrip.Models.UserError.Log;
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 import com.activeandroid.query.Select;
+import com.activeandroid.util.SQLiteUtils;
+import com.eveningoutpost.dexdrip.Models.UserError.Log;
 import com.eveningoutpost.dexdrip.Services.ActivityRecognizedService;
-import com.eveningoutpost.dexdrip.Services.MissedReadingService;
 import com.eveningoutpost.dexdrip.UtilityModels.AlertPlayer;
 import com.eveningoutpost.dexdrip.UtilityModels.Notifications;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
+import com.google.gson.internal.bind.DateTypeAdapter;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.annotations.Expose;
-import com.google.gson.internal.bind.DateTypeAdapter;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 
 /**
  * Created by Emma Black on 1/14/15.
  */
 @Table(name = "AlertType", id = BaseColumns._ID)
 public class AlertType extends Model {
+
+    public static final byte SUNDAY = 1;
+    public static final byte MONDAY = 2;
+    public static final byte TUESDAY = 4;
+    public static final byte WEDNESDAY = 8;
+    public static final byte THURSDAY = 16;
+    public static final byte FRIDAY = 32;
+    public static final byte SATURDAY = 64;
+    public static final byte ALL_DAYS = 127;
+    public static final byte NO_DAYS = 0;
 
     @Expose
     @Column(name = "name")
@@ -83,6 +86,10 @@ public class AlertType extends Model {
     public double threshold;
 
     @Expose
+    @Column(name = "days_of_week")
+    public int days_of_week;
+
+    @Expose
     @Column(name = "all_day")
     public boolean all_day;
 
@@ -124,6 +131,7 @@ public class AlertType extends Model {
     public static void fixUpTable() {
         if (patched) return;
         String[] patchup = {
+                "ALTER TABLE AlertType ADD COLUMN days_of_week INTEGER default 127;",
                 "ALTER TABLE AlertType ADD COLUMN volume INTEGER;",
                 "ALTER TABLE AlertType ADD COLUMN light INTEGER;",
                 "ALTER TABLE AlertType ADD COLUMN predictive INTEGER;",
@@ -216,7 +224,6 @@ public class AlertType extends Model {
             }
         }
 
-
         // If no low alert found or low alerts disabled, check higher alert.
         if(prefs.getLong("high_alerts_disabled_until", 0) > new Date().getTime()){
             Log.i("NOTIFICATIONS", "get_highest_active_alert_helper: High alerts are currently disabled!! Skipping high alerts");
@@ -296,6 +303,7 @@ public class AlertType extends Model {
             String mp3_file,
             int start_time_minutes,
             int end_time_minutes,
+            byte days_of_week,
             boolean override_silent_mode,
             boolean force_speaker,
             int snooze,
@@ -312,6 +320,7 @@ public class AlertType extends Model {
         at.mp3_file = mp3_file;
         at.start_time_minutes = start_time_minutes;
         at.end_time_minutes = end_time_minutes;
+        at.days_of_week = days_of_week;
         at.override_silent_mode = override_silent_mode;
         at.force_speaker = force_speaker;
         at.default_snooze = snooze;
@@ -329,6 +338,7 @@ public class AlertType extends Model {
             String mp3_file,
             int start_time_minutes,
             int end_time_minutes,
+            byte days_of_week,
             boolean override_silent_mode,
             boolean force_speaker,
             int snooze,
@@ -352,6 +362,7 @@ public class AlertType extends Model {
         at.mp3_file = mp3_file;
         at.start_time_minutes = start_time_minutes;
         at.end_time_minutes = end_time_minutes;
+        at.days_of_week = days_of_week;
         at.override_silent_mode = override_silent_mode;
         at.force_speaker = force_speaker;
         at.default_snooze = snooze;
@@ -371,11 +382,12 @@ public class AlertType extends Model {
         String above = "above: " + this.above;
         String threshold = "threshold: " + this.threshold;
         String all_day = "all_day: " + this.all_day;
+        String days_of_week = "days: " + this.days_of_week;
         String time = "Start time: " + this.start_time_minutes + " end time: "+ this.end_time_minutes;
         String minutes_between = "minutes_between: " + this.minutes_between;
         String uuid = "uuid: " + this.uuid;
 
-        return name + " " + above + " " + threshold + " "+ all_day + " " +time +" " + minutes_between + " uuid" + uuid;
+        return name + " " + above + " " + threshold + " " + days_of_week + " " + all_day + " " +time +" " + minutes_between + " uuid" + uuid;
     }
 
     public String toS() {
@@ -451,16 +463,16 @@ public class AlertType extends Model {
     // This alert will not be editable/removable.
     public static void CreateStaticAlerts() {
         if(get_alert(LOW_ALERT_55) == null) {
-            add_alert(LOW_ALERT_55, "low alert ", false, 55, true, 1, null, 0, 0, true, true, 20, true, true);
+            add_alert(LOW_ALERT_55, "low alert ", false, 55, true, 1, null, 0, 0, ALL_DAYS, true, true, 20, true, true);
         }
     }
 
 
     public static void testAll(Context context) {
         remove_all();
-        add_alert(null, "high alert 1", true, 180, true, 10, null, 0, 0, true, true, 20, true, true);
-        add_alert(null, "high alert 2", true, 200, true, 10, null, 0, 0, true, true,20, true, true);
-        add_alert(null, "high alert 3", true, 220, true, 10, null, 0, 0, true, true,20, true, true);
+        add_alert(null, "high alert 1", true, 180, true, 10, null, 0, 0, ALL_DAYS, true, true, 20, true, true);
+        add_alert(null, "high alert 2", true, 200, true, 10, null, 0, 0, ALL_DAYS, true, true,20, true, true);
+        add_alert(null, "high alert 3", true, 220, true, 10, null, 0, 0, ALL_DAYS, true, true,20, true, true);
         print_all();
         AlertType a1 = get_highest_active_alert(context, 190);
         Log.d(TAG, "a1 = " + a1.toString());
@@ -471,8 +483,8 @@ public class AlertType extends Model {
         AlertType a3 = get_alert(a1.uuid);
         Log.d(TAG, "a1 == a3 ? need to see true " + (a1==a3) + a1 + " " + a3);
 
-        add_alert(null, "low alert 1", false, 80, true, 10, null, 0, 0, true, true,20, true, true);
-        add_alert(null, "low alert 2", false, 60, true, 10, null, 0, 0, true, true,20, true, true);
+        add_alert(null, "low alert 1", false, 80, true, 10, null, 0, 0, ALL_DAYS, true, true,20, true, true);
+        add_alert(null, "low alert 2", false, 60, true, 10, null, 0, 0, ALL_DAYS, true, true,20, true, true);
 
         AlertType al1 = get_highest_active_alert(context, 90);
         Log.d(TAG, "al1 should be null  " + al1);
@@ -493,16 +505,41 @@ public class AlertType extends Model {
 
 
     private boolean in_time_frame() {
-        return s_in_time_frame(all_day, start_time_minutes, end_time_minutes);
+        return s_in_time_frame(days_of_week, all_day, start_time_minutes, end_time_minutes);
     }
     
-    static public boolean  s_in_time_frame(boolean s_all_day, int s_start_time_minutes, int s_end_time_minutes) {
+    static public boolean  s_in_time_frame(int s_days_of_week, boolean s_all_day, int s_start_time_minutes, int s_end_time_minutes) {
+        Calendar rightNow = Calendar.getInstance();
+        int dow = rightNow.get(Calendar.DAY_OF_WEEK);
+        switch (dow) {
+            case Calendar.MONDAY:
+                if ((s_days_of_week & MONDAY) == 0) return false;
+                break;
+            case Calendar.TUESDAY:
+                if ((s_days_of_week & TUESDAY) == 0) return false;
+                break;
+            case Calendar.WEDNESDAY:
+                if ((s_days_of_week & WEDNESDAY) == 0) return false;
+                break;
+            case Calendar.THURSDAY:
+                if ((s_days_of_week & THURSDAY) == 0) return false;
+                break;
+            case Calendar.FRIDAY:
+                if ((s_days_of_week & FRIDAY) == 0) return false;
+                break;
+            case Calendar.SATURDAY:
+                if ((s_days_of_week & SATURDAY) == 0) return false;
+                break;
+            case Calendar.SUNDAY:
+                if ((s_days_of_week & SUNDAY) == 0) return false;
+                break;
+            default: return false;
+        }
         if (s_all_day) {
             //Log.e(TAG, "in_time_frame returning true " );
             return true;
         }
         // time_now is the number of minutes that have passed from the start of the day.
-        Calendar rightNow = Calendar.getInstance();
         int time_now = toTime(rightNow.get(Calendar.HOUR_OF_DAY), rightNow.get(Calendar.MINUTE));
         Log.d(TAG, "time_now is " + time_now + " minutes" + " start_time " + s_start_time_minutes + " end_time " + s_end_time_minutes);
         if(s_start_time_minutes < s_end_time_minutes) {
@@ -564,6 +601,7 @@ public class AlertType extends Model {
         String mp3_file,
         int start_time_minutes,
         int end_time_minutes,
+        byte days_of_week,
         boolean override_silent_mode,
         boolean force_speaker,
         int snooze,
@@ -580,6 +618,7 @@ public class AlertType extends Model {
             at.mp3_file = mp3_file;
             at.start_time_minutes = start_time_minutes;
             at.end_time_minutes = end_time_minutes;
+            at.days_of_week = days_of_week;
             at.override_silent_mode = override_silent_mode;
             at.force_speaker = force_speaker;
             at.default_snooze = snooze;

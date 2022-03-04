@@ -25,6 +25,7 @@ import com.eveningoutpost.dexdrip.Services.ActivityRecognizedService;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
 import com.eveningoutpost.dexdrip.food.FoodManager;
 import com.eveningoutpost.dexdrip.food.MultipleCarbs;
+import com.eveningoutpost.dexdrip.eassist.GetLocationByLM;
 import com.eveningoutpost.dexdrip.insulin.Insulin;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
@@ -1386,7 +1387,12 @@ public class NightscoutUploader {
 
                 json.put("device", batteryType.getDeviceName());
                 json.put("uploader", uploader);
-
+                if (Pref.getBooleanDefaultFalse("nightscout_device_append_location_info"))
+                {
+                    GetLocationByLM.getLocation();
+                    json.put("gps", GetLocationByLM.getBestLocation());
+                    json.put("url", GetLocationByLM.getMapUrl());
+                }
                 array.put(json);
 
                 // example
