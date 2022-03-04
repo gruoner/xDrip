@@ -104,6 +104,8 @@ import com.eveningoutpost.dexdrip.databinding.ActivityHomeBinding;
 import com.eveningoutpost.dexdrip.databinding.ActivityHomeShelfSettingsBinding;
 import com.eveningoutpost.dexdrip.databinding.PopupInitialStatusHelperBinding;
 import com.eveningoutpost.dexdrip.eassist.EmergencyAssistActivity;
+import com.eveningoutpost.dexdrip.food.FoodManager;
+import com.eveningoutpost.dexdrip.food.MultipleCarbs;
 import com.eveningoutpost.dexdrip.insulin.Insulin;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
@@ -253,6 +255,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     private static double last_speech_time = 0;
     private static float hours = DEFAULT_CHART_HOURS;
     private PreviewLineChartView previewChart;
+    private ImageButton foodButton;
     private Button stepsButton;
     private Button bpmButton;
     private TextView dexbridgeBattery;
@@ -449,6 +452,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
         if (MultipleInsulins.isEnabled())   // alway load all Insulin profiles because even in single mode we store injections with the default bolus
             InsulinManager.getDefaultInstance();
+        if (MultipleCarbs.isEnabled())   // alway load all Food profiles
+            FoodManager.getDefaultInstance();
 
         this.btnSpeak = (ImageButton) findViewById(R.id.btnTreatment);
         btnSpeak.setOnClickListener(v -> promptTextInput());
@@ -456,6 +461,12 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             promptSpeechInput();
             return true;
         });
+
+        this.foodButton = (ImageButton) findViewById(R.id.foodButton);
+        if (MultipleCarbs.isAvailable())
+            foodButton.setVisibility(View.VISIBLE);
+        else foodButton.setVisibility(View.INVISIBLE);
+        foodButton.setOnClickListener(v -> promptFoodInput());
 
         this.btnNote = (ImageButton) findViewById(R.id.btnNote);
         btnNote.setOnLongClickListener(v -> {
@@ -500,7 +511,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                     textInsulinDose[finalI].setVisibility(View.INVISIBLE);
                     btnInsulinDose[finalI].setVisibility(View.INVISIBLE);
                     // create individual treatment just for this entry
-                    Treatments.create(0, thisinsulinnumber[finalI], Treatments.convertLegacyDoseToInjectionListByName(thisinsulinprofile[finalI].getName(), thisinsulinnumber[finalI]), Treatments.getTimeStampWithOffset(thistimeoffset));
+                    Treatments.create(0, null, thisinsulinnumber[finalI], Treatments.convertLegacyDoseToInjectionListByName(thisinsulinprofile[finalI].getName(), thisinsulinnumber[finalI]), Treatments.getTimeStampWithOffset(thistimeoffset));
 
                     thisinsulinnumber[finalI] = 0;
                     insulinset[finalI] = false;
@@ -520,7 +531,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             textCarbohydrates.setVisibility(View.INVISIBLE);
             btnCarbohydrates.setVisibility(View.INVISIBLE);
             reset_viewport = true;
-            Treatments.create(thiscarbsnumber, 0, new ArrayList<InsulinInjection>(), Treatments.getTimeStampWithOffset(thistimeoffset));
+            Treatments.create(thiscarbsnumber, null,0, new ArrayList<InsulinInjection>(), Treatments.getTimeStampWithOffset(thistimeoffset));
             thiscarbsnumber = 0;
             if (hideTreatmentButtonsIfAllDone()) {
                 updateCurrentBgInfo("carbs button");
@@ -874,7 +885,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                             injections.add(injection);
                         }
                     Log.d(TAG, "processAndApproveTreatment create watchkeypad Treatment carbs=" + thiscarbsnumber + " insulin=" + thisInsulinSumNumber + " timestamp=" + JoH.dateTimeText(time) + " uuid=" + thisuuid);
-                    Treatments.create(thiscarbsnumber, thisInsulinSumNumber, injections, time, thisuuid);
+                    Treatments.create(thiscarbsnumber, null, thisInsulinSumNumber, injections, time, thisuuid);
 // gruoner: changed pendiq handling 09/12/19        TODO remove duplicate code with helper function
 // in case of multiple injections in a treatment, select the injection with the primary insulin profile defined in the profile editor; if not found, take 0
 // in case of a single injection in a treatment, assume thats the #units to send to pendiq
@@ -897,7 +908,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                     InsulinInjection injection = new InsulinInjection(thisinsulinprofile[i], thisinsulinnumber[i]);
                     injections.add(injection);
                 }
-            Treatments.create(thiscarbsnumber, thisInsulinSumNumber, injections, Treatments.getTimeStampWithOffset(mytimeoffset));
+            Treatments.create(thiscarbsnumber, null, thisInsulinSumNumber, injections, Treatments.getTimeStampWithOffset(mytimeoffset));
 // gruoner: changed pendiq handling 09/12/19   TODO remove duplicate code with helper function
 // in case of multiple injections in a treatment, select the injection with the primary insulin profile defined in the profile editor; if not found, take 0
 // in case of a single injection in a treatment, assume thats the #units to send to pendiq
@@ -1252,6 +1263,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         myPopUp.showAtLocation(findViewById(R.id.chart), Gravity.CENTER, 0, 0);*/
 
         startActivity(new Intent(this, PhoneKeypadInputActivity.class));
+    }
+    private void promptFoodInput() {
+        Log.d(TAG, "Showing pop-up");
+        startActivity(new Intent(this, FoodInputActivity.class));
     }
 
     private void promptTextInput() {
@@ -1868,6 +1883,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         activityVisible = true;
         updateCurrentBgInfo("generic on resume");
         updateHealthInfo("generic on resume");
+
+        if (MultipleCarbs.isAvailable())
+            foodButton.setVisibility(View.VISIBLE);
+        else foodButton.setVisibility(View.INVISIBLE);
 
         if (NFCReaderX.useNFC()) {
             NFCReaderX.doNFC(this);

@@ -11,6 +11,8 @@ import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.messages.Entry;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.utils.NightscoutUrl;
 import com.eveningoutpost.dexdrip.evaluators.MissedReadingsEstimator;
+import com.eveningoutpost.dexdrip.food.FoodManager;
+import com.eveningoutpost.dexdrip.food.MultipleCarbs;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
 import com.eveningoutpost.dexdrip.tidepool.InfoInterceptor;
@@ -25,6 +27,7 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -69,7 +72,27 @@ public class NightscoutFollow {
         public String color;
     }
 
-
+    public static class NightscoutFoodStructure {
+        public String _id;
+        public String type;
+        public String name;
+        public List<NightscoutFoodStructure> foods;
+        public String carbs;
+        public String fat;
+        public String protein;
+        public String energy;
+        public String gi;
+        public String unit;
+        public String category;
+        public String subcategory;
+        public String portion;
+        public String portions;
+        public String hideafteruse;
+        public String hidden;
+        public String position;
+        public String defaultPortion;
+        public String portionIncrement;
+    }
     public interface Nightscout {
         @Headers({
                 "User-Agent: xDrip+ " + BuildConfig.VERSION_NAME,
@@ -83,6 +106,9 @@ public class NightscoutFollow {
 
         @GET("/api/v1/insulin")
         Call<List<NightscoutInsulinStructure>> getInsulinProfiles(@Header("api-secret") String secret);
+
+        @GET("/api/v1/food")
+        Call<List<NightscoutFoodStructure>> getFoodProfiles(@Header("api-secret") String secret);
     }
 
     private static Nightscout getService() {
@@ -140,6 +166,20 @@ public class NightscoutFollow {
             })
                     .setOnFailure(() -> msg(session.insulinCallback.getStatus()));
 
+        if (MultipleCarbs.isEnabled())
+            // set up processing callback for treatments
+            session.foodCallback = new NightscoutCallback<List<NightscoutFoodStructure>>("NS food download", session, () -> {
+                // process data
+                try {
+                    if (FoodManager.updateFromNightscout(session.food)) ActiveAndroid.clearCache();   // when at least one profile has been changed ActiveAndroid Cache will be cleared to reload all insulin injections from scratch
+                    NightscoutFollowService.updateFoodDownloaded();
+                } catch (Exception e) {
+                    JoH.clearRatelimit("nsfollow-food-download");
+                    msg("Food: " + e);
+                }
+            })
+                    .setOnFailure(() -> msg(session.foodCallback.getStatus()));
+
         if (!emptyString(urlString)) {
             try {
                 int count = Math.min(MissedReadingsEstimator.estimate() + 1, (int) (Constants.DAY_IN_MS / DEXCOM_PERIOD));
@@ -168,6 +208,17 @@ public class NightscoutFollow {
                         JoH.clearRatelimit("nsfollow-insulin-download");
                         UserError.Log.e(TAG, "Exception in insulin work() " + e);
                         msg("Nightscout follow insulin error: " + e);
+                    }
+                }
+            }
+            if (MultipleCarbs.isEnabled()) {
+                if (JoH.ratelimit("nsfollow-food-download", 60*10)) {
+                    try {
+                        getService().getFoodProfiles(session.url.getHashedSecret()).enqueue(session.foodCallback);
+                    } catch (Exception e) {
+                        JoH.clearRatelimit("nsfollow-food-download");
+                        UserError.Log.e(TAG, "Exception in food work() " + e);
+                        msg("Nightscout follow food error: " + e);
                     }
                 }
             }
