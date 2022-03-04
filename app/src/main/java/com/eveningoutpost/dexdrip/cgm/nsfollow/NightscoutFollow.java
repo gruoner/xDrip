@@ -69,6 +69,7 @@ public class NightscoutFollow {
         public String enabled;
         public String type;
         public List<Double> IOB1Min;
+        public String color;
     }
 
     public static class NightscoutFoodStructure {
@@ -211,7 +212,7 @@ public class NightscoutFollow {
                 }
             }
             if (MultipleCarbs.isEnabled()) {
-                if (JoH.ratelimit("nsfollow-food-download", 60*1)) {
+                if (JoH.ratelimit("nsfollow-food-download", 60*10)) {
                     try {
                         getService().getFoodProfiles(session.url.getHashedSecret()).enqueue(session.foodCallback);
                     } catch (Exception e) {
