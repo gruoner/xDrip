@@ -13,6 +13,7 @@ public abstract class Insulin {
     private String name;
     private ArrayList<String> pharmacyProductNumber;
     private InsulinManager.insulinCurve curve;
+    private String color;
     private Boolean deleted;
 
     public Insulin() {
@@ -20,11 +21,12 @@ public abstract class Insulin {
         displayName = null;
         pharmacyProductNumber = null;
         curve = null;
+        color = "";
         enabled = false;
         deleted = false;
     }
 
-    public Insulin(String n, String dn, List<String> ppn, InsulinManager.insulinCurve curveData, Boolean del) {
+    public Insulin(String n, String dn, List<String> ppn, InsulinManager.insulinCurve curveData, String c, Boolean del) {
         name = n;
         displayName = dn;
         pharmacyProductNumber = (ArrayList<String>) ppn;
@@ -32,6 +34,7 @@ public abstract class Insulin {
         enabled = false;
         curve = curveData;
         deleted = del;
+        color = c;
     }
 
     public String getName() {
@@ -39,6 +42,9 @@ public abstract class Insulin {
     }
     public String getDisplayName() {
         return displayName;
+    }
+    public String getColor() {
+        return color;
     }
     public ArrayList<String> getPharmacyProductNumber() {
         return pharmacyProductNumber;
