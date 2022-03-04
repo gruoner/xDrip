@@ -66,6 +66,7 @@ public class NightscoutFollow {
         public String enabled;
         public String type;
         public List<Double> IOB1Min;
+        public String color;
     }
 
 

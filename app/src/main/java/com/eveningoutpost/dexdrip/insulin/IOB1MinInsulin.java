@@ -7,8 +7,8 @@ public class IOB1MinInsulin extends Insulin {
     /// curvedata is a IOB value array with stepsize of 1 minute
     private ArrayList<Double> curve;
 
-    public IOB1MinInsulin(String n, String dn, ArrayList<String> ppn, InsulinManager.insulinCurve curveData, Boolean del) {
-        super(n, dn, ppn, curveData, del);
+    public IOB1MinInsulin(String n, String dn, ArrayList<String> ppn, InsulinManager.insulinCurve curveData, String c, Boolean del) {
+        super(n, dn, ppn, curveData, c, del);
 
         JsonArray l = curveData.data.get("list").getAsJsonArray();
         curve = new ArrayList<>();
