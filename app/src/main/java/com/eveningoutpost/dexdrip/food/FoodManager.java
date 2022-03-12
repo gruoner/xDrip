@@ -14,7 +14,7 @@ public class FoodManager {
     private static Boolean loadConfigFromNightscout;
 
     public static Boolean updateFromNightscout(List<NightscoutFollow.NightscoutFoodStructure> p) {
-        Log.d(TAG, "Initialize carbo profiles from Nightscout");
+        Log.d(TAG, "updating food profiles from Nightscout");
         Boolean somethingChanged = false;
         ArrayList<String> profilesGot = new ArrayList<>();
         for (NightscoutFollow.NightscoutFoodStructure profile: p)
@@ -52,7 +52,7 @@ public class FoodManager {
             boolean hidden = false;
             if (profile.hidden != null)
             {
-                hidden = profile.hidden.toUpperCase().equals("true");
+                hidden = profile.hidden.toUpperCase().equals("TRUE");
             }
             String ingredients = "";
             if (profile.foods != null)
@@ -68,6 +68,7 @@ public class FoodManager {
             if (FoodProfile.byFoodID(profile._id) == null)   // its a new profile --> create it
             {
                 FoodProfile.create(profile._id, profile.name, profile.type, profile.gi, energy, protein, fat, carbs, profile.unit, portion, defaultPortion, portionIncrement, false, hidden, ingredients);
+                Log.d(TAG, "created " + profile.name + " with ID " + profile._id);
                 somethingChanged = true;
             } else {        // its a known profile --> update it
                 FoodProfile o = FoodProfile.byFoodID(profile._id);
@@ -85,11 +86,13 @@ public class FoodManager {
                 if (!o.getIngredients().equals(ingredients)) {   o.setIngredients(ingredients); somethingChanged = true; }
                 if (o.getDefaultPortion() != defaultPortion) {   o.setDefaultPortion(defaultPortion); somethingChanged = true; }
                 if (o.getPortionIncrement() != portionIncrement) {   o.setPortionIncrement(portionIncrement); somethingChanged = true; }
+                Log.d(TAG, "updating " + profile.name + " (identified by ID: " + profile._id + ")");
             }
         }
         for (FoodProfile toDel: FoodProfile.all())
             if (!profilesGot.contains(toDel.getFoodID()) && !toDel.isDeleted()) {
                 toDel.setDeleted(true);
+                Log.d(TAG, "deleting " + toDel.getName() + " (with ID: " + toDel.getFoodID() + ")");
                 somethingChanged = true;
             }
         if (somethingChanged) getDefaultInstance();
@@ -133,7 +136,7 @@ public class FoodManager {
         if (p != null)
         {
             Food food = new Food(p);
-            Log.d(TAG, "initialized Food " + food.getName());
+            Log.d(TAG, "initialized Food " + food.getName() + "(deleted: " + food.isDeleted() + "; hidden: " + food.isHidden() + ")");
             profiles.add(food);
             return food;
         }
