@@ -65,15 +65,13 @@ public class FoodManager {
                 }
             }
 
-            if ((FoodProfile.byFoodID(profile._id) == null) && (FoodProfile.byName(profile.name) == null))  // its a new profile --> create it
+            if (FoodProfile.byFoodID(profile._id) == null)  // its a new profile --> create it
             {
                 FoodProfile.create(profile._id, profile.name, profile.type, profile.gi, energy, protein, fat, carbs, profile.unit, portion, defaultPortion, portionIncrement, false, hidden, ingredients);
                 Log.d(TAG, "created " + profile.name + " with ID " + profile._id);
                 somethingChanged = true;
             } else {        // its a known profile --> update it
                 FoodProfile o = FoodProfile.byFoodID(profile._id);
-                if (o == null)
-                    o = FoodProfile.byName(profile.name);
                 if (!o.getName().equals(profile.name)) {   o.setName(profile.name); somethingChanged = true; }
                 if (!o.getType().equals(profile.type)) {   o.setType(profile.type); somethingChanged = true; }
                 if (o.getEnergy() != energy) {   o.setEnergy(energy); somethingChanged = true; }
@@ -92,7 +90,7 @@ public class FoodManager {
             }
         }
         for (FoodProfile toDel: FoodProfile.all())
-            if (!profilesGot.contains(toDel.getFoodID()) && !toDel.isDeleted()) {
+            if (!profilesGot.contains(toDel.getFoodID())) {
                 toDel.setDeleted(true);
                 Log.d(TAG, "deleting " + toDel.getName() + " (with ID: " + toDel.getFoodID() + ")");
                 somethingChanged = true;
@@ -109,15 +107,7 @@ public class FoodManager {
         profiles = new ArrayList<>();
         for (FoodProfile d : FoodProfile.all())
             getFood(d.getFoodID());
-        //LoadDisabledProfilesFromPrefs();
         return profiles;
-    }
-
-    public static Boolean getLoadConfigFromNightscout() {
-        return loadConfigFromNightscout;
-    }
-    public static void setLoadConfigFromNightscout(Boolean l) {
-        loadConfigFromNightscout = l;
     }
 
     public static List<Food> getFood() {
@@ -129,12 +119,7 @@ public class FoodManager {
         for (Food f : profiles)
             if (f.getID().equalsIgnoreCase(id))
                 return f;
-        for (Food f : profiles)
-            if (f.getName().equalsIgnoreCase(id))
-                return f;
         FoodProfile p = FoodProfile.byFoodID(id);
-        if (p == null)
-            p = FoodProfile.byName(id);
         if (p != null)
         {
             Food food = new Food(p);
@@ -144,52 +129,4 @@ public class FoodManager {
         }
         return null;
     }
-
-/*    public static void LoadDisabledProfilesFromPrefs() {
-        checkInitialized();
-        String json = Pref.getString("saved_enabled_insulinprofiles_json", "[" + bolusProfile.getName() + "]");
-        Log.d(TAG, "Loaded enabled Insulin Profiles from Prefs: " + json);
-        String[] enabled = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().fromJson(json, String[].class);
-        for (String d : enabled) {
-            Insulin ins = getProfile(d);
-            if (ins != null)
-                enableProfile(ins);
-        }
-        String prof = Pref.getString("saved_basal_insulinprofiles", "");
-        Log.d(TAG, "Loaded basal Insulin Profiles from Prefs: " + prof);
-        basalProfile = getProfile(prof);
-        if (basalProfile == null)
-            basalProfile = profiles.get(0);
-        prof = Pref.getString("saved_bolus_insulinprofiles", bolusProfile.getName());
-        Log.d(TAG, "Loaded bolus Insulin Profiles from Prefs: " + prof);
-        bolusProfile = getProfile(prof);
-        if (bolusProfile == null)
-            bolusProfile = profiles.get(0);
-
-        prof = Pref.getString("saved_load_insulinprofilesconfig_from_ns", "false");
-        Log.d(TAG, "Loaded Insulin Profiles ConfigFromNS from Prefs: " + prof);
-        if (prof.equalsIgnoreCase("true"))
-            loadConfigFromNightscout = true;
-        else loadConfigFromNightscout = false;
-    }
-
-    public static void saveDisabledProfilesToPrefs() {
-        checkInitialized();
-        ArrayList<String> enabled = new ArrayList<String>();
-        for (Insulin i : profiles)
-            if (isProfileEnabled(i))
-                enabled.add(i.getName());
-        String json = new GsonBuilder().create().toJson(enabled);
-        Pref.setString("saved_enabled_insulinprofiles_json", json);
-        Log.d(TAG, "saved enabled Insulin Profiles to Prefs: " + json);
-        if (basalProfile != null) {
-            Pref.setString("saved_basal_insulinprofiles", basalProfile.getName());
-            Log.d(TAG, "saved basal Insulin Profiles to Prefs: " + basalProfile.getName());
-        }
-        if (bolusProfile != null) {
-            Pref.setString("saved_bolus_insulinprofiles", bolusProfile.getName());
-            Log.d(TAG, "saved bolus Insulin Profiles to Prefs: " + bolusProfile.getName());
-        }
-        Pref.setString("saved_load_insulinprofilesconfig_from_ns", loadConfigFromNightscout.toString());
-    }*/
 }
