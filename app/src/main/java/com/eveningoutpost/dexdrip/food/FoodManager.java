@@ -65,13 +65,15 @@ public class FoodManager {
                 }
             }
 
-            if (FoodProfile.byFoodID(profile._id) == null)   // its a new profile --> create it
+            if ((FoodProfile.byFoodID(profile._id) == null) && (FoodProfile.byName(profile.name) == null))  // its a new profile --> create it
             {
                 FoodProfile.create(profile._id, profile.name, profile.type, profile.gi, energy, protein, fat, carbs, profile.unit, portion, defaultPortion, portionIncrement, false, hidden, ingredients);
                 Log.d(TAG, "created " + profile.name + " with ID " + profile._id);
                 somethingChanged = true;
             } else {        // its a known profile --> update it
                 FoodProfile o = FoodProfile.byFoodID(profile._id);
+                if (o == null)
+                    o = FoodProfile.byName(profile.name);
                 if (!o.getName().equals(profile.name)) {   o.setName(profile.name); somethingChanged = true; }
                 if (!o.getType().equals(profile.type)) {   o.setType(profile.type); somethingChanged = true; }
                 if (o.getEnergy() != energy) {   o.setEnergy(energy); somethingChanged = true; }

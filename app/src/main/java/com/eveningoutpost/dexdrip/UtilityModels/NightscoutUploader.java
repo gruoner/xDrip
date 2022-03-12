@@ -557,21 +557,11 @@ public class NightscoutUploader {
                             try {
                                 NSprofiles = new GsonBuilder().create().fromJson(r.body().string(), NightscoutFollow.NightscoutInsulinStructure[].class);
                                 android.util.Log.d(TAG, "insulin profiles loaded from nightscout");
-                                last_modified_string = r.raw().header("Last-Modified", JoH.getRFC822String(request_start));
-                                final String this_etag = r.raw().header("Etag", "");
-                                if (this_etag.length() > 0) {
-                                    // older versions of nightscout don't support if-modified-since so check the etag for duplication
-                                    if (this_etag.equals(PersistentStore.getString(ETAG + LAST_MODIFIED_KEY))) {
-                                        Log.d(TAG, "Skipping Insulin on " + uri.getHost() + ":" + uri.getPort() + " due to etag duplicate: " + this_etag);
-                                        continue;
-                                    }
-                                    PersistentStore.setString(ETAG + LAST_MODIFIED_KEY, this_etag);
-                                }
                                 if (InsulinManager.updateFromNightscout(new ArrayList<>(Arrays.asList(NSprofiles)))) {
-                                    PersistentStore.setString(LAST_MODIFIED_KEY, last_modified_string);
                                     checkGzipSupport(r);
                                     ActiveAndroid.clearCache();
                                     new_data = true;
+                                    updateInsulinDownloaded();
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -593,7 +583,6 @@ public class NightscoutUploader {
                 handleRestFailure(msg);
             }
         }
-        updateInsulinDownloaded();
         Log.d(TAG, "doRESTinsulinDownload() finishing run");
         return new_data;
     }
@@ -670,18 +659,7 @@ public class NightscoutUploader {
                             try {
                                 NSprofiles = new GsonBuilder().create().fromJson(r.body().string(), NightscoutFollow.NightscoutFoodStructure[].class);
                                 android.util.Log.d(TAG, "food profiles loaded from nightscout");
-                                last_modified_string = r.raw().header("Last-Modified", JoH.getRFC822String(request_start));
-                                final String this_etag = r.raw().header("Etag", "");
-                                if (this_etag.length() > 0) {
-                                    // older versions of nightscout don't support if-modified-since so check the etag for duplication
-                                    if (this_etag.equals(PersistentStore.getString(ETAG + LAST_MODIFIED_KEY))) {
-                                        Log.d(TAG, "Skipping Food on " + uri.getHost() + ":" + uri.getPort() + " due to etag duplicate: " + this_etag);
-                                        continue;
-                                    }
-                                    PersistentStore.setString(ETAG + LAST_MODIFIED_KEY, this_etag);
-                                }
                                 if (FoodManager.updateFromNightscout(new ArrayList<>(Arrays.asList(NSprofiles)))) {
-                                    PersistentStore.setString(LAST_MODIFIED_KEY, last_modified_string);
                                     checkGzipSupport(r);
                                     ActiveAndroid.clearCache();
                                     new_data = true;
