@@ -99,8 +99,6 @@ public class FoodIntake {
         {
             JsonObject e = o.get(i).getAsJsonObject();
             Food f = FoodManager.getFood(e.get("foodID").getAsString());
-            if (f == null)
-                f = FoodManager.getFood(e.get("foodName").getAsString());
             Double p = e.get("portions").getAsDouble();
             if (f == null) ret = false;
             else if (p <= 0) ret = false;

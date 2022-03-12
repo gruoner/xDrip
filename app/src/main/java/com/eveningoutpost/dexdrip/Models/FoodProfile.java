@@ -209,7 +209,7 @@ public class FoodProfile extends Model {
                 "ALTER TABLE FoodProfiles ADD COLUMN defaultPortion FLOAT DEFAULT 1;",
                 "ALTER TABLE FoodProfiles ADD COLUMN portionIncrement FLOAT DEFAULT 0.1;",
                 "CREATE UNIQUE INDEX index_FoodProfiles_id on FoodProfiles(id);",
-                "CREATE UNIQUE INDEX index_FoodProfiles_name on FoodProfiles(name);"};
+                "DROP INDEX [IF EXISTS] index_FoodProfiles_name;"};
 
         for (String patch : patchup) {
             try {
@@ -220,19 +220,6 @@ public class FoodProfile extends Model {
             }
         }
         patched = true;
-    }
-
-    public static FoodProfile byName(String n)
-    {
-        try {
-            return new Select()
-                    .from(FoodProfile.class)
-                    .where("name = ?", n)
-                    .executeSingle();
-        } catch (android.database.sqlite.SQLiteException e) {
-            fixUpTable();
-            return null;
-        }
     }
 
     public static FoodProfile byFoodID(String id)
@@ -252,6 +239,7 @@ public class FoodProfile extends Model {
         try {
             return new Select()
                     .from(FoodProfile.class)
+                    .where("deleted = 0")
                     .execute();
         } catch (android.database.sqlite.SQLiteException e) {
             fixUpTable();
