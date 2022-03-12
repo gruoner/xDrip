@@ -671,12 +671,20 @@
                         android:targetClass="com.eveningoutpost.dexdrip.food.FoodProfileEditor"
                         android:targetPackage="@string/local_target_package" />
                 </Preference>
-
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:key="multiple_carbs_use_for_prediction"
                     android:summary="use extended carbs profiles as predictive model"
                     android:title="Use in prediction"/>
+                <Preference
+                    android:id="@+id/nightscout_force_food_download"
+                    android:summary="@string/summary_force_food_download"
+                    android:title="@string/title_force_food_download">
+                    <intent
+                        android:action="android.intent.action.MAIN"
+                        android:targetClass="com.eveningoutpost.dexdrip.food.NightscoutForceDownloadActivity"
+                        android:targetPackage="@string/local_target_package" />
+                </Preference>
 
             </PreferenceScreen>
 

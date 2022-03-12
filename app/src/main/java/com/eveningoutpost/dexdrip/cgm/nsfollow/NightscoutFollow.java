@@ -212,11 +212,11 @@ public class NightscoutFollow {
                 }
             }
             if (MultipleCarbs.isEnabled()) {
-                if (JoH.ratelimit("nsfollow-food-download", 60*10)) {
+                if (JoH.ratelimit("ns-food-download", 24*60*60)) {   // load food every day
                     try {
                         getService().getFoodProfiles(session.url.getHashedSecret()).enqueue(session.foodCallback);
                     } catch (Exception e) {
-                        JoH.clearRatelimit("nsfollow-food-download");
+                        JoH.clearRatelimit("ns-food-download");
                         UserError.Log.e(TAG, "Exception in food work() " + e);
                         msg("Nightscout follow food error: " + e);
                     }
