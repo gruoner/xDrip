@@ -686,6 +686,7 @@ public class NightscoutUploader {
                                     checkGzipSupport(r);
                                     ActiveAndroid.clearCache();
                                     new_data = true;
+                                    updateFoodDownloaded();
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -707,7 +708,6 @@ public class NightscoutUploader {
                 handleRestFailure(msg);
             }
         }
-        updateFoodDownloaded();
         Log.d(TAG, "doRESTfoodDownload() finishing run");
         return new_data;
     }
