@@ -280,9 +280,11 @@ public class NightscoutUploader {
                     if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
                         if (doRESTinsulinDownload(prefs))
                             refresh = true;
-                    if (MultipleCarbs.isEnabled() && JoH.ratelimit("nsupload-food-download", 60*60))    // load insulin every hour
+                    if (MultipleCarbs.isEnabled() && (JoH.ratelimit("ns-food-download", 24*60*60)))    // load FOOD every day
                         if (doRESTfoodDownload(prefs))
+                        {
                             refresh = true;
+                        }
                     if (refresh) {
                         Home.staticRefreshBGCharts();
                     }
@@ -313,9 +315,11 @@ public class NightscoutUploader {
                 if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
                     if (doRESTinsulinDownload(prefs))
                         substatus = true;
-                if (MultipleCarbs.isEnabled() && JoH.ratelimit("nsupload-food-download", 60*60))    // load food every hour
+                if (MultipleCarbs.isEnabled() && (JoH.ratelimit("ns-food-download", 24*60*60)))    // load FOOD every day
                     if (doRESTfoodDownload(prefs))
+                    {
                         substatus = true;
+                    }
                 if (substatus) {
                     Home.staticRefreshBGCharts();
                 }

@@ -1,6 +1,9 @@
 package com.eveningoutpost.dexdrip.food;
 
+import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.UtilityModels.Pref;
+import com.eveningoutpost.dexdrip.utils.DexCollectionType;
+import static com.eveningoutpost.dexdrip.utils.DexCollectionType.NSFollow;
 
 public class MultipleCarbs {
     public static boolean isEnabled() {
@@ -9,7 +12,17 @@ public class MultipleCarbs {
 
     public static boolean isAvailable() {
         if (!isEnabled()) return false;
-        return true;   // todo: return true when fooddatabase download from nightscout is enabled;
+        if (FoodManager.getDefaultInstance().size() == 0) return false;
+        return true;
+    }
+
+    public static boolean isDownloadableByUploader() {
+        if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") && Pref.getBooleanDefaultFalse("cloud_storage_api_download_enable")) return true;
+        return false;
+    }
+    public static boolean isDownloadableByFollower() {
+        if (DexCollectionType.getDexCollectionType() == NSFollow) return true;
+        return false;
     }
 
     public static boolean useExtendedCarbs4Prediction() {
