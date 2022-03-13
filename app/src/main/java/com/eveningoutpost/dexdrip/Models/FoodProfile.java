@@ -51,7 +51,7 @@ public class FoodProfile extends Model {
     public FoodProfile() {
         super();
     }
-    public FoodProfile(String id, String n, String type, String g, int e, int p, int f, int c, String u, int portion, double dP, double pI, Boolean del, Boolean h, String i) {
+    public FoodProfile(String id, String n, String type, String g, int e, int p, int f, int c, String u, int portion, double dP, double pI, Boolean del, Boolean h, String i, String fC) {
         this.foodID = id;
         name = n;
         this.type = type;
@@ -69,12 +69,12 @@ public class FoodProfile extends Model {
         ingredients = i;
         defaultPortion = dP;
         portionIncrement = pI;
-        foodCategories = "";
+        foodCategories = fC;
     }
 
-    public static FoodProfile create(String id, String dn, String type, String g, int e, int p, int f, int c, String u, int portion, double dP, double pI, Boolean del, Boolean h, String i)
+    public static FoodProfile create(String id, String dn, String type, String g, int e, int p, int f, int c, String u, int portion, double dP, double pI, Boolean del, Boolean h, String i, String fC)
     {
-        FoodProfile ret = new FoodProfile(id, dn, type, g, e, p, f, c, u, portion, dP, pI, del, h, i);
+        FoodProfile ret = new FoodProfile(id, dn, type, g, e, p, f, c, u, portion, dP, pI, del, h, i, fC);
         try { ret.save(); } catch (android.database.sqlite.SQLiteException ex) { fixUpTable(); ret.save(); }
 
         return ret;
