@@ -137,7 +137,8 @@ public class FoodInputActivity extends BaseActivity {
             }, now.getHours(), now.getMinutes(), true);
             dia.show();
         });
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        if (height-200 < lp.height)
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         currentcat = "FoodCat1";
         catChanged = true;
