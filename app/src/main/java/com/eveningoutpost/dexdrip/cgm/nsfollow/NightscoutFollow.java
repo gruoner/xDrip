@@ -89,6 +89,7 @@ public class NightscoutFollow {
         public String portions;
         public String hideafteruse;
         public String hidden;
+        public String xdripCategories;
         public String position;
         public String defaultPortion;
         public String portionIncrement;

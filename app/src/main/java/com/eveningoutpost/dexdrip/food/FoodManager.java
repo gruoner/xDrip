@@ -28,6 +28,7 @@ public class FoodManager {
             int portion = 1;
             double defaultPortion = 1;
             double portionIncrement = 0.1;
+            String foodCat = "";
             try {
                 if (!Strings.isNullOrEmpty(profile.energy)) energy = Integer.parseInt(profile.energy);
             } catch (Exception ignored) { }
@@ -64,16 +65,20 @@ public class FoodManager {
                     sep = "|";
                 }
             }
+            if (!Strings.isNullOrEmpty(profile.xdripCategories))
+                foodCat = profile.xdripCategories;
 
             if (FoodProfile.byFoodID(profile._id) == null)  // its a new profile --> create it
             {
-                FoodProfile.create(profile._id, profile.name, profile.type, profile.gi, energy, protein, fat, carbs, profile.unit, portion, defaultPortion, portionIncrement, false, hidden, ingredients);
+                FoodProfile.create(profile._id, profile.name, profile.type, profile.gi, energy, protein, fat, carbs, profile.unit, portion, defaultPortion, portionIncrement, false, hidden, ingredients, foodCat);
                 Log.d(TAG, "created " + profile.name + " with ID " + profile._id);
                 somethingChanged = true;
             } else {        // its a known profile --> update it
                 FoodProfile o = FoodProfile.byFoodID(profile._id);
                 if (!o.getName().equals(profile.name)) {   o.setName(profile.name); somethingChanged = true; }
                 if (!o.getType().equals(profile.type)) {   o.setType(profile.type); somethingChanged = true; }
+// disabled because foodCategories can be changed by ProfileEditor and thus shall not be updated every time food database will be retrieved from NS server
+                //if (!o.getFoodCategories().equals(foodCat)) {   o.setFoodCategories(foodCat); somethingChanged = true; }
                 if (o.getEnergy() != energy) {   o.setEnergy(energy); somethingChanged = true; }
                 if (o.getFat() != fat) {   o.setFat(fat); somethingChanged = true; }
                 if (o.getProtein() != protein) {   o.setProtein(protein); somethingChanged = true; }
