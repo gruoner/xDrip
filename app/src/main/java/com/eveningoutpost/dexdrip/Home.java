@@ -1568,6 +1568,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                         if (!insulinset[number] && (thisnumber > 0)) {
                             thisinsulinnumber[number] = thisnumber;
                             textInsulinDose[number].setText(Double.toString(thisnumber) + " " + insulin.getName());
+                            if (MultipleInsulins.useProfilespecificColoring())
+                                textInsulinDose[number].setTextColor(insulin.getColor());
                             Log.d(TAG, insulin.getName() + " dose: " + Double.toString(thisnumber));
                             insulinset[number] = true;
                             btnInsulinDose[number].setVisibility(View.VISIBLE);
