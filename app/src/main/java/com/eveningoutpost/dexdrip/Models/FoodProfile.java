@@ -187,7 +187,6 @@ public class FoodProfile extends Model {
         try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
     }
 
-    // This shouldn't be needed but itportionSize seems it is
     private static void fixUpTable() {
         if (patched) return;
         String[] patchup = {
@@ -220,6 +219,22 @@ public class FoodProfile extends Model {
             }
         }
         patched = true;
+    }
+
+    public static void recreateTable() {
+        String[] patchup = {
+                "DROP TABLE FoodProfiles;"};
+
+        for (String patch : patchup) {
+            try {
+                SQLiteUtils.execSql(patch);
+                UserError.Log.e(TAG, "Processed patch should have succeeded!!: " + patch);
+            } catch (Exception e) {
+                UserError.Log.d(TAG, "Patch: " + patch + " generated exception as it should: " + e.toString());
+            }
+        }
+        patched = false;
+        fixUpTable();
     }
 
     public static FoodProfile byFoodID(String id)

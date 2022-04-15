@@ -1,5 +1,7 @@
 package com.eveningoutpost.dexdrip.food;
 
+import android.annotation.SuppressLint;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -162,7 +164,11 @@ public class Food {
     public String getDescription(double u) {
         if (ingredients.hasIntakes()) {
             return String.format("%.1f", u) + " port. " + name + " (" + ingredients.getFoodIntakeShortString(u) + ")";
-        } else return Math.round(pSize*u) + " " + unit + " " + name;
+        } else {
+            @SuppressLint("DefaultLocale") String t = String.format("%.1f", Math.round(pSize * u / portionIncrement)*portionIncrement);
+            t = t.replace(".0", "");
+            return t + " " + unit + " " + name;
+        }
     }
 
     public void setCategory(String cat) {

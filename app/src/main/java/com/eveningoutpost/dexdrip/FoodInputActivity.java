@@ -147,7 +147,7 @@ public class FoodInputActivity extends BaseActivity {
 
     private void createNumberPickerDialog(Food f, double u, Boolean update, Activity c) {
         ArrayList<String> portions = new ArrayList<>();
-        for (double p=0.1; p < 10; p += f.getPortionIncrement())
+        for (double p=f.getPortionIncrement(); p < 10; p += f.getPortionIncrement())
             portions.add(f.getDescription(p));
         String[] pA = portions.toArray(new String[0]);
         final AlertDialog.Builder d = new AlertDialog.Builder(c, AlertDialog.THEME_HOLO_DARK);
