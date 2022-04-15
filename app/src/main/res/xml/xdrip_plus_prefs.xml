@@ -690,6 +690,15 @@
                         android:targetClass="com.eveningoutpost.dexdrip.food.NightscoutForceDownloadActivity"
                         android:targetPackage="@string/local_target_package" />
                 </Preference>
+                <Preference
+                    android:id="@+id/drop_food_db"
+                    android:summary="@string/summary_drop_food_db"
+                    android:title="@string/title_drop_food_db">
+                    <intent
+                        android:action="android.intent.action.MAIN"
+                        android:targetClass="com.eveningoutpost.dexdrip.food.DropFoodDBActivity"
+                        android:targetPackage="@string/local_target_package" />
+                </Preference>
 
             </PreferenceScreen>
 

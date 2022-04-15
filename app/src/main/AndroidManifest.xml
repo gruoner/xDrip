@@ -707,6 +707,11 @@
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".food.DropFoodDBActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustPan" />
         <uses-library
             android:name="com.sec.android.app.multiwindow"
             android:required="false" />

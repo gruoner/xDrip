@@ -163,6 +163,8 @@
     <string name="title_activity_foodprofile_editor">Food Profile Editor</string>
     <string name="title_force_food_download">force food download</string>
     <string name="summary_force_food_download">trigger a food download from nightscout server</string>
+    <string name="title_drop_food_db">drop food database</string>
+    <string name="summary_drop_food_db">drop food database, create a new one and download complete food set from nightscout</string>
     <string name="first_use_menu_to_scan">First use the menu to scan for your BT device or change the Data Source in Settings!</string>
     <string name="first_configure_ip_address">First configure your WiFi Wixel reader IP addresses or Parakeet URL</string>
     <string name="now_start_your_sensor">Now start your sensor or check Settings</string>
