@@ -1,5 +1,7 @@
 package com.eveningoutpost.dexdrip.insulin;
 
+import android.graphics.Color;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,9 +45,10 @@ public abstract class Insulin {
     public String getDisplayName() {
         return displayName;
     }
-    public String getColor() {
+    public String getColorStr() {
         return color;
     }
+    public int getColor() { return Color.parseColor(color); }
     public ArrayList<String> getPharmacyProductNumber() {
         return pharmacyProductNumber;
     }

@@ -1647,6 +1647,8 @@
     <string name="title_multiple_insulin_types">Multiple Insulin Types</string>
     <string name="summary_multiple_insulin_use_basal_activity">Plot Basal activity on graph and incorporate in predictive model</string>
     <string name="title_multiple_insulin_use_basal_activity">Use Basal Activity</string>
+    <string name="summary_multiple_insulin_use_profilespecific_coloring">Every insulin profile has his own color. Do you want to use it when registering an injection?</string>
+    <string name="title_multiple_insulin_use_profilespecific_coloring">Use profilespecific coloring</string>
     <string name="title_xdrip_plus_snooze_broadcast">Local Broadcast</string>
     <string name="summary_broadcast_snooze">Send snoozes to other apps on this handset</string>
     <string name="title_broadcast_snooze">Local Broadcast</string>
