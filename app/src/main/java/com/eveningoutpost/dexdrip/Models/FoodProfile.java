@@ -37,6 +37,8 @@ public class FoodProfile extends Model {
     private int portionSize;
     @Column(name = "deleted")
     private Integer deleted;
+    @Column(name = "favourite")
+    private Integer favourite;
     @Column(name = "hidden")
     private Integer hidden;
     @Column(name = "ingredients")
@@ -51,7 +53,7 @@ public class FoodProfile extends Model {
     public FoodProfile() {
         super();
     }
-    public FoodProfile(String id, String n, String type, String g, int e, int p, int f, int c, String u, int portion, double dP, double pI, Boolean del, Boolean h, String i, String fC) {
+    public FoodProfile(String id, String n, String type, String g, int e, int p, int f, int c, String u, int portion, double dP, double pI, Boolean del, Boolean h, Boolean fav, String i, String fC) {
         this.foodID = id;
         name = n;
         this.type = type;
@@ -70,11 +72,14 @@ public class FoodProfile extends Model {
         defaultPortion = dP;
         portionIncrement = pI;
         foodCategories = fC;
+        if (fav)
+            favourite = 1;
+        else favourite = 0;
     }
 
     public static FoodProfile create(String id, String dn, String type, String g, int e, int p, int f, int c, String u, int portion, double dP, double pI, Boolean del, Boolean h, String i, String fC)
     {
-        FoodProfile ret = new FoodProfile(id, dn, type, g, e, p, f, c, u, portion, dP, pI, del, h, i, fC);
+        FoodProfile ret = new FoodProfile(id, dn, type, g, e, p, f, c, u, portion, dP, pI, del, h, false, i, fC);
         try { ret.save(); } catch (android.database.sqlite.SQLiteException ex) { fixUpTable(); ret.save(); }
 
         return ret;
@@ -118,6 +123,10 @@ public class FoodProfile extends Model {
     public Boolean isHidden() {
         if (hidden == null) return false;
         return hidden != 0;
+    }
+    public Boolean isFavourite() {
+        if (favourite == null) return false;
+        return favourite != 0;
     }
     public String getIngredients() {
         return Objects.toString(ingredients, "");
@@ -173,6 +182,11 @@ public class FoodProfile extends Model {
         else deleted = 0;
         try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
     }
+    public void setFavourite(Boolean fav) {
+        if (fav) favourite = 1;
+        else favourite = 0;
+        try { save(); } catch (android.database.sqlite.SQLiteException e) { fixUpTable(); save(); }
+    }
     public void setHidden(Boolean h) {
         if (h) hidden = 1;
         else hidden = 0;
@@ -201,6 +215,7 @@ public class FoodProfile extends Model {
                 "ALTER TABLE FoodProfiles ADD COLUMN carbs INTEGER DEFAULT 0;",
                 "ALTER TABLE FoodProfiles ADD COLUMN unit TEXT DEFAULT 'g';",
                 "ALTER TABLE FoodProfiles ADD COLUMN deleted INTEGER DEFAULT 0;",
+                "ALTER TABLE FoodProfiles ADD COLUMN favourite INTEGER DEFAULT 0;",
                 "ALTER TABLE FoodProfiles ADD COLUMN hidden INTEGER DEFAULT 0;",
                 "ALTER TABLE FoodProfiles ADD COLUMN portionSize INTEGER DEFAULT 0;",
                 "ALTER TABLE FoodProfiles ADD COLUMN ingredients TEXT;",
