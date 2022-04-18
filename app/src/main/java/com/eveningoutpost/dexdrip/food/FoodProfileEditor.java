@@ -21,7 +21,9 @@ public class FoodProfileEditor extends BaseAppCompatActivity {
     private static final String TAG = "foodprofileeditor";
     private String selectedCat;
     LinearLayout FoodView;
-    HashMap<String, HashMap<Food, CheckBox>> checkboxes;
+    HashMap<String, HashMap<Food, LinearLayout>> Checkboxes;
+    HashMap<String, HashMap<Food, CheckBox>> catCheckboxes;
+    HashMap<String, HashMap<Food, CheckBox>> favCheckboxes;
     final int offColor = Color.DKGRAY;
     final int onColor = Color.RED;
     Button catButton1, catButton2, catButton3, catButton4;
@@ -30,13 +32,15 @@ public class FoodProfileEditor extends BaseAppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_foodprofile_editor);
-        checkboxes = new HashMap<>();
+        Checkboxes = new HashMap<>();
+        catCheckboxes = new HashMap<>();
+        favCheckboxes = new HashMap<>();
         FoodView = (LinearLayout) findViewById(R.id.foodprofileeditor_view);
         selectedCat = "FoodCat1";
-        setCheckboxes("FoodCat1");
-        setCheckboxes("FoodCat2");
-        setCheckboxes("FoodCat3");
-        setCheckboxes("FoodCat4");
+        setCatCheckboxes("FoodCat1");
+        setCatCheckboxes("FoodCat2");
+        setCatCheckboxes("FoodCat3");
+        setCatCheckboxes("FoodCat4");
         catButton1 = (Button) findViewById(R.id.foodcat_button1);
         catButton2 = (Button) findViewById(R.id.foodcat_button2);
         catButton3 = (Button) findViewById(R.id.foodcat_button3);
@@ -45,23 +49,43 @@ public class FoodProfileEditor extends BaseAppCompatActivity {
         updateTab();
     }
 
-    public void setCheckboxes(String cat) {
-        HashMap<Food, CheckBox> cbs = new HashMap<>();
+    public void setCatCheckboxes(String cat) {
+        HashMap<Food, LinearLayout> lvs = new HashMap<>();
+        HashMap<Food, CheckBox> cbsCat = new HashMap<>();
+        HashMap<Food, CheckBox> cbsFav = new HashMap<>();
         for (Food f: FoodManager.getFood())
             if (!f.isDeleted() && !f.isHidden())
             {
-                CheckBox cb = new CheckBox(this);
-                cb.setText(f.getDescription(1));
-                cb.setTextSize(15);
-                cb.setTextColor(0xffffffff);
-                cb.setChecked(f.isInCategory(cat));
-                cbs.put(f, cb);
+                LinearLayout v = new LinearLayout(this);
+                v.setOrientation(LinearLayout.HORIZONTAL);
+                CheckBox cbFav = new CheckBox(this);
+                cbFav.setChecked(f.isFavourite());
+                cbFav.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Boolean c = cbFav.isChecked();
+                        for (String cat: catCheckboxes.keySet())
+                            favCheckboxes.get(cat).get(f).setChecked(c);
+                    }
+                });
+                cbsFav.put(f, cbFav);
+                v.addView(cbFav);
+                CheckBox cbCat = new CheckBox(this);
+                cbCat.setText(f.getDescription(1));
+                cbCat.setTextSize(15);
+                cbCat.setTextColor(0xffffffff);
+                cbCat.setChecked(f.isInCategory(cat));
+                v.addView(cbCat);
+                lvs.put(f, v);
+                cbsCat.put(f, cbCat);
             }
-        checkboxes.put(cat, cbs);
+        Checkboxes.put(cat, lvs);
+        catCheckboxes.put(cat, cbsCat);
+        favCheckboxes.put(cat, cbsFav);
     }
 
-    public void getCheckboxes(String cat) {
-        HashMap<Food, CheckBox> cbs = checkboxes.get(cat);
+    public void getCatCheckboxes(String cat) {
+        HashMap<Food, CheckBox> cbs = catCheckboxes.get(cat);
         assert cbs != null;
         for (Food f: cbs.keySet())
         {
@@ -69,6 +93,17 @@ public class FoodProfileEditor extends BaseAppCompatActivity {
                 f.setCategory(cat);
             else
                 f.unsetCategory(cat);
+        }
+    }
+    public void getFavCheckboxes(String cat) {
+        HashMap<Food, CheckBox> cbs = favCheckboxes.get(cat);
+        assert cbs != null;
+        for (Food f: cbs.keySet())
+        {
+            if (Objects.requireNonNull(cbs.get(f)).isChecked())
+                f.setFavourite();
+            else
+                f.unsetFavourite();
         }
     }
     @Override
@@ -96,7 +131,7 @@ public class FoodProfileEditor extends BaseAppCompatActivity {
                 catButton4.setBackgroundColor(onColor);
                 break;
         }
-        HashMap<Food, CheckBox> cbs = checkboxes.get(selectedCat);
+        HashMap<Food, LinearLayout> cbs = Checkboxes.get(selectedCat);
         FoodView.removeAllViews();
         for (Food f: FoodManager.getFood()) {
             assert cbs != null;
@@ -109,18 +144,21 @@ public class FoodProfileEditor extends BaseAppCompatActivity {
         finish();
     }
     public void foodProfileSaveButton(View myview) {
-        getCheckboxes("FoodCat1");
-        getCheckboxes("FoodCat2");
-        getCheckboxes("FoodCat3");
-        getCheckboxes("FoodCat4");
+        getCatCheckboxes("FoodCat1");
+        getCatCheckboxes("FoodCat2");
+        getCatCheckboxes("FoodCat3");
+        getCatCheckboxes("FoodCat4");
+        getFavCheckboxes("FoodCat1");
         finish();
     }
     public void foodProfileUndoButton(View myview) {
-        checkboxes = new HashMap<>();
-        setCheckboxes("FoodCat1");
-        setCheckboxes("FoodCat2");
-        setCheckboxes("FoodCat3");
-        setCheckboxes("FoodCat4");
+        Checkboxes = new HashMap<>();
+        catCheckboxes = new HashMap<>();
+        favCheckboxes = new HashMap<>();
+        setCatCheckboxes("FoodCat1");
+        setCatCheckboxes("FoodCat2");
+        setCatCheckboxes("FoodCat3");
+        setCatCheckboxes("FoodCat4");
         updateTab();
     }
 

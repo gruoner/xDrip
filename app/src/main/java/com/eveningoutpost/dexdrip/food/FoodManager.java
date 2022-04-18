@@ -2,16 +2,18 @@ package com.eveningoutpost.dexdrip.food;
 
 import android.util.Log;
 import com.eveningoutpost.dexdrip.Models.FoodProfile;
+import com.eveningoutpost.dexdrip.Models.JoH;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
 import com.google.common.base.Strings;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class FoodManager {
+    public enum SortTypes {unsorted, favourites, alphanummeric, usage, favalpha}
+
     private static final String TAG = "FoodManager";
     private static List<Food> profiles = new ArrayList<>();
-    private static Boolean loadConfigFromNightscout;
 
     public static Boolean updateFromNightscout(List<NightscoutFollow.NightscoutFoodStructure> p) {
         Log.d(TAG, "updating food profiles from Nightscout");
@@ -118,6 +120,45 @@ public class FoodManager {
     public static List<Food> getFood() {
         return profiles;
     }
+    public static List<Food> getFood(boolean hidden, boolean deleted ) {
+        List<Food> ret = new ArrayList<>();
+        for (Food f: profiles)
+            if ((f.isHidden() == hidden) && (f.isDeleted() == deleted))
+                ret.add(f);
+        return ret;
+    }
+    public static List<Food> getFood(SortTypes sorting, boolean hidden, boolean deleted) {
+        switch (sorting)
+        {
+            case unsorted:
+                return getFood(hidden, deleted);
+            case favalpha:
+            case favourites:
+                ArrayList<Food> favs = new ArrayList<>();
+                ArrayList<Food> nonfavs = new ArrayList<>();
+                for (Food f: getFood(hidden, deleted))
+                    if (f.isFavourite())
+                        favs.add(f);
+                    else nonfavs.add(f);
+                    if (sorting == SortTypes.favourites)
+                        favs.addAll(nonfavs);
+                    else {
+                        favs = sortAlphanumeric(favs);
+                        favs.addAll(sortAlphanumeric(nonfavs));
+                    }
+                    return favs;
+            case alphanummeric:
+                return sortAlphanumeric(getFood(hidden, deleted));
+        }
+        JoH.static_toast_long("sorting " + sorting.name() + " isn't implemented yet!!");
+        return new ArrayList<Food>();
+    }
+    public static ArrayList<Food> sortAlphanumeric(List<Food> l) {
+        ArrayList<Food> ret = new ArrayList<>(l);
+        Collections.sort(ret, (f1, f2) -> f1.getName().compareToIgnoreCase(f2.getName()));
+        return ret;
+    }
+
     public static Food getFood(String id) {
         if (profiles == null)
             profiles = new ArrayList<>();

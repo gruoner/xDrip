@@ -153,7 +153,7 @@ public class FoodInputActivity extends BaseActivity {
         final AlertDialog.Builder d = new AlertDialog.Builder(c, AlertDialog.THEME_HOLO_DARK);
         LayoutInflater inflater = (LayoutInflater) c.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
         View dialogView = inflater.inflate(R.layout.number_picker_dialog, null);
-        d.setTitle("Wie viel davon?");
+        d.setTitle(getResources().getString(R.string.amountoffood));
         d.setView(dialogView);
         final NumberPicker numberPicker = (NumberPicker) dialogView.findViewById(R.id.dialog_number_picker);
         numberPicker.setMaxValue(portions.size()-1);
@@ -161,18 +161,18 @@ public class FoodInputActivity extends BaseActivity {
         numberPicker.setWrapSelectorWheel(true);
         numberPicker.setDisplayedValues(pA);
         numberPicker.setValue((int) (Math.round(u/f.getPortionIncrement()) - 1));
-        d.setPositiveButton("Eintragen", (dialogInterface, i) -> {
+        d.setPositiveButton(getResources().getString(R.string.ok), (dialogInterface, i) -> {
             double v = (numberPicker.getValue() + 1) * f.getPortionIncrement();
             if (update) intake.removeIngredient(f.getID());
             intake.addIngredient(Objects.requireNonNull(FoodManager.getFood(f.getID())), v);
             updateTab();
         });
         if (update)
-            d.setNegativeButton("Löschen", (dialogInterface, i) -> {
+            d.setNegativeButton(getResources().getString(R.string.erase), (dialogInterface, i) -> {
                 intake.removeIngredient(f.getID());
                 updateTab();
             });
-        d.setNeutralButton("Abbrechen", (dialogInterface, i) -> updateTab());
+        d.setNeutralButton(getResources().getString(R.string.cancel), (dialogInterface, i) -> updateTab());
 
         AlertDialog alertDialog = d.create();
         alertDialog.show();
@@ -182,7 +182,7 @@ public class FoodInputActivity extends BaseActivity {
         if (intakeTimestamp == null)
             intakeTimestamp = new Date();
         DateFormat dateFormat = new SimpleDateFormat("E dd.MM.yyyy 'um' HH:mm");
-        String mystring = String.format("Am %s %dg Kohlenhydrate (%s) gegessen.", dateFormat.format(intakeTimestamp), intake.getCarbs(), intake.getFoodIntakeShortString(1));
+        String mystring = String.format(getResources().getString(R.string.foodintakeconfirmation), dateFormat.format(intakeTimestamp), intake.getCarbs(), intake.getFoodIntakeShortString(1));
 
         GenericConfirmDialog.show(this, gs(R.string.are_you_sure), mystring, () -> {
             Treatments.create(intake.getCarbs(), intake, 0, null, intakeTimestamp.getTime());
@@ -220,8 +220,8 @@ public class FoodInputActivity extends BaseActivity {
         }
         if (catChanged) {
             allFoodView.removeAllViews();
-            for (Food f : FoodManager.getFood())
-                if (!f.isDeleted() && !f.isHidden() && f.isInCategory(currentcat)) {
+            for (Food f : FoodManager.getFood(FoodManager.SortTypes.favalpha, false, false))
+                if (f.isInCategory(currentcat)) {
                     TextView t = new TextView(this);
                     t.setText(f.getDescription(1));
                     t.setTextSize(15);

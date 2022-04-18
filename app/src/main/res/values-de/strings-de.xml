@@ -1573,4 +1573,6 @@
     <string name="title_variant">Du verwendest eine xDrip+-Variante</string>
     <string name="expires_unknown">Läuft ab: ???</string>
     <string name="sensor_expired">Abgelaufen!</string>
+    <string name="amountoffood">Wie viel davon?</string>
+    <string name="foodintakeconfirmation">Am %s %dg Kohlenhydrate (%s) gegessen.</string>
 </resources>

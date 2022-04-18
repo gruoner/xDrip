@@ -1,10 +1,8 @@
 package com.eveningoutpost.dexdrip.food;
 
 import android.annotation.SuppressLint;
-
 import java.util.ArrayList;
 import java.util.Collections;
-
 import com.eveningoutpost.dexdrip.Models.FoodIntake;
 import com.eveningoutpost.dexdrip.Models.FoodProfile;
 import com.google.common.base.Strings;
@@ -25,6 +23,7 @@ public class Food {
     private long protein;
     private Boolean hidden;
     private Boolean deleted;
+    private Boolean favourite;
     private FoodIntake ingredients;
     private double defaultPortion;
     private double portionIncrement;
@@ -45,6 +44,7 @@ public class Food {
         unit = p.getUnit();
         pSize = p.getPortionSize();
         hidden = p.isHidden();
+        favourite = p.isFavourite();
         deleted = p.isDeleted();
         ingredients = new FoodIntake();
         if (!Strings.isNullOrEmpty(p.getIngredients())) {
@@ -114,6 +114,9 @@ public class Food {
     }
     public int getPSize() {
         return pSize;
+    }
+    public Boolean isFavourite() {
+        return favourite;
     }
     public Boolean isHidden() {
         return hidden;
@@ -192,5 +195,14 @@ public class Food {
             }
             originalProfile.setFoodCategories(result);
         }
+    }
+
+    public void setFavourite() {
+        favourite = true;
+        originalProfile.setFavourite(favourite);
+    }
+    public void unsetFavourite() {
+        favourite = false;
+        originalProfile.setFavourite(favourite);
     }
 }

@@ -31,11 +31,29 @@
                 android:orientation="vertical"/>
         </ScrollView>
         <LinearLayout
-            android:paddingTop="@dimen/activity_vertical_margin"
+            android:paddingTop="0dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="60dp"
+            android:layout_marginBottom="100dp"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:text="Favor"
+                android:layout_alignParentBottom="true"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Enable"
+                android:layout_alignParentBottom="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:paddingTop="0dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="55dp"
             android:orientation="horizontal">
 
             <Button
