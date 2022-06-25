@@ -29,6 +29,7 @@ import android.provider.Settings;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -55,6 +56,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.eveningoutpost.dexdrip.G5Model.Ob1G5StateMachine;
+import com.eveningoutpost.dexdrip.G5Model.SensorDays;
 import com.eveningoutpost.dexdrip.ImportedLibraries.usbserial.util.HexDump;
 import com.eveningoutpost.dexdrip.Models.ActiveBgAlert;
 import com.eveningoutpost.dexdrip.Models.ActiveBluetoothDevice;
@@ -109,6 +111,7 @@ import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
 import com.eveningoutpost.dexdrip.insulin.inpen.InPenEntry;
 import com.eveningoutpost.dexdrip.insulin.pendiq.Pendiq;
+import com.eveningoutpost.dexdrip.nfc.NFControl;
 import com.eveningoutpost.dexdrip.profileeditor.DatePickerFragment;
 import com.eveningoutpost.dexdrip.profileeditor.ProfileAdapter;
 import com.eveningoutpost.dexdrip.ui.BaseShelf;
@@ -116,6 +119,7 @@ import com.eveningoutpost.dexdrip.ui.MicroStatus;
 import com.eveningoutpost.dexdrip.ui.MicroStatusImpl;
 import com.eveningoutpost.dexdrip.ui.NumberGraphic;
 import com.eveningoutpost.dexdrip.ui.UiPing;
+import com.eveningoutpost.dexdrip.ui.dialog.ChooseInsulinPenDialog;
 import com.eveningoutpost.dexdrip.ui.dialog.DidYouCancelAlarm;
 import com.eveningoutpost.dexdrip.ui.dialog.HeyFamUpdateOptInDialog;
 import com.eveningoutpost.dexdrip.ui.dialog.QuickSettingsDialogs;
@@ -168,6 +172,8 @@ import lecho.lib.hellocharts.view.PreviewLineChartView;
 import lombok.Getter;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static com.eveningoutpost.dexdrip.Models.JoH.msSince;
+import static com.eveningoutpost.dexdrip.Models.JoH.tsl;
 import static com.eveningoutpost.dexdrip.UtilityModels.ColorCache.X;
 import static com.eveningoutpost.dexdrip.UtilityModels.ColorCache.getCol;
 import static com.eveningoutpost.dexdrip.UtilityModels.Constants.DAY_IN_MS;
@@ -191,6 +197,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     public final static String BLUETOOTH_METER_CALIBRATION = "BLUETOOTH_METER_CALIBRATION";
     public final static String ACTIVITY_SHOWCASE_INFO = "ACTIVITY_SHOWCASE_INFO";
     public final static String ENABLE_STREAMING_DIALOG = "ENABLE_STREAMING_DIALOG";
+    public final static String CHOOSE_INSULIN_PEN = "CHOOSE_INSULIN_PEN";
     public final static int SENSOR_READY_ID = 4912;
     private final UiPing ui = new UiPing();
     public static boolean activityVisible = false;
@@ -708,7 +715,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
             final Intent calintent = new Intent(getApplicationContext(), AddCalibration.class);
             calintent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            calintent.putExtra("timestamp", JoH.tsl());
+            calintent.putExtra("timestamp", tsl());
             calintent.putExtra("bg_string", JoH.qs(glucosenumber));
             calintent.putExtra("bg_age", Long.toString((long) (timeoffset / 1000)));
             calintent.putExtra("allow_undo", "true");
@@ -755,7 +762,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             final Intent calintent = new Intent(getApplicationContext(), AddCalibration.class);
 
             calintent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            calintent.putExtra("timestamp", JoH.tsl());
+            calintent.putExtra("timestamp", tsl());
             calintent.putExtra("bg_string", JoH.qs(glucosenumber));
             calintent.putExtra("bg_age", Long.toString((long) (timeoffset / 1000)));
             calintent.putExtra("allow_undo", "true");
@@ -763,55 +770,55 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             Log.d(TAG, "ProcessCalibrationNoUI number: " + glucosenumber + " offset: " + timeoffset);
 
             final String calibration_type = Pref.getString("treatment_fingerstick_calibration_usage", "ask");
-            if (calibration_type.equals("ask")) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(gs(R.string.use_bg_for_calibration));
-                builder.setMessage(gs(R.string.do_you_want_to_use_this_entered_fingerstick_blood_glucose_test_to_calibrate_with__you_can_change_when_this_dialog_is_displayed_in_settings));
+            Log.d(TAG, "Creating blood test record from input data");
+            BloodTest.createFromCal(glucosenumber, timeoffset, "Manual Entry");
+            GcmActivity.syncBloodTests();
+            if (!Pref.getBooleanDefaultFalse("bluetooth_meter_for_calibrations_auto")) { // If automatic calibration is disabled
+                if (calibration_type.equals("ask")) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle(gs(R.string.use_bg_for_calibration));
+                    builder.setMessage(gs(R.string.do_you_want_to_use_this_entered_fingerstick_blood_glucose_test_to_calibrate_with__you_can_change_when_this_dialog_is_displayed_in_settings));
 
-                builder.setPositiveButton(gs(R.string.yes_calibrate), (dialog, which) -> {
-                    calintent.putExtra("note_only", "false");
-                    calintent.putExtra("from_interactive", "true");
-                    startIntentThreadWithDelayedRefresh(calintent);
-                    dialog.dismiss();
-                });
-
-                builder.setNegativeButton(gs(R.string.no), (dialog, which) -> {
-                    // TODO make this a blood test entry xx
-                    calintent.putExtra("note_only", "true");
-                    startIntentThreadWithDelayedRefresh(calintent);
-                    dialog.dismiss();
-                });
-
-                AlertDialog alert = builder.create();
-                alert.show();
-
-            } else if (calibration_type.equals("auto")) {
-                Log.d(TAG, "Creating bloodtest  record from cal input data");
-                BloodTest.createFromCal(glucosenumber, timeoffset, "Manual Entry");
-                GcmActivity.syncBloodTests();
-                if ((!Pref.getBooleanDefaultFalse("bluetooth_meter_for_calibrations_auto"))
-                        && (DexCollectionType.getDexCollectionType() != DexCollectionType.Follower)
-                        && (JoH.pratelimit("ask_about_auto_calibration", 86400 * 30))) {
-                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle(gs(R.string.enable_automatic_calibration));
-                    builder.setMessage(gs(R.string.entered_blood_tests_which_occur_during_flat_trend_periods_can_automatically_be_used_to_recalibrate_after_20_minutes_this_should_provide_the_most_accurate_method_to_calibrate_with__do_you_want_to_enable_this_feature));
-
-                    builder.setPositiveButton(gs(R.string.yes_enable), (dialog, which) -> {
-                        Pref.setBoolean("bluetooth_meter_for_calibrations_auto", true);
-                        JoH.static_toast_long(gs(R.string.automated_calibration_enabled));
+                    builder.setPositiveButton(gs(R.string.yes_calibrate), (dialog, which) -> {
+                        calintent.putExtra("note_only", "false");
+                        calintent.putExtra("from_interactive", "true");
+                        startIntentThreadWithDelayedRefresh(calintent);
                         dialog.dismiss();
                     });
 
-                    builder.setNegativeButton(gs(R.string.no), (dialog, which) -> dialog.dismiss());
+                    builder.setNegativeButton(gs(R.string.no), (dialog, which) -> {
+                        dialog.dismiss();
+                    });
 
-                    final AlertDialog alert = builder.create();
+                    AlertDialog alert = builder.create();
                     alert.show();
+
+                } else if (calibration_type.equals("auto")) {
+                    if ((!Pref.getBooleanDefaultFalse("bluetooth_meter_for_calibrations_auto"))
+                            && (DexCollectionType.getDexCollectionType() != DexCollectionType.Follower)
+                            && (JoH.pratelimit("ask_about_auto_calibration", 86400 * 30))) {
+                        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                        builder.setTitle(gs(R.string.enable_automatic_calibration));
+                        builder.setMessage(gs(R.string.entered_blood_tests_which_occur_during_flat_trend_periods_can_automatically_be_used_to_recalibrate_after_20_minutes_this_should_provide_the_most_accurate_method_to_calibrate_with__do_you_want_to_enable_this_feature));
+
+                        builder.setPositiveButton(gs(R.string.yes_enable), (dialog, which) -> {
+                            Pref.setBoolean("bluetooth_meter_for_calibrations_auto", true);
+                            JoH.static_toast_long(gs(R.string.automated_calibration_enabled));
+                            dialog.dismiss();
+                        });
+
+                        builder.setNegativeButton(gs(R.string.no), (dialog, which) -> dialog.dismiss());
+
+                        final AlertDialog alert = builder.create();
+                        alert.show();
+                    }
+                    // offer choice to enable auto-calibration mode if not already enabled on pratelimit
+                } else if (calibration_type.equals("never")) {
+                } else {
+                    // if use for calibration == "no" then this is a "note_only" type, otherwise it isn't
+                    calintent.putExtra("note_only", calibration_type.equals("never") ? "true" : "false");
+                    startIntentThreadWithDelayedRefresh(calintent);
                 }
-                // offer choice to enable auto-calibration mode if not already enabled on pratelimit
-            } else {
-                // if use for calibration == "no" then this is a "note_only" type, otherwise it isn't
-                calintent.putExtra("note_only", calibration_type.equals("never") ? "true" : "false");
-                startIntentThreadWithDelayedRefresh(calintent);
             }
         }
     }
@@ -855,7 +862,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         if (watchkeypad) {
             // calculate absolute offset
             long treatment_timestamp = watchkeypad_timestamp - (long) mytimeoffset;
-            mytimeoffset = JoH.tsl() - treatment_timestamp;
+            mytimeoffset = tsl() - treatment_timestamp;
             Log.d(TAG, "Watch Keypad timestamp is: " + JoH.dateTimeText(treatment_timestamp) + " Original offset: " + JoH.qs(thistimeoffset) + " New: " + JoH.qs(mytimeoffset));
             if ((mytimeoffset > (DAY_IN_MS * 3)) || (mytimeoffset < -HOUR_IN_MS * 3)) {
                 Log.e(TAG, "Treatment timestamp out of range: " + mytimeoffset);
@@ -1023,7 +1030,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                         builder.setPositiveButton(gs(R.string.calibrate), (dialog, which) -> {
                             dialog.dismiss();
                             // TODO time should be absolute not relative!?!?
-                            final long time_since = JoH.msSince(bt.timestamp);
+                            final long time_since = msSince(bt.timestamp);
                             Home.startHomeWithExtra(xdrip.getAppContext(), Home.BLUETOOTH_METER_CALIBRATION, BgGraphBuilder.unitized_string_static(bt.mgdl), Long.toString(time_since));
                             bt.addState(BloodTest.STATE_CALIBRATION);
                             GcmActivity.syncBloodTests();
@@ -1063,6 +1070,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                 }
             } else if (bundle.getString(Home.ENABLE_STREAMING_DIALOG) != null) {
                 NFCReaderX.enableBluetoothAskUser(mActivity);
+            } else if (bundle.getString(Home.CHOOSE_INSULIN_PEN) != null) {
+                ChooseInsulinPenDialog.show(this, bundle.getString(Home.CHOOSE_INSULIN_PEN));
             }
         }
     }
@@ -1422,7 +1431,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                     }
                     if (note_text.length() > 0) {
                         // TODO respect historic timeset?
-                        Treatments.create_note(note_text, JoH.tsl());
+                        Treatments.create_note(note_text, tsl());
                         staticRefreshBGCharts();
                         break; // don't process any more
                     }
@@ -1870,11 +1879,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         updateCurrentBgInfo("generic on resume");
         updateHealthInfo("generic on resume");
 
-        if (NFCReaderX.useNFC()) {
-            NFCReaderX.doNFC(this);
-        } else {
-            NFCReaderX.disableNFC(this);
-        }
+        NFControl.initNFC(this, false);
 
         if (get_follower() || get_master()) {
             GcmActivity.checkSync(this);
@@ -2019,7 +2024,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             chart.setCurrentViewport(holdViewport);
             previewChart.setCurrentViewport(holdViewport);
         } else {
-            if (homeShelf.get("time_buttons")) {
+            if (homeShelf.get("time_buttons") || homeShelf.get("time_locked_always")) {
                 final long which_hour = PersistentStore.getLong("home-locked-hours");
                 if (which_hour > 0) {
                     hours = which_hour;
@@ -2054,7 +2059,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     public void onPause() {
         activityVisible = false;
         super.onPause();
-        NFCReaderX.stopNFC(this);
+        NFControl.initNFC(this, true); // disables
         nanoStatus.setRunning(false);
         expiryStatus.setRunning(false);
         if (_broadcastReceiver != null) {
@@ -2330,7 +2335,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
         if (isWifiWixel || isWifiBluetoothWixel || isWifiandBTLibre || isWifiLibre || collector.equals(DexCollectionType.Mock)) {
             updateCurrentBgInfoForWifiWixel(collector, notificationText);
-        } else if (is_follower || collector.equals(DexCollectionType.NSEmulator) || collector.equals(DexCollectionType.NSFollow) || collector.equals(DexCollectionType.SHFollow) ||collector.equals(DexCollectionType.LibreReceiver)) {
+        } else if (is_follower || collector.isPassive()) {
             displayCurrentInfo();
             Inevitable.task("home-notifications-start", 5000, Notifications::start);
         } else if (!alreadyDisplayedBgInfoCommon && (DexCollectionType.getDexCollectionType() == DexCollectionType.LibreAlarm || collector == DexCollectionType.Medtrum)) {
@@ -2479,7 +2484,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             if(lastReading == 0) {
                 notificationText.setText(R.string.in_libre_all_house_mode_no_readings_collected_yet);
             } else {
-                int minutes = (int) (JoH.tsl() - lastReading) / (60 * 1000);
+                int minutes = (int) (tsl() - lastReading) / (60 * 1000);
                 final String fmt = getString(R.string.minutes_ago);
                 notificationText.setText(R.string.in_libre_all_house_mode_last_data_collected);
                 notificationText.append(MessageFormat.format(fmt, minutes));
@@ -2492,7 +2497,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         // automagically start an xDrip sensor session if G5 transmitter already has active sensor
         if (!isSensorActive && Ob1G5CollectionService.isG5SensorStarted() && !Sensor.stoppedRecently()) {
             JoH.static_toast_long(getString(R.string.auto_starting_sensor));
-            Sensor.create(JoH.tsl() - HOUR_IN_MS * 3);
+            Sensor.create(tsl() - HOUR_IN_MS * 3);
             isSensorActive = Sensor.isActive();
         }
 
@@ -2534,14 +2539,24 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             return;
         }
 
-        final long now = System.currentTimeMillis();
-        if (Sensor.currentSensor().started_at + 60000 * 60 * 2 >= now) {
-            double waitTime = (Sensor.currentSensor().started_at + 60000 * 60 * 2 - now) / 60000.0;
-            notificationText.setText(getString(R.string.please_wait_while_sensor_warms_up) + JoH.qs(waitTime, 0) + getString(R.string.minutes_with_bracket));
-            showUncalibratedSlope();
-            return;
+        if (!BgReading.doWeHaveRecentUsableData()) {
+            long startedAt = Sensor.currentSensor().started_at;
+            long computedStartedAt = SensorDays.get().getStart();
+            if (computedStartedAt > 0 && msSince(computedStartedAt) < HOUR_IN_MS * 3) {
+                startedAt = Math.min(computedStartedAt, startedAt);
+            }
+            final long warmUpMs = SensorDays.get().getWarmupMs();
+            final long now = tsl();
+            if (startedAt + warmUpMs > now) {
+                double waitTime = (startedAt + warmUpMs - now) / (double)MINUTE_IN_MS;
+                // TODO better resource format string
+                notificationText.setText(getString(R.string.please_wait_while_sensor_warms_up) + JoH.qs(waitTime, 0) + getString(R.string.minutes_with_bracket));
+                showUncalibratedSlope();
+                return;
+            }
         }
-        if (DexCollectionType.isLibreOOPAlgorithm(collector)) {
+
+        if (DexCollectionType.isLibreOOPNonCalibratebleAlgorithm(collector)) {
             // Rest of this function deals with initial calibration. Since we currently don't have a way to calibrate,
             // And even once we will have, there is probably no need to force a calibration at start of sensor use.
             displayCurrentInfo();
@@ -2855,6 +2870,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
     }
 
+    // TODO consider moving this out of Home
     public static long stale_data_millis() {
         if (DexCollectionType.getDexCollectionType() == DexCollectionType.LibreAlarm)
             return (60000 * 13);
@@ -3235,7 +3251,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     }
 
     public void showNoteTextInputDialog(View myitem) {
-        showNoteTextInputDialog(myitem, JoH.tsl(), -1);
+        showNoteTextInputDialog(myitem, tsl(), -1);
     }
 
     public void showNoteTextInputDialog(View myitem, final long timestamp) {
@@ -3510,7 +3526,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         android.support.design.widget.Snackbar.make(
 
                 activity.findViewById(android.R.id.content),
-                message, android.support.design.widget.Snackbar.LENGTH_LONG)
+                message, Snackbar.LENGTH_LONG)
                 .setAction(buttonString, mOnClickListener)
                 //.setActionTextColor(Color.RED)
                 .show();

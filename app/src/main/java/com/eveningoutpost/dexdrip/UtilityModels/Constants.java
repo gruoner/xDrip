@@ -51,6 +51,7 @@ public class Constants {
     public static final int BLUEJAY_SERVICE_RETRY_ID = 1025;
     public static final int MIBAND_SERVICE_RETRY_ID = 1026;
     public static final int MIBAND_SERVICE_BG_RETRY_ID = 1027;
+    public static final int WEBFOLLOW_SERVICE_FAILOVER_ID = 1028;
 
     static final int NIGHTSCOUT_ERROR_NOTIFICATION_ID = 2001;
 
@@ -64,4 +65,9 @@ public class Constants {
     public static final int APK_DOWNLOAD_JOB_ID = 60920014;
 
     public static final int LIBRE_1_2_FRAM_SIZE = 344;
+
+    public static final int LIBREPRO_HEADER1_SIZE = 40;
+    public static final int LIBREPRO_HEADER2_SIZE = 32;
+    public static final int LIBREPRO_HEADER3_SIZE = 104;
+
 }
