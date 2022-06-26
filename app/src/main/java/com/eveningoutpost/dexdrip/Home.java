@@ -127,6 +127,7 @@ import com.eveningoutpost.dexdrip.ui.graphic.ITrendArrow;
 import com.eveningoutpost.dexdrip.ui.graphic.TrendArrowFactory;
 import com.eveningoutpost.dexdrip.utils.ActivityWithMenu;
 import com.eveningoutpost.dexdrip.utils.BgToSpeech;
+import com.eveningoutpost.dexdrip.utils.ConfigureImportExport;
 import com.eveningoutpost.dexdrip.utils.DatabaseUtil;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 import com.eveningoutpost.dexdrip.utils.DisplayQRCode;
@@ -3204,6 +3205,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
     public void settingsSDcardExport(MenuItem myitem) {
         startActivity(new Intent(getApplicationContext(), SdcardImportExport.class));
+    }
+
+    public void configureImportExport(MenuItem myitem) {
+        startActivity(new Intent(getApplicationContext(), ConfigureImportExport.class));
     }
 
     public void showMapFromMenu(MenuItem myitem) {
