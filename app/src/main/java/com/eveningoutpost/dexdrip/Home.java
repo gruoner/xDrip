@@ -3403,7 +3403,9 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                                 0);
                         return null;
                     } else {
-                        return DatabaseUtil.saveSql(getBaseContext());
+                        String f =  DatabaseUtil.saveSql(getBaseContext());
+                        ConfigureImportExport.dispatchAdditionalExports(f, true, false);
+                        return f;
                     }
 
                 }
@@ -3412,7 +3414,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                 protected void onPostExecute(String filename) {
                     super.onPostExecute(filename);
                     if (filename != null) {
-
                         snackBar(R.string.share, getString(R.string.exported_to) + filename, makeSnackBarUriLauncher(Uri.fromFile(new File(filename)), getString(R.string.share_database)), Home.this);
                         startActivity(new Intent(xdrip.getAppContext(), SdcardImportExport.class).putExtra("backup", "now").setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
                     /*    SnackbarManager.show(
@@ -3423,7 +3424,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                                         .actionLabel("Share") // action button label
                                         .actionListener(new SnackbarUriListener(Uri.fromFile(new File(filename)))),
                                 Home.this);*/
-                        ConfigureImportExport.dispatchAdditionalExports(filename, true, false);
                     } else {
                         Toast.makeText(Home.this, R.string.could_not_export_database, Toast.LENGTH_LONG).show();
                     }
@@ -3473,7 +3473,9 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                                         0);
                                 return null;
                             } else {
-                                return DatabaseUtil.saveCSV(getBaseContext(), date.getTimeInMillis());
+                                String f =  DatabaseUtil.saveCSV(getBaseContext(), date.getTimeInMillis());
+                                ConfigureImportExport.dispatchAdditionalExports(f, false, false);
+                                return f;
                             }
                         }
 
@@ -3483,7 +3485,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                             if (filename != null) {
                                 Pref.setLong("sidiary_last_exportdate", System.currentTimeMillis());
                                 snackBar(R.string.share, getString(R.string.exported_to) + filename, makeSnackBarUriLauncher(Uri.fromFile(new File(filename)), getString(R.string.share_database)), Home.this);
-                                ConfigureImportExport.dispatchAdditionalExports(filename, false, false);
                             } else {
                                 Toast.makeText(Home.this, gs(R.string.could_not_export_csv_), Toast.LENGTH_LONG).show();
                             }

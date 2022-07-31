@@ -16,7 +16,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -362,6 +361,8 @@ public class ImportDatabaseActivity extends ListActivityWithMenu {
                                 fout.close();
                                 dbFile = new File(output_filename);
                                 toDeleteAfterImport.add(dbFile);
+                                toDeleteAfterImport.add(new File(output_filename + "-shm"));
+                                toDeleteAfterImport.add(new File(output_filename + "-wal"));
                                 Log.d(TAG, "New filename: " + output_filename);
                             } else {
                                 String msg = "Cant find sqlite in zip file";
@@ -429,7 +430,6 @@ public class ImportDatabaseActivity extends ListActivityWithMenu {
                 });
                 SdcardImportExport.directCopyFile(prefsFile2ImportAfterSuccessRestore,
                         new File(xdrip.getAppContext().getFilesDir().getParent() + "/" + SdcardImportExport.PREFERENCES_FILE));
-                SdcardImportExport.hardReset();
             }
             statusDialog.dismiss();;
             return result;
@@ -439,7 +439,7 @@ public class ImportDatabaseActivity extends ListActivityWithMenu {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             postImportDB(result);
-
+            SdcardImportExport.hardReset();
         }
     }
 }

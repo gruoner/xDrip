@@ -1,9 +1,11 @@
 package com.eveningoutpost.dexdrip.utils;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.TextInputEditText;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -14,6 +16,10 @@ import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 import com.eveningoutpost.dexdrip.xdrip;
 import com.google.common.base.Strings;
+import com.thegrizzlylabs.sardineandroid.DavResource;
+import com.thegrizzlylabs.sardineandroid.Sardine;
+import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -25,6 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -35,7 +43,7 @@ import java.util.zip.ZipOutputStream;
 
 public class ConfigureImportExport extends BaseAppCompatActivity {
 
-    private static final String TAG = "ConfigureExportExportSettingsDialog";
+    private static final String TAG = "ConfigureImportExport";
     private static final int BUFFER_SIZE = 4096;
 
     public enum ImportSelection { old, localStorage, WebDAVStorage }
@@ -44,6 +52,7 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
     private Button undoBtn;
     private Switch localStorageSwitch;
     private Switch webdavStorageSwitch;
+    private Switch webdavStorageSSLSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +74,7 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
                 ((LinearLayout)findViewById(R.id.webdavstoragelayout)).setVisibility(View.VISIBLE);
             else ((LinearLayout)findViewById(R.id.webdavstoragelayout)).setVisibility(View.INVISIBLE);
         });
+        webdavStorageSSLSwitch = (Switch) findViewById(R.id.webdavstoragesslswitch);
 
         loadFromPrefs();
     }
@@ -81,6 +91,7 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
     public void SaveButton(View myview) {
         Pref.setString("importexport2localstorage_path", getStringFromText(R.id.localstoragepath));
         Pref.setBoolean("importexport2localstorage_enabled", localStorageSwitch.isChecked());
+        Pref.setBoolean("importexport2webdavstorage_ssl", webdavStorageSSLSwitch.isChecked());
         Pref.setString("importexport2webdavstorage_server", getStringFromText(R.id.webdavstorageserver));
         Pref.setString("importexport2webdavstorage_path", getStringFromText(R.id.webdavstoragepath));
         Pref.setString("importexport2webdavstorage_user", getStringFromText(R.id.webdavstorageuser));
@@ -94,6 +105,7 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
         Pref.removeItem("importexport2localstorage_path");
         Pref.removeItem("importexport2webdavstorage_enabled");
         Pref.removeItem("importexport2webdavstorage_server");
+        Pref.removeItem("importexport2webdavstorage_ssl");
         Pref.removeItem("importexport2webdavstorage_path");
         Pref.removeItem("importexport2webdavstorage_user");
         Pref.removeItem("importexport2webdavstorage_password");
@@ -129,6 +141,7 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
         setStringToText(R.id.localstoragepath, Pref.getString("importexport2localstorage_path",
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/xdrip/backup"));
         webdavStorageSwitch.setChecked(Pref.getBooleanDefaultFalse("importexport2webdavstorage_enabled"));
+        webdavStorageSSLSwitch.setChecked(Pref.getBooleanDefaultFalse("importexport2webdavstorage_ssl"));
         setStringToText(R.id.webdavstorageserver, Pref.getString("importexport2webdavstorage_server", defaultServerName));
         setStringToText(R.id.webdavstoragepath, Pref.getString("importexport2webdavstorage_path", "/webdav/xdrip/backup"));
         setStringToText(R.id.webdavstorageuser, Pref.getString("importexport2webdavstorage_user", "xdrip"));
@@ -213,7 +226,21 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
     }
 
     public static void export2WebDAV(String filename, String nameOfFile) {
-        /// Todo: export the file to webdav
+        String server = Pref.getStringDefaultBlank("importexport2webdavstorage_server");
+        String path = Pref.getStringDefaultBlank("importexport2webdavstorage_path");
+        String user = Pref.getStringDefaultBlank("importexport2webdavstorage_user");
+        String password = Pref.getStringDefaultBlank("importexport2webdavstorage_password");
+        String url = "http";
+        if (Pref.getBooleanDefaultFalse("importexport2webdavstorage_ssl"))
+            url = "https";
+        try {
+            Sardine sardine = new OkHttpSardine();
+            sardine.setCredentials(user, password);
+            sardine.put(url + "://" + server + path + "/" + nameOfFile, new File(filename), "application/octet-stream");
+        } catch (Exception e) {
+            Log.d(TAG, e.getLocalizedMessage());
+            JoH.static_toast_long(e.getLocalizedMessage());
+        }
     }
 
     /*
@@ -223,12 +250,25 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
      */
     public static ArrayList<File> findAllBackups(ImportSelection s) {
         switch (s) {
-            default: 
+            default:
                 return new ArrayList<>();
             case localStorage:
                 return findAllLocalBackups();
             case WebDAVStorage:
-                return findAllWebDAVBackups();
+                final ArrayList<File>[] ret = new ArrayList[]{new ArrayList<>()};
+                AsyncTask t = new AsyncTask<Void, Void, String>() {
+                    @Override
+                    protected String doInBackground(Void... params) {
+                        ret[0] = findAllWebDAVBackups();
+                        return "success";
+                    }
+                }.execute();
+                try {
+                    t.get();
+                } catch (ExecutionException e) {
+                } catch (InterruptedException e) {
+                }
+                return ret[0];
         }
     }
     public static ArrayList<File> findAllLocalBackups() {
@@ -254,8 +294,26 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
     }
 
     public static ArrayList<File> findAllWebDAVBackups() {
-        /// Todo: find / list all backup files on webdav
-        return new ArrayList<>();
+        String server = Pref.getStringDefaultBlank("importexport2webdavstorage_server");
+        String path = Pref.getStringDefaultBlank("importexport2webdavstorage_path");
+        String user = Pref.getStringDefaultBlank("importexport2webdavstorage_user");
+        String password = Pref.getStringDefaultBlank("importexport2webdavstorage_password");
+        String url = "http";
+        if (Pref.getBooleanDefaultFalse("importexport2webdavstorage_ssl"))
+            url = "https";
+        ArrayList<File> ret = new ArrayList<>();
+        try {
+            Sardine sardine = new OkHttpSardine();
+            sardine.setCredentials(user, password);
+            List<DavResource> d = sardine.list(url + "://" + server + path + "/", 1, false);
+            for (DavResource r: d)
+                if (r.getContentType().toLowerCase().equals("application/octet-stream"))
+                    ret.add(new File(r.toString()));
+        } catch (Exception e) {
+            Log.d(TAG, e.getLocalizedMessage());
+            JoH.static_toast_long(e.getLocalizedMessage());
+        }
+        return ret;
     }
 
     /*
@@ -270,27 +328,53 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
             case localStorage:
                 return fetchBackupFromLocal(f);
             case WebDAVStorage:
-                return fetchBackupFromWebDAV(f);
+                final File[] ret = new File[]{f};
+                AsyncTask t = new AsyncTask<Void, Void, String>() {
+                    @Override
+                    protected String doInBackground(Void... params) {
+                        ret[0] = fetchBackupFromWebDAV(f);
+                        return "success";
+                    }
+                }.execute();
+                try {
+                    t.get();
+                } catch (ExecutionException e) {
+                } catch (InterruptedException e) {
+                }
+                return ret[0];
         }
     }
     public static File fetchBackupFromLocal(File f) {   // because the file is still on local storage we can extract the backup directly; no need for copying
         return f;
     }
     public static File fetchBackupFromWebDAV(File f) {
-        /// Todo: fetch the file from webdav
-        return f;
+        String server = Pref.getStringDefaultBlank("importexport2webdavstorage_server");
+        String path = Pref.getStringDefaultBlank("importexport2webdavstorage_path");
+        String user = Pref.getStringDefaultBlank("importexport2webdavstorage_user");
+        String password = Pref.getStringDefaultBlank("importexport2webdavstorage_password");
+        String url = "http";
+        if (Pref.getBooleanDefaultFalse("importexport2webdavstorage_ssl"))
+            url = "https";
+        File ret = new File(xdrip.getAppContext().getFilesDir() + "/tmp_" + f.getName());
+        try {
+            FileOutputStream foStream = new FileOutputStream(ret, true);
+            Sardine sardine = new OkHttpSardine();
+            sardine.setCredentials(user, password);
+            InputStream fiStream = sardine.get(url + "://" + server + path + "/" + f.getName());
+            byte buffer[] = new byte[BUFFER_SIZE];
+            int count;
+            while ((count = fiStream.read(buffer, 0, BUFFER_SIZE)) != -1) {
+                foStream.write(buffer, 0, count);
+            }
+            fiStream.close();
+            foStream.close();
+        } catch (Exception e) {
+            Log.d(TAG, e.getLocalizedMessage());
+            JoH.static_toast_long(e.getLocalizedMessage());
+        }
+        return ret;
     }
 
-    public static File extractDBBackup(ImportSelection s, File f) {
-        switch (s) {
-            default:
-                return null;
-            case localStorage:
-                return extractDBBackupFromLocal(f);
-            case WebDAVStorage:
-                return extractDBBackupFromWebDAV(f);
-        }
-    }
     private static File extractFromLocalZip(File f, String pattern) {
         File r = null;
         if (f.getAbsolutePath().endsWith(".zip")) {
@@ -322,6 +406,17 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
             }
         }
         return r;
+    }
+
+    public static File extractDBBackup(ImportSelection s, File f) {
+        switch (s) {
+            default:
+                return null;
+            case localStorage:
+                return extractDBBackupFromLocal(f);
+            case WebDAVStorage:
+                return extractDBBackupFromWebDAV(f);
+        }
     }
     public static File extractDBBackupFromLocal(File f) {
         return extractFromLocalZip(f, ".zip");
@@ -365,4 +460,5 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
         f.delete();
     }
 }
+
 
