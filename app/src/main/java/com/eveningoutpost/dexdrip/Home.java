@@ -34,7 +34,9 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.preference.SwitchPreference;
 import android.provider.Settings;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
@@ -70,6 +72,7 @@ import com.eveningoutpost.dexdrip.G5Model.SensorDays;
 import com.eveningoutpost.dexdrip.ImportedLibraries.usbserial.util.HexDump;
 import com.eveningoutpost.dexdrip.Models.ActiveBgAlert;
 import com.eveningoutpost.dexdrip.Models.ActiveBluetoothDevice;
+import com.eveningoutpost.dexdrip.Models.AudioRecorder;
 import com.eveningoutpost.dexdrip.Models.BgReading;
 import com.eveningoutpost.dexdrip.Models.BloodTest;
 import com.eveningoutpost.dexdrip.Models.Calibration;
@@ -82,6 +85,7 @@ import com.eveningoutpost.dexdrip.Models.Sensor;
 import com.eveningoutpost.dexdrip.Models.StepCounter;
 import com.eveningoutpost.dexdrip.Models.Treatments;
 import com.eveningoutpost.dexdrip.Models.UserError;
+import com.eveningoutpost.dexdrip.Recorder.ManageRecorder;
 import com.eveningoutpost.dexdrip.Services.ActivityRecognizedService;
 import com.eveningoutpost.dexdrip.Services.DexCollectionService;
 import com.eveningoutpost.dexdrip.Services.Ob1G5CollectionService;
@@ -117,6 +121,9 @@ import com.eveningoutpost.dexdrip.databinding.ActivityHomeBinding;
 import com.eveningoutpost.dexdrip.databinding.ActivityHomeShelfSettingsBinding;
 import com.eveningoutpost.dexdrip.databinding.PopupInitialStatusHelperBinding;
 import com.eveningoutpost.dexdrip.eassist.EmergencyAssistActivity;
+import com.eveningoutpost.dexdrip.food.FoodManager;
+import com.eveningoutpost.dexdrip.food.MultipleCarbs;
+import com.eveningoutpost.dexdrip.eassist.GetLocationByLM;
 import com.eveningoutpost.dexdrip.insulin.Insulin;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
@@ -183,6 +190,15 @@ import lecho.lib.hellocharts.view.LineChartView;
 import lecho.lib.hellocharts.view.PreviewLineChartView;
 import lombok.Getter;
 
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static com.eveningoutpost.dexdrip.UtilityModels.ColorCache.X;
+import static com.eveningoutpost.dexdrip.UtilityModels.ColorCache.getCol;
+import static com.eveningoutpost.dexdrip.UtilityModels.Constants.DAY_IN_MS;
+import static com.eveningoutpost.dexdrip.UtilityModels.Constants.HOUR_IN_MS;
+import static com.eveningoutpost.dexdrip.UtilityModels.Constants.MINUTE_IN_MS;
+import static com.eveningoutpost.dexdrip.xdrip.getAppContext;
+import static com.eveningoutpost.dexdrip.xdrip.gs;
+
 public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPermissionsResultCallback {
     private final static String TAG = "jamorham " + Home.class.getSimpleName();
     private final static boolean d = true;
@@ -200,6 +216,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     public final static String ACTIVITY_SHOWCASE_INFO = "ACTIVITY_SHOWCASE_INFO";
     public final static String ENABLE_STREAMING_DIALOG = "ENABLE_STREAMING_DIALOG";
     public final static String CHOOSE_INSULIN_PEN = "CHOOSE_INSULIN_PEN";
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     public final static int SENSOR_READY_ID = 4912;
     private final UiPing ui = new UiPing();
     public static boolean activityVisible = false;
@@ -262,6 +279,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     private static double last_speech_time = 0;
     private static float hours = DEFAULT_CHART_HOURS;
     private PreviewLineChartView previewChart;
+    private ImageButton foodButton;
     private Button stepsButton;
     private Button bpmButton;
     private TextView dexbridgeBattery;
@@ -282,7 +300,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     double thisInsulinSumNumber = 0;
     double[] thisinsulinnumber = new double[MAX_INSULIN_PROFILES];
     Insulin[] thisinsulinprofile = new Insulin[MAX_INSULIN_PROFILES];
-    ArrayList<Insulin> insulins = null;
     double thistimeoffset = 0;
     String thisword = "";
     String thisuuid = "";
@@ -413,6 +430,15 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         parakeetBattery.setText("");
         sensorAge.setText("");
 
+        this.currentBgValueText.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Intent myIntent = new Intent(view.getContext(), ManageRecorder.class);
+                startActivity(myIntent);
+                return false;
+            }
+        });
+
         if (BgGraphBuilder.isXLargeTablet(getApplicationContext())) {
             this.currentBgValueText.setTextSize(100);
         }
@@ -457,8 +483,20 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         if (searchWords == null) {
             initializeSearchWords("");
         }
-        if (insulins == null)   // TODO only when using multiples?
-            insulins = InsulinManager.getDefaultInstance();
+        if (MultipleInsulins.isEnabled())   // alway load all Insulin profiles because even in single mode we store injections with the default bolus
+            InsulinManager.getDefaultInstance();
+        if (MultipleCarbs.isEnabled())   // alway load all Food profiles
+            FoodManager.getDefaultInstance();
+
+        if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
+                Pref.getBooleanDefaultFalse("nightscout_device_append_location_info")) {
+            if ((ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) &&
+                    (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED))
+            {
+                ActivityCompat.requestPermissions(this, new String[] {android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, GetLocationByLM.MY_PERMISSIONS_REQUEST_GPS);
+            }
+            GetLocationByLM.prepareForLocation();
+        }
 
         this.btnSpeak = (ImageButton) findViewById(R.id.btnTreatment);
         btnSpeak.setOnClickListener(v -> promptTextInput());
@@ -466,6 +504,12 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             promptSpeechInput();
             return true;
         });
+
+        this.foodButton = (ImageButton) findViewById(R.id.foodButton);
+        if (MultipleCarbs.isAvailable())
+            foodButton.setVisibility(View.VISIBLE);
+        else foodButton.setVisibility(View.INVISIBLE);
+        foodButton.setOnClickListener(v -> promptFoodInput());
 
         this.btnNote = (ImageButton) findViewById(R.id.btnNote);
         btnNote.setOnLongClickListener(v -> {
@@ -510,7 +554,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                     textInsulinDose[finalI].setVisibility(View.INVISIBLE);
                     btnInsulinDose[finalI].setVisibility(View.INVISIBLE);
                     // create individual treatment just for this entry
-                    Treatments.create(0, thisinsulinnumber[finalI], Treatments.convertLegacyDoseToInjectionListByName(thisinsulinprofile[finalI].getName(), thisinsulinnumber[finalI]), Treatments.getTimeStampWithOffset(thistimeoffset));
+                    Treatments.create(0, null, thisinsulinnumber[finalI], Treatments.convertLegacyDoseToInjectionListByName(thisinsulinprofile[finalI].getName(), thisinsulinnumber[finalI]), Treatments.getTimeStampWithOffset(thistimeoffset));
 
                     thisinsulinnumber[finalI] = 0;
                     insulinset[finalI] = false;
@@ -530,7 +574,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             textCarbohydrates.setVisibility(View.INVISIBLE);
             btnCarbohydrates.setVisibility(View.INVISIBLE);
             reset_viewport = true;
-            Treatments.create(thiscarbsnumber, 0, new ArrayList<InsulinInjection>(), Treatments.getTimeStampWithOffset(thistimeoffset));
+            Treatments.create(thiscarbsnumber, null,0, new ArrayList<InsulinInjection>(), Treatments.getTimeStampWithOffset(thistimeoffset));
             thiscarbsnumber = 0;
             if (hideTreatmentButtonsIfAllDone()) {
                 updateCurrentBgInfo("carbs button");
@@ -610,6 +654,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
 
         currentBgValueText.setText(""); // clear any design prototyping default
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
+        }
     }
 
     private boolean firstRunDialogs(final boolean checkedeula) {
@@ -884,7 +932,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                             injections.add(injection);
                         }
                     Log.d(TAG, "processAndApproveTreatment create watchkeypad Treatment carbs=" + thiscarbsnumber + " insulin=" + thisInsulinSumNumber + " timestamp=" + JoH.dateTimeText(time) + " uuid=" + thisuuid);
-                    Treatments.create(thiscarbsnumber, thisInsulinSumNumber, injections, time, thisuuid);
+                    Treatments.create(thiscarbsnumber, null, thisInsulinSumNumber, injections, time, thisuuid);
 // gruoner: changed pendiq handling 09/12/19        TODO remove duplicate code with helper function
 // in case of multiple injections in a treatment, select the injection with the primary insulin profile defined in the profile editor; if not found, take 0
 // in case of a single injection in a treatment, assume thats the #units to send to pendiq
@@ -907,7 +955,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                     InsulinInjection injection = new InsulinInjection(thisinsulinprofile[i], thisinsulinnumber[i]);
                     injections.add(injection);
                 }
-            Treatments.create(thiscarbsnumber, thisInsulinSumNumber, injections, Treatments.getTimeStampWithOffset(mytimeoffset));
+            Treatments.create(thiscarbsnumber, null, thisInsulinSumNumber, injections, Treatments.getTimeStampWithOffset(mytimeoffset));
 // gruoner: changed pendiq handling 09/12/19   TODO remove duplicate code with helper function
 // in case of multiple injections in a treatment, select the injection with the primary insulin profile defined in the profile editor; if not found, take 0
 // in case of a single injection in a treatment, assume thats the #units to send to pendiq
@@ -1265,6 +1313,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
         startActivity(new Intent(this, PhoneKeypadInputActivity.class));
     }
+    private void promptFoodInput() {
+        Log.d(TAG, "Showing pop-up");
+        startActivity(new Intent(this, FoodInputActivity.class));
+    }
 
     private void promptTextInput() {
 
@@ -1582,18 +1634,15 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                                 thisinsulinprofile[number] = insulin;
                                 break;
                             }
-                        if (!insulinset[number]) {
-                            final String thisNumberStr = Double.toString(thisnumber);
-                            if (thisnumber > 0) {
-                                thisinsulinnumber[number] = thisnumber;
-                                textInsulinDose[number].setText(thisNumberStr + " " + insulin.getName());
-                                Log.d(TAG, insulin.getName() + " dose: " + thisNumberStr);
-                                insulinset[number] = true;
-                                btnInsulinDose[number].setVisibility(View.VISIBLE);
-                                textInsulinDose[number].setVisibility(View.VISIBLE);
-                            } else {
-                                Log.d(TAG, insulin.getName() + " dose is too small: " + thisNumberStr);
-                            }
+                        if (!insulinset[number] && (thisnumber > 0)) {
+                            thisinsulinnumber[number] = thisnumber;
+                            textInsulinDose[number].setText(Double.toString(thisnumber) + " " + insulin.getName());
+                            if (MultipleInsulins.useProfilespecificColoring())
+                                textInsulinDose[number].setTextColor(insulin.getColor());
+                            Log.d(TAG, insulin.getName() + " dose: " + Double.toString(thisnumber));
+                            insulinset[number] = true;
+                            btnInsulinDose[number].setVisibility(View.VISIBLE);
+                            textInsulinDose[number].setVisibility(View.VISIBLE);
                         } else {
                             Log.d(TAG, insulin.getName() + " dose already set");
                             preserve = true;
@@ -1892,6 +1941,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         updateHealthInfo("generic on resume");
 
         NFControl.initNFC(this, false);
+        if (MultipleCarbs.isAvailable())
+            foodButton.setVisibility(View.VISIBLE);
+        else foodButton.setVisibility(View.INVISIBLE);
+
 
         if (get_follower() || get_master()) {
             GcmActivity.checkSync(this);
@@ -3705,6 +3758,11 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                 && permissions.length > 0 && grantResults.length > 0
                 && permissions[0].equals(WRITE_EXTERNAL_STORAGE) && grantResults[0] == 0) {
             SdcardImportExport.restoreSettingsNow(this);
+        }
+        if ((requestCode == GetLocationByLM.MY_PERMISSIONS_REQUEST_GPS)
+                && permissions.length > 0 && grantResults.length > 0
+                && permissions[0].equals(android.Manifest.permission.ACCESS_FINE_LOCATION) && grantResults[0] == 0) {
+            GetLocationByLM.prepareForLocation();
         }
     }
 
