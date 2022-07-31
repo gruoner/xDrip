@@ -1,14 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="monday">MO</string>
-    <string name="tuesday">DI</string>
-    <string name="wednesday">MI</string>
-    <string name="thursday">DO</string>
-    <string name="friday">FR</string>
-    <string name="saturday">SA</string>
-    <string name="sunday">SO</string>
-    <string name="select_days_for_alert_colon">Wähle die Tage der Woche für den Alarm aus</string>
-
     <string name="title_activity_bluetooth_scan">Bluetooth-Suche</string>
     <string name="connected">Verbunden</string>
     <string name="disconnected">Getrennt</string>
@@ -142,8 +133,6 @@
     <string name="blood_test">Bluttest</string>
     <string name="share">Teilen</string>
     <string name="title_activity_profile_editor">Behandlungen ändern</string>
-    <string name="title_activity_insulinprofile_editor">Insulin Profile Editor</string>
-    <string name="title_activity_foodprofile_editor">Food Profile Editor</string>
     <string name="first_use_menu_to_scan">Zuerst sollte nach dem BT-Gerät gescannt werden oder die Datenquelle in den Einstellungen geändert werden.</string>
     <string name="first_configure_ip_address">Zuerst sollte das Wifi-Wixel über IP-Adressen oder Parakeet-URL konfiguriert werden</string>
     <string name="now_start_your_sensor">Jetzt den Sensor starten oder Einstellungen überprüfen.</string>
@@ -255,8 +244,6 @@
     <string name="extra_tags_dialog_message">Die hier eingegebenen Tags werden in xDrip protokolliert. Format ist tag:level. Level kann v, d oder i sein. Zum Beispiel bgreading:i, DexCollectionService:v. Diese Tags werden mit niedriger Priorität protokolliert in der Fehler- und Ereignisliste.</string>
     <string name="extra_tags_dialog_title">Gib weitere Tags ein, die protokolliert werden sollen</string>
     <string name="data_source_settings">Einstellung der Datenquelle</string>
-    <string name="summary_nsfollow_download_treatments_even_xdrip">Lade Treatments von Nightscout herunter auch wenn sie von XDrip+ stammen</string>
-    <string name="title_nsfollow_download_treatments_even_xdrip">Download Treatments auch von XDrip+</string>
     <string name="smart_watch_features">Smart Watch Eigenschaften</string>
     <string name="wear_integration">Wear Integration</string>
     <string name="send_data_to_android_wear_watch">Daten an Watchface senden</string>
@@ -1180,12 +1167,8 @@
     <string name="manual_overwrite_not_possible">Manuelles Überschreiben nicht möglich!</string>
     <string name="upload_even_when_using_mobile_data">Auch hochladen wenn mobile Daten verwendet werden</string>
     <string name="use_mobile_data">Mobile Daten verwenden</string>
-    <string name="summary_cloud_storage_api_download_enable">Versuche Daten von Nightscout herunterzuladen</string>
-    <string name="title_cloud_storage_api_download_enable">Daten herunterladen</string>
-    <string name="summary_cloud_storage_api_download_treatments_enable">Versuche Behandlungen von Nightscout herunterzuladen</string>
-    <string name="title_cloud_storage_api_download_treatments_enable">Behandlungen herunterladem</string>
-    <string name="summary_cloud_storage_api_download_insulin_enable">Versuche die Insulin Konfiguration von Nightscout herunterzuladen</string>
-    <string name="title_cloud_storage_api_download_insulin_enable">Insuline herunterladem</string>
+    <string name="summary_cloud_storage_api_download_enable">Versuche Behandlungen von Nightscout herunterzuladen</string>
+    <string name="title_cloud_storage_api_download_enable">Behandlungen herunterladen</string>
     <string name="summary_bluetooth_meter_for_calibrations_auto">Ohne zu fragen mit einem neuen Blutzuckerwert kalibrieren, wenn die Bedingungen gut scheinen (experimentell)</string>
     <string name="title_bluetooth_meter_for_calibrations_auto">Automatische Kalibrierung</string>
     <string name="title_rest_api_extra_options">Zusätzliche Optionen</string>
@@ -1199,8 +1182,6 @@
     <string name="title_warn_nightscout_failures">Alarm bei Fehlern</string>
     <string name="summary_nightscout_device_append_source_info">Für G5, sendet Sammlertyp (z.B. OB1) und lese Nachfüll-Status (native) an Nightscout.</string>
     <string name="title_nightscout_device_append_source_info">Quell-Info an Gerätename anhängen</string>
-    <string name="summary_nightscout_upload_insulin_profiles">Wenn der Nightscout Server die Uploads von Insulin Profilen erlaubt, können hier die Profile und die Multi-Insulin Konfiguration hochgeladen werden.</string>
-    <string name="title_nightscout_upload_insulin_profiles">Insulin Profile auf Nightscout hochladen</string>
     <string name="summary_tap_to_send_historical_data">Klicken um historische Daten an Nightscout zu senden</string>
     <string name="title_back_fill_data">Back-fill Daten</string>
     <string name="summary_tidepool_upload_screen">Daten zum Tidepool-Dienst hochladen</string>
@@ -1580,11 +1561,6 @@
     <string name="enable_streaming_dialog_title">Verbinde Libre-Sensor mit Bluetooth</string>
     <string name="summary_lower_fuzzer">Verringere den FUZZER Wert von 2,5 Minuten auf 37,5 Sekunden</string>
     <string name="without_camera_permission_cannot_scan_barcode">Ohne Kamera-Berechtigung können wir keinen Barcode scannen</string>
-    <string name="NameFoodCategory_one">Frühstück</string>
-    <string name="NameFoodCategory_two">Mittag</string>
-    <string name="NameFoodCategory_three">Nacht</string>
-    <string name="NameFoodCategory_four">Snacks</string>
-    <string name="NameFoodCategory_all">alle Kateorien</string>
     <string name="summary_widget_hide_graph">Graph auf Widgets ausblenden (wird beim nächsten Wert aktiv)</string>
     <string name="title_widget_hide_graph">Graph auf Widgets ausblenden</string>
     <string name="summary_illustrate_remote_data">Empfangene Remote-Daten anzeigen (nur Diagnose)</string>
@@ -1644,6 +1620,4 @@
     <string name="show_collector_status">Zeige Collector Status</string>
     <string name="show_time_buttons">Zeittasten anzeigen</string>
     <string name="please_wait_seconds_before_trying_to_start_sensor">Bitte %d Sekunden vor dem Start eines neuen Sensors warten</string>
-    <string name="amountoffood">Wie viel davon?</string>
-    <string name="foodintakeconfirmation">Am %s %dg Kohlenhydrate (%s) gegessen.</string>
 </resources>

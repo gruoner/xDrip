@@ -151,8 +151,8 @@ public class EmergencyAssist {
         if (destinationsDefined()) {
             final PowerManager.WakeLock wl = JoH.getWakeLock("emergency-activate", 120000); // linger
             JoH.static_toast_long("Sending assistance message in 15 seconds");
-            Inevitable.task("prep location-ea", 200, GetLocationByGoogle::prepareForLocation);
-            Inevitable.task("get location-ea", 5000, GetLocationByGoogle::getLocation);
+            Inevitable.task("prep location-ea", 200, GetLocation::prepareForLocation);
+            Inevitable.task("get location-ea", 5000, GetLocation::getLocation);
             Inevitable.task("send assist message", 15000, () -> sendAssistMessage(true));
         } else {
             final String err = "No emergency contacts defined! Cannot activate!";
@@ -162,8 +162,8 @@ public class EmergencyAssist {
     }
 
     public void getLocation() {
-        Inevitable.task("prep location-ea", 100, GetLocationByGoogle::prepareForLocation);
-        Inevitable.task("get location-ea", 300, GetLocationByGoogle::getLocation);
+        Inevitable.task("prep location-ea", 100, GetLocation::prepareForLocation);
+        Inevitable.task("get location-ea", 300, GetLocation::getLocation);
         Inevitable.task("stream location-ea", 300, this::streamLocation);
         //Inevitable.task("update extended message", 15000, this::getExtendedReasonText);
     }
@@ -187,16 +187,16 @@ public class EmergencyAssist {
     }
 
     private void sendAssistMessage(boolean firstRun) {
-        final String locationText = GetLocationByGoogle.getBestLocation();
+        final String locationText = GetLocation.getBestLocation();
         final String msg = getExtendedReasonText();
 
         UserError.Log.wtf(TAG, "Sending Assistance message: " + msg);
         sendMessageReal(msg);
 
         if (firstRun) {
-            Inevitable.task("check-emergency-location", GetLocationByGoogle.getGPS_ACTIVE_TIME(), () -> {
-                if (!locationText.equals(GetLocationByGoogle.getBestLocation())) {
-                    UserError.Log.d(TAG, "Location has changed: " + locationText + " vs " + GetLocationByGoogle.getBestLocation());
+            Inevitable.task("check-emergency-location", GetLocation.getGPS_ACTIVE_TIME(), () -> {
+                if (!locationText.equals(GetLocation.getBestLocation())) {
+                    UserError.Log.d(TAG, "Location has changed: " + locationText + " vs " + GetLocation.getBestLocation());
                     sendAssistMessage(false);
                 } else {
                     UserError.Log.d(TAG, "Location has not changed from: " + locationText);
@@ -207,7 +207,7 @@ public class EmergencyAssist {
     }
 
     private void streamLocation() {
-        final long endTime = JoH.tsl() + GetLocationByGoogle.getGPS_ACTIVE_TIME() + 15000;
+        final long endTime = JoH.tsl() + GetLocation.getGPS_ACTIVE_TIME() + 15000;
         while (JoH.tsl() < endTime) {
             JoH.threadSleep(1000);
             getExtendedReasonText();
@@ -218,8 +218,8 @@ public class EmergencyAssist {
         final String timeText = JoH.niceTimeScalar(since);
         final String userText = getUsername();
         final String reasonText = String.format(getReasonText(reason), userText.length() > 0 ? userText : "Name not set", timeText);
-        final String locationText = GetLocationByGoogle.getBestLocation();
-        final String mapText = GetLocationByGoogle.getMapUrl();
+        final String locationText = GetLocation.getBestLocation();
+        final String mapText = GetLocation.getMapUrl();
         final String signatureText = getString(R.string.automatic_message_from_xdrip);
         lastExtendedText.set(String.format(getString(R.string.emergency_message_near_format_string),
                 reasonText, locationText, mapText, extra, signatureText).trim());

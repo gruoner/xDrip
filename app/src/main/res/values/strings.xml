@@ -1,13 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="monday">MON</string>
-    <string name="tuesday">TUE</string>
-    <string name="wednesday">WED</string>
-    <string name="thursday">THU</string>
-    <string name="friday">FRI</string>
-    <string name="saturday">SAT</string>
-    <string name="sunday">SUN</string>
-    <string name="select_days_for_alert_colon">Select the days of week</string>
 
     <string name="title_activity_bluetooth_scan">Bluetooth Scan</string>
     <string name="connected">Connected</string>
@@ -160,12 +152,6 @@
     <string name="blood_test">Blood Test</string>
     <string name="share">Share</string>
     <string name="title_activity_profile_editor">Treatment Profile Editor</string>
-    <string name="title_activity_insulinprofile_editor">Insulin Profile Editor</string>
-    <string name="title_activity_foodprofile_editor">Food Profile Editor</string>
-    <string name="title_force_food_download">force food download</string>
-    <string name="summary_force_food_download">trigger a food download from nightscout server</string>
-    <string name="title_drop_food_db">drop food database</string>
-    <string name="summary_drop_food_db">drop food database, create a new one and download complete food set from nightscout</string>
     <string name="first_use_menu_to_scan">First use the menu to scan for your BT device or change the Data Source in Settings!</string>
     <string name="first_configure_ip_address">First configure your WiFi Wixel reader IP addresses or Parakeet URL</string>
     <string name="now_start_your_sensor">Now start your sensor or check Settings</string>
@@ -839,8 +825,6 @@
     <string name="carb_ratio">Carb Ratio</string>
     <string name="enable_dedicated_insulin_profiles">Config Insulin profiles</string>
     <string name="desc_enable_dedicated_insulin_profiles">Here one can enable or configure various insulin profiles</string>
-    <string name="enable_dedicated_food_profiles">Config Food profiles</string>
-    <string name="desc_enable_dedicated_food_profiles">Here one can enable or configure various food profiles</string>
     <string name="insulin_sensitivity">Insulin Sensitivity</string>
     <string name="secondary_plugin_glucose_value">Secondary Plugin Glucose value</string>
     <string name="step_counter_1st_color">Step counter 1st Color</string>
@@ -1226,12 +1210,8 @@
     <string name="manual_overwrite_not_possible">Manual overwrite not possible!</string>
     <string name="upload_even_when_using_mobile_data">Upload even when using mobile data</string>
     <string name="use_mobile_data">Use mobile data</string>
-    <string name="summary_cloud_storage_api_download_enable">Also try to download data from Nightscout</string>
-    <string name="title_cloud_storage_api_download_enable">Download data</string>
-    <string name="summary_cloud_storage_api_download_treatments_enable">try to download treatments from Nightscout</string>
-    <string name="title_cloud_storage_api_download_treatments_enable">Download treatments</string>
-    <string name="summary_cloud_storage_api_download_insulin_enable">try to download insulin profiles from Nightscout</string>
-    <string name="title_cloud_storage_api_download_insulin_enable">Download insulin profiles</string>
+    <string name="summary_cloud_storage_api_download_enable">Also try to download treatments from Nightscout</string>
+    <string name="title_cloud_storage_api_download_enable">Download treatments</string>
     <string name="summary_bluetooth_meter_for_calibrations_auto">Calibrate using new blood glucose readings if the conditions appear right to do so without asking confirmation (experimental)</string>
     <string name="title_bluetooth_meter_for_calibrations_auto">Automatic Calibration</string>
     <string name="title_rest_api_extra_options">Extra Options</string>
@@ -1245,10 +1225,6 @@
     <string name="title_warn_nightscout_failures">Alert on failures</string>
     <string name="summary_nightscout_device_append_source_info">For G5, sends collector type (e.g. OB1) and reading backfill status (for native) to Nightscout.</string>
     <string name="title_nightscout_device_append_source_info">Append source info to device name</string>
-    <string name="summary_nightscout_device_append_location_info">send also location information to Nightscout.</string>
-    <string name="title_nightscout_device_append_location_info">add location info to device name</string>
-    <string name="summary_nightscout_upload_insulin_profiles">If Nightscout Server is supporting uploads of insulin profiles, here one can upload profiles and Multi-Insulin configuration.</string>
-    <string name="title_nightscout_upload_insulin_profiles">Upload insulin profiles to nightscout</string>
     <string name="summary_tap_to_send_historical_data">Tap to send historical data to Nightscout</string>
     <string name="title_back_fill_data">Back-fill data</string>
     <string name="summary_tidepool_upload_screen">Upload data to the Tidepool service</string>
@@ -1360,12 +1336,8 @@
     <string name="title_medtrum_a_hex">Medtrum Debug</string>
     <string name="summary_nsfollow_url">Web address for following</string>
     <string name="title_nsfollow_url">Nightscout Follow URL</string>
-    <string name="summary_nsfollow_download_insulin">Also download insulin profiles from Nightscout as follower</string>
-    <string name="title_nsfollow_download_insulin">Download Insulin Profiles</string>
     <string name="summary_nsfollow_download_treatments">Also download treatments from Nightscout as follower</string>
     <string name="title_nsfollow_download_treatments">Download Treatments</string>
-    <string name="summary_nsfollow_download_treatments_even_xdrip">Also download treatments from Nightscout as follower even if it comes from xdrip</string>
-    <string name="title_nsfollow_download_treatments_even_xdrip">Download Treatments XDrip+</string>
     <string name="title_ob1_options">OB1 G5/G6 Collector Settings</string>
     <string name="summary_use_ob1_g5_collector_service">Complete re-write, should work on Android 4.4 - 9, supports native mode and more</string>
     <string name="title_use_ob1_g5_collector_service">Use the OB1 Collector</string>
@@ -1660,11 +1632,6 @@
     <string name="title_lower_fuzzer">Lower FUZZER</string>
     <string name="summary_lower_fuzzer">Lower the FUZZER value from 2.5 minutes to 37.5 seconds</string>
     <string name="without_camera_permission_cannot_scan_barcode">Without camera permission we cannot scan a barcode</string>
-    <string name="NameFoodCategory_one">Breakfast</string>
-    <string name="NameFoodCategory_two">Lunch</string>
-    <string name="NameFoodCategory_three">Diner</string>
-    <string name="NameFoodCategory_four">Snacks</string>
-    <string name="NameFoodCategory_all">all food</string>
     <string name="summary_create_missing_filtered">Make filtered data as needed</string>
     <string name="title_create_missing_filtered">Create missing filtered</string>
     <string name="summary_widget_hide_graph">Hide the graph on widgets (shows on next reading)</string>
@@ -1678,8 +1645,6 @@
     <string name="title_multiple_insulin_types">Multiple Insulin Types</string>
     <string name="summary_multiple_insulin_use_basal_activity">Plot Basal activity on graph and incorporate in predictive model</string>
     <string name="title_multiple_insulin_use_basal_activity">Use Basal Activity</string>
-    <string name="summary_multiple_insulin_use_profilespecific_coloring">Every insulin profile has his own color. Do you want to use it when registering an injection?</string>
-    <string name="title_multiple_insulin_use_profilespecific_coloring">Use profilespecific coloring</string>
     <string name="title_xdrip_plus_snooze_broadcast">Local Broadcast</string>
     <string name="summary_broadcast_snooze">Send snoozes to other apps on this handset</string>
     <string name="title_broadcast_snooze">Local Broadcast</string>
@@ -1754,6 +1719,4 @@
     <string name="please_wait_seconds_before_trying_to_start_sensor">Please wait %d seconds before trying to start sensor</string>
     <string name="please_update_OOP2_or_move_to_calibrate_based_on_raw_mode">please update OOP2 or move to calibrate based on raw mode</string>
     <string name="special_pairing_workaround">Special Pairing Workaround</string>
-    <string name="amountoffood">how much did you eat?</string>
-    <string name="foodintakeconfirmation">on %s you ate %dg of carbohydrates (%s)?</string>
 </resources>

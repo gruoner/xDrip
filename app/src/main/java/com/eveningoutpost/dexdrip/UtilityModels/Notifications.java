@@ -614,8 +614,8 @@ public class Notifications extends IntentService {
             b.setPriority(Notification.PRIORITY_HIGH);
         }
         final BestGlucose.DisplayGlucose dg = (use_best_glucose) ? BestGlucose.getDisplayGlucose() : null;
-        final boolean use_color_in_notification = true; // could be preference option
-        final SpannableString titleString = new SpannableString(lastReading == null ? "BG Reading Unavailable" : (dg != null) ? (dg.spannableString(" " + dg.unitized + " " + dg.delta_arrow + " ",use_color_in_notification))
+        final boolean use_color_in_notification = false; // could be preference option
+        final SpannableString titleString = new SpannableString(lastReading == null ? "BG Reading Unavailable" : (dg != null) ? (dg.spannableString(dg.unitized + " " + dg.delta_arrow,use_color_in_notification))
                 : (lastReading.displayValue(mContext) + " " + lastReading.slopeArrow()));
         b.setContentTitle(titleString)
                 .setContentText("xDrip Data collection service is running.")

@@ -21,9 +21,6 @@ import com.eveningoutpost.dexdrip.Models.LibreBlock;
 import com.eveningoutpost.dexdrip.Models.TransmitterData;
 import com.eveningoutpost.dexdrip.Models.Treatments;
 import com.eveningoutpost.dexdrip.Models.UserError;
-import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
-import com.eveningoutpost.dexdrip.food.MultipleCarbs;
-import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
 import com.eveningoutpost.dexdrip.tidepool.TidepoolEntry;
 import com.eveningoutpost.dexdrip.tidepool.TidepoolStatus;
 import com.eveningoutpost.dexdrip.tidepool.TidepoolUploader;
@@ -397,21 +394,6 @@ public class UploaderQueue extends Model {
 
     public static List<StatusItem> megaStatus() {
         final List<StatusItem> l = new ArrayList<>();
-
-        // Status for Insulin
-        String ageLastInsulin = "n/a";
-        if(NightscoutUploader.lastInsulinDownloaded != 0) {
-            long age = JoH.msSince(NightscoutUploader.lastInsulinDownloaded);
-            ageLastInsulin = JoH.niceTimeScalar(age);
-        }
-
-        // Status for Food
-        String ageLastFood = "n/a";
-        if(NightscoutUploader.lastFoodDownloaded != 0) {
-            long age = JoH.msSince(NightscoutUploader.lastFoodDownloaded);
-            ageLastFood = JoH.niceTimeScalar(age);
-        }
-
         // per circuit
         for (int i = 0, size = circuits_for_stats.size(); i < size; i++) {
             final long bitfield = circuits_for_stats.keyAt(i);
@@ -535,13 +517,6 @@ public class UploaderQueue extends Model {
                                         }
                                     }));
 
-                        if(NightscoutUploader.insulinDownloadEnabled() && MultipleInsulins.isEnabled()) {
-                            l.add(new StatusItem("Latest Insulin Download", ageLastInsulin + " ago"));
-                        }
-
-                        if(MultipleCarbs.isEnabled()) {
-                            l.add(new StatusItem("Latest Food Download", ageLastFood + " ago"));
-                        }
 
                     } catch (JSONException e) {
 

@@ -395,18 +395,6 @@ public class AlertPlayer {
                 mediaPlayer.start();
             });
 
-            mediaPlayer.setOnCompletionListener(mp -> {
-                Log.i(TAG, "playFile: onCompletion called (finished playing) ");
-                try {
-                    mediaPlayer.stop();
-                } catch (IllegalStateException e) {
-                    //
-                }
-                mediaPlayer.release();
-                mediaPlayer = null;
-                revertCurrentVolume(streamType);
-            });
-
             mediaPlayer.prepareAsync();
         } catch (NullPointerException e) {
             Log.wtf(TAG, "Playfile: Concurrency related null pointer exception: " + e.toString());

@@ -4,14 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.eveningoutpost.dexdrip.Models.AudioRecorder;
 import com.eveningoutpost.dexdrip.Models.UserError;
 import com.eveningoutpost.dexdrip.Services.PlusSyncService;
 import com.eveningoutpost.dexdrip.UtilityModels.CollectionServiceStarter;
 import com.eveningoutpost.dexdrip.UtilityModels.Inevitable;
 import com.eveningoutpost.dexdrip.UtilityModels.Pref;
-
-import static com.eveningoutpost.dexdrip.xdrip.getAppContext;
 
 // jamorham
 
@@ -29,8 +26,7 @@ public class AutoStart extends BroadcastReceiver {
         } catch (Exception e) {
             //
         }
-        if (Pref.getBooleanDefaultFalse("audio_recorder_started") && !AudioRecorder.isActive())
-            AudioRecorder.create(getAppContext());
+
 
         try {
             CollectionServiceStarter.restartCollectionServiceBackground();

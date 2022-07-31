@@ -30,15 +30,6 @@
             android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small" />
 
         <TextView
-            android:id="@+id/alertDays"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TextView"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"   />
-
-        <TextView
             android:id="@+id/alertTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

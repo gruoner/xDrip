@@ -31,7 +31,6 @@ import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
 import com.eveningoutpost.dexdrip.utils.jobs.BackgroundQueue;
 import com.eveningoutpost.dexdrip.watch.thinjam.BlueJayEntry;
 import com.eveningoutpost.dexdrip.xdrip;
-import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
@@ -103,32 +102,23 @@ public class Treatments extends Model {
     @Column(name = "insulinJSON")
     public String insulinJSON;
     @Expose
-    @Column(name = "foodJSON")
-    public String foodJSON;
-    @Expose
     @Column(name = "created_at")
     public String created_at;
 
     // don't access this directly use getInsulinInjections()
     private List<InsulinInjection> insulinInjections = null;
 
-    // don't access this directly use getFoodIntakes()
-    private FoodIntake foodIntake = null;
-
     private boolean hasInsulinInjections() {
         final List<InsulinInjection> injections = getInsulinInjections();
         return ((injections != null) && (injections.size() > 0));
     }
-    private boolean hasFoodIntake() {
-        if (foodIntake == null) return false;
-        return foodIntake.hasIntakes();
-    }
+
     public boolean isBasalOnly() {
         if (!hasInsulinInjections()) return false;
         boolean foundBasal = false;
         final List<InsulinInjection> injections = getInsulinInjections();
         for (InsulinInjection injection : injections) {
-            Log.d(TAG,"isBasalOnly: "+injection.isBasal()+" "+injection.getProfile().getName());
+            Log.d(TAG,"isBasalOnly: "+injection.isBasal()+" "+injection.getInsulin());
             if (!injection.isBasal()) {
                 return false;
             } else {
@@ -147,10 +137,6 @@ public class Treatments extends Model {
         }
         return sb.toString();
     }
-    private String getFodIntakesShortString(double u) {
-        if (foodIntake == null) return "";
-        return foodIntake.getFoodIntakeShortString(u);
-    }
 
     private void setInsulinInjections(List<InsulinInjection> i)
     {
@@ -161,21 +147,10 @@ public class Treatments extends Model {
         insulinInjections = i;
         Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
-                // .registerTypeAdapter(Date.class, new DateTypeAdapter())
+               // .registerTypeAdapter(Date.class, new DateTypeAdapter())
                 .serializeSpecialFloatingPointValues()
                 .create();
         insulinJSON = gson.toJson(i);
-    }
-    private void setFoodIntakes(FoodIntake i)
-    {
-        if (i == null) {
-            i = new FoodIntake();
-        } else {
-            if (Strings.isNullOrEmpty(notes))
-                notes = i.getFoodIntakeShortString(1);
-        }
-        foodIntake = i;
-        foodJSON = i.toJson();
     }
 
     // lazily populate and return InsulinInjection array from json
@@ -208,28 +183,6 @@ public class Treatments extends Model {
             }
         }
         return insulinInjections;
-    }
-    // lazily populate and return FoodIntakes array from json
-    FoodIntake getFoodIntake() {
-        // Log.d(TAG,"get intakes: "+foodJSON);
-        if (foodJSON == null) {
-            if (foodJSON != null) {
-                foodIntake = new FoodIntake();
-                if (!foodIntake.fromJson(foodJSON))
-                {
-                    if (JoH.ratelimit("ij-json-error", 60)) {
-                        UserError.Log.wtf(TAG, "Error converting foodJSON: " + foodJSON);
-                    }
-                    notes = "CORRUPT DATA";
-                    // state of foodIntakes is basically undefined here as we cannot recover from corrupt data
-                    // we could neutralise the treatment data in other ways perhaps.
-                }
-            } else {
-                // return empty if not set // TODO do we want to cache this or not to avoid memory creation?
-                return new FoodIntake();
-            }
-        }
-        return foodIntake;
     }
 
     // take a simple insulin value and produce a list assuming it is bolus insulin - for legacy conversion
@@ -266,28 +219,6 @@ public class Treatments extends Model {
             UserError.Log.e(TAG, "Got exception in setInsulinJson: " + e + " for " + json);
         }
     }
-    public void setFoodJSON(String json) {
-        if ((json == null) || json.isEmpty())
-            json = "[]";
-        try {
-            foodIntake = new FoodIntake(json);
-            foodJSON = json; // set json only if we didn't get exception processing it
-        } catch (Exception e) {
-            UserError.Log.e(TAG, "Got exception in setFoodJson: " + e + " for " + json);
-        }
-    }
-
-    private double getMaxEffect()
-    {
-        double ret = 0;
-        for (InsulinInjection i: insulinInjections)
-            if (ret < i.getProfile().getMaxEffect())
-                ret = i.getProfile().getMaxEffect();
-        if (foodIntake != null)
-            if (ret < foodIntake.getMaxEffect())
-                ret = foodIntake.getMaxEffect();
-        return ret;
-    }
 
     public Treatments()
     {
@@ -303,21 +234,19 @@ public class Treatments extends Model {
 
     public static synchronized Treatments create(final double carbs, final double insulinSum, final long timestamp, final String suggested_uuid) {
 
-// changed by gruoner 11/09/19 - as we have defined a default bolus profile (currently novorapid as curve is the save as the "old" prediction logic before "multiple insulins")
-// we will store an injection list in the treatment holding just this on injection with the default bolus - the rest is still the same
-//        if (MultipleInsulins.isEnabled()) {
-            return create(carbs, null, insulinSum, convertLegacyDoseToBolusInjectionList(insulinSum), timestamp, suggested_uuid);
-//        } else {
-//            return create(carbs, insulinSum, null, timestamp, suggested_uuid);
-//        }
+        if (MultipleInsulins.isEnabled()) {
+            return create(carbs, insulinSum, convertLegacyDoseToBolusInjectionList(insulinSum), timestamp, suggested_uuid);
+        } else {
+            return create(carbs, insulinSum, null, timestamp, suggested_uuid);
+        }
 
     }
 
-    public static synchronized Treatments create(final double carbs, final FoodIntake food, final double insulinSum, final List<InsulinInjection> insulin, long timestamp) {
-        return create(carbs, food, insulinSum, insulin, timestamp, null);
+    public static synchronized Treatments create(final double carbs, final double insulinSum, final List<InsulinInjection> insulin, long timestamp) {
+        return create(carbs, insulinSum, insulin, timestamp, null);
     }
 
-    public static synchronized Treatments create(final double carbs, final FoodIntake food, final double insulinSum, final List<InsulinInjection> insulin, long timestamp, String suggested_uuid) {
+    public static synchronized Treatments create(final double carbs, final double insulinSum, final List<InsulinInjection> insulin, long timestamp, String suggested_uuid) {
         // if treatment more than 1 minutes in the future
         final long future_seconds = (timestamp - JoH.tsl()) / 1000;
         if (future_seconds > (60 * 60)) {
@@ -330,10 +259,10 @@ public class Treatments extends Model {
                     + carbs + " g " + context.getString(R.string.carbs) + " / "
                     + insulinSum + " " + context.getString(R.string.units), (int) future_seconds, 34026);
         }
-        return create(carbs, food, insulinSum, insulin, timestamp, -1, suggested_uuid);
+        return create(carbs, insulinSum, insulin, timestamp, -1, suggested_uuid);
     }
 
-    public static synchronized Treatments create(final double carbs, final FoodIntake food, final double insulinSum, final List<InsulinInjection> insulin, long timestamp, double position, String suggested_uuid) {
+    public static synchronized Treatments create(final double carbs, final double insulinSum, final List<InsulinInjection> insulin, long timestamp, double position, String suggested_uuid) {
         // TODO sanity check values
         Log.d(TAG, "Creating treatment: " +
                 "Insulin: " + insulinSum + " / " +
@@ -357,7 +286,6 @@ public class Treatments extends Model {
         }
 
         treatment.carbs = carbs;
-        treatment.setFoodIntakes(food);
         treatment.insulin = insulinSum;
         treatment.setInsulinInjections(insulin);
         treatment.timestamp = timestamp;
@@ -557,7 +485,6 @@ public class Treatments extends Model {
                 "ALTER TABLE Treatments ADD COLUMN insulin REAL;",
                 "ALTER TABLE Treatments ADD COLUMN insulinJSON TEXT;",
                 "ALTER TABLE Treatments ADD COLUMN carbs REAL;",
-                "ALTER TABLE Treatments ADD COLUMN foodJSON TEXT;",
                 "CREATE INDEX index_Treatments_timestamp on Treatments(timestamp);",
                 "CREATE UNIQUE INDEX index_Treatments_uuid on Treatments(uuid);"};
 
@@ -763,7 +690,6 @@ public class Treatments extends Model {
                 }
 
                 if ((dupe_treatment.carbs == 0) && (mytreatment.carbs > 0)) {
-                    dupe_treatment.setFoodJSON(mytreatment.foodJSON);
                     dupe_treatment.carbs = mytreatment.carbs;
                     dupe_treatment.save();
                     Home.staticRefreshBGChartsOnIdle();
@@ -1030,7 +956,7 @@ public class Treatments extends Model {
         // number param currently ignored
 
         // 10 hours max look or from insulin manager if enabled
-        final double dontLookThisFar = multipleInsulins ? MINUTE_IN_MS * InsulinManager.getMaxEffect(true) : 10 * HOUR_IN_MS;
+        final double dontLookThisFar = MultipleInsulins.isEnabled() ? MINUTE_IN_MS * InsulinManager.getMaxEffect(true) : 10 * HOUR_IN_MS;
 // look back the longest effect period of all enabled insulin profiles (startTime is always 24h behind NOW)
         List<Treatments> theTreatments = latestForGraph(2000, startTime - dontLookThisFar);
         Log.d(TAG,"TREATMENT LIST: "+theTreatments.size()+" "+JoH.dateTimeText((long)(startTime - dontLookThisFar)));
@@ -1059,14 +985,11 @@ public class Treatments extends Model {
         for (Treatments thisTreatment : theTreatments) {
             // early optimisation exclusion
 
+            mytime = (long) ((thisTreatment.timestamp / stepms) * stepms); // effects of treatment occur only after it is given / fit to slot time
+            tendtime = mytime + 36 * HOUR_IN_MS;     // 36 hours max look (24h history plus 12h forecast)
+            if (tendtime > startTime + 30 * HOUR_IN_MS)
+                tendtime = startTime + 30 * HOUR_IN_MS;   // dont look more than 6h in future // TODO review time limit
             if (thisTreatment.insulin > 0) {
-                /// gruoner 12/04/19: sometimes insulinInjections is NULL because it is loaded from DB - so loading it from insulinJSON
-                if ((thisTreatment.insulinInjections == null) && !(thisTreatment.insulinJSON == null))
-                    thisTreatment.setInsulinJSON(thisTreatment.insulinJSON);
-                mytime = ((long) (thisTreatment.timestamp / stepms)) * stepms; // effects of treatment occur only after it is given / fit to slot time
-                tendtime = mytime + thisTreatment.getMaxEffect() * MINUTE_IN_MS;     // look just until last injected insulin has lost its effect
-                if (tendtime > startTime + 30 * HOUR_IN_MS)
-                    tendtime = startTime + 30 * HOUR_IN_MS;   // dont look more than 6h in future // TODO review time limit
                 // lay down insulin on board
                 do {
 
@@ -1357,7 +1280,6 @@ public class Treatments extends Model {
             jsonObject.put("insulin", insulin);
             jsonObject.put("insulinJSON", insulinJSON);
             jsonObject.put("carbs", carbs);
-            jsonObject.put("foodJSON", foodJSON);
             jsonObject.put("timestamp", timestamp);
             jsonObject.put("notes", notes);
             jsonObject.put("enteredBy", enteredBy);

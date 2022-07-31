@@ -33,9 +33,9 @@ import lombok.Getter;
 
 // Using old (9.x) apis of play services due to legacy compatibility
 
-public class GetLocationByGoogle {
+public class GetLocation {
 
-    private static final String TAG = GetLocationByGoogle.class.getSimpleName();
+    private static final String TAG = GetLocation.class.getSimpleName();
 
 
     private static GoogleApiClient mApiClient;
