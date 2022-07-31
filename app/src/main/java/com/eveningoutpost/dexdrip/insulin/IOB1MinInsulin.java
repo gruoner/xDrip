@@ -17,11 +17,11 @@ public class IOB1MinInsulin extends Insulin {
         maxEffect = curve.size();
     }
 
-    public double calculateIOB(double t) {
+    public double calculateIOB(long t) {
         if (t < 0)
             return 1.0;
         int index = (int) t;    // typecast / round down
-        double remaining = t - index;   // remaining double to be approximated linearly
+        long remaining = t - index;   // remaining double to be approximated linearly
 
         if (index+1 >= curve.size())
             return curve.get(curve.size()-1);
@@ -32,7 +32,7 @@ public class IOB1MinInsulin extends Insulin {
         return ret;
     }
 
-    public double calculateActivity(double t) {
+    public double calculateActivity(long t) {
         double stepBefore = calculateIOB(t-1);
 //        double now = calculateIOB(t);
         double stepBehind = calculateIOB(t+1);
