@@ -74,11 +74,11 @@ public abstract class Insulin {
         return maxEffect;
     }
 
-    public double calculateIOB(double time) {
+    public double calculateIOB(long time) {
         return -1;
     }
 
-    public double calculateActivity(double time) {
+    public double calculateActivity(long time) {
         return -1;
     }
 
