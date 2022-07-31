@@ -159,6 +159,12 @@
     <string name="blood_test">Blood Test</string>
     <string name="share">Share</string>
     <string name="title_activity_profile_editor">Treatment Profile Editor</string>
+    <string name="title_activity_insulinprofile_editor">Insulin Profile Editor</string>
+    <string name="title_activity_foodprofile_editor">Food Profile Editor</string>
+    <string name="title_force_food_download">force food download</string>
+    <string name="summary_force_food_download">trigger a food download from nightscout server</string>
+    <string name="title_drop_food_db">drop food database</string>
+    <string name="summary_drop_food_db">drop food database, create a new one and download complete food set from nightscout</string>
     <string name="first_use_menu_to_scan">First use the menu to scan for your BT device or change the Data Source in Settings!</string>
     <string name="first_configure_ip_address">First configure your WiFi Wixel reader IP addresses or Parakeet URL</string>
     <string name="now_start_your_sensor">Now start your sensor or check Settings</string>
@@ -824,6 +830,8 @@
     <string name="carb_ratio">Carb Ratio</string>
     <string name="enable_dedicated_insulin_profiles">Config Insulin profiles</string>
     <string name="desc_enable_dedicated_insulin_profiles">Here one can enable or configure various insulin profiles</string>
+    <string name="enable_dedicated_food_profiles">Config Food profiles</string>
+    <string name="desc_enable_dedicated_food_profiles">Here one can enable or configure various food profiles</string>
     <string name="insulin_sensitivity">Insulin Sensitivity</string>
     <string name="secondary_plugin_glucose_value">Secondary Plugin Glucose value</string>
     <string name="step_counter_1st_color">Step counter 1st Color</string>
@@ -1643,6 +1651,11 @@
     <string name="title_lower_fuzzer">Lower FUZZER</string>
     <string name="summary_lower_fuzzer">Lower the FUZZER value from 2.5 minutes to 37.5 seconds</string>
     <string name="without_camera_permission_cannot_scan_barcode">Without camera permission we cannot scan a barcode</string>
+    <string name="NameFoodCategory_one">Breakfast</string>
+    <string name="NameFoodCategory_two">Lunch</string>
+    <string name="NameFoodCategory_three">Diner</string>
+    <string name="NameFoodCategory_four">Snacks</string>
+    <string name="NameFoodCategory_all">all food</string>
     <string name="summary_create_missing_filtered">Make filtered data as needed</string>
     <string name="title_create_missing_filtered">Create missing filtered</string>
     <string name="summary_widget_hide_graph">Hide the graph on widgets (shows on next reading)</string>
@@ -1703,6 +1716,8 @@
     <string name="accept_external_status">Accept External Status</string>
     <string translatable="false" name="summary_dex_specified_slot">Specify transmitter slot manually, setting this incorrectly will prevent any readings being received.</string>
     <string translatable="false" name="title_dex_specified_slot">Manual Slot Number</string>
+    <string name="amountoffood">how much did you eat?</string>
+    <string name="foodintakeconfirmation">on %s you ate %dg of carbohydrates (%s)?</string>
     <string name="cancel_by_default">Cancel by default</string>
     <string name="old">Old</string>
     <string name="neww">New</string>

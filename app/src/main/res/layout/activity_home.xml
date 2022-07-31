@@ -223,13 +223,28 @@
                     android:paddingTop="2dp"
                     android:src="@drawable/ic_note_plus_grey600_24dp" />
 
+                <ImageButton
+                    android:id="@+id/foodButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignStart="@+id/btnNote"
+                    android:layout_below="@+id/btnNote"
+                    android:layout_marginTop="8dp"
+                    android:contentDescription="register meal"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_pizza_24dp"
+                    android:onClick="toggleStepsVisibility"
+                    android:paddingBottom="3dp"
+                    android:paddingLeft="1dp"
+                    android:paddingRight="3dp"
+                    android:paddingTop="2dp" />
 
                 <ImageButton
                     android:id="@+id/btnUndo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignStart="@+id/btnNote"
-                    android:layout_below="@+id/btnNote"
+                    android:layout_alignStart="@+id/foodButton"
+                    android:layout_below="@+id/foodButton"
                     android:layout_marginTop="8dp"
                     android:background="@android:color/transparent"
 
