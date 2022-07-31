@@ -54,6 +54,7 @@
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application
         android:name=".xdrip"
@@ -119,6 +120,10 @@
             android:exported="true" />
         <service android:name=".Services.ActivityRecognizedService" />
         <service android:name=".Services.BluetoothGlucoseMeter" />
+        <service
+            android:name=".Services.broadcastservice.BroadcastService"
+            android:enabled="true"
+            android:exported="true"></service>
         <service
             android:name=".wearintegration.WatchUpdaterService"
             android:exported="true">
@@ -272,6 +277,14 @@
             android:enabled="true"
             android:exported="true" />
 
+        <service android:name=".Services.UiBasedCollector"
+            android:label="UiBasedCollector"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".stats.StatsActivity"
             android:configChanges="orientation|screenSize"
@@ -381,10 +394,6 @@
         <activity
             android:name=".ShareTest"
             android:label="@string/title_activity_share_test" />
-        <activity
-            android:name=".SystemStatus"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/system_status" />
         <activity
             android:name=".utils.Preferences"
             android:configChanges="orientation|screenSize"
@@ -524,7 +533,11 @@
         </receiver>
         <receiver android:name=".utils.framework.WakeLockTrampoline" />
         <receiver android:name=".watch.thinjam.BackgroundScanReceiver" />
-
+        <receiver
+            android:name=".receiver.ReminderReceiver"
+            android:enabled="true"
+            android:exported="true">
+        </receiver>
         <service
             android:name=".TaskService"
             android:exported="true"
@@ -667,7 +680,7 @@
             android:label="@string/language_editor"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".GlucoseMeter.BTGlucoseMeterActivity"
+            android:name=".glucosemeter.BTGlucoseMeterActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_btglucose_meter"
             android:parentActivityName=".Home">
@@ -770,6 +783,7 @@
         <service android:name=".watch.thinjam.BlueJayService"
             android:foregroundServiceType="connectedDevice|location"
             />
+        <service android:name=".cgm.webfollow.WebFollowService" />
     </application>
 
 </manifest>

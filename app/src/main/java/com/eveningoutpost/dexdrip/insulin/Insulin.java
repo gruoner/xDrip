@@ -74,18 +74,18 @@ public abstract class Insulin {
         return maxEffect;
     }
 
-    public double calculateIOB(double time) {
+    public double calculateIOB(long time) {
         return -1;
     }
 
-    public double calculateActivity(double time) {
+    public double calculateActivity(long time) {
         return -1;
     }
 
     public ArrayList<Double> getIOBList(int timesliceSize)
     {
         ArrayList<Double> ret = new ArrayList<>();
-        double time = 0;
+        long time = 0;
         double iob = 1;
         while (iob > 1.0/1000000)
         {
