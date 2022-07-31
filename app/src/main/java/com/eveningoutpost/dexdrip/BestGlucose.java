@@ -14,12 +14,14 @@ import com.eveningoutpost.dexdrip.Models.JoH;
 import com.eveningoutpost.dexdrip.Models.SensorSanity;
 import com.eveningoutpost.dexdrip.Models.UserError;
 import com.eveningoutpost.dexdrip.UtilityModels.BgGraphBuilder;
+import com.eveningoutpost.dexdrip.UtilityModels.ColorCache;
 import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 import com.eveningoutpost.dexdrip.calibrations.CalibrationAbstract;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 
 import java.util.List;
 
+import static com.eveningoutpost.dexdrip.UtilityModels.ColorCache.getCol;
 import static com.eveningoutpost.dexdrip.calibrations.PluggableCalibration.getCalibrationPluginFromPreferences;
 
 /**
@@ -112,13 +114,12 @@ public class BestGlucose {
             if (isStale()) wholeSpan(ret, new StrikethroughSpan());
             if (color) {
                 if (isLow()) {
-                    // TODO should colors be configurable?
-                    wholeSpan(ret, new BackgroundColorSpan(Color.parseColor("#C30909")));
-                    wholeSpan(ret, new ForegroundColorSpan(Color.parseColor("#ffffff")));
+                    wholeSpan(ret, new ForegroundColorSpan(getCol(ColorCache.X.color_low_bg_values)));
                 } else if (isHigh()) {
-                    wholeSpan(ret, new BackgroundColorSpan(Color.parseColor("#FFBB33")));
-                    wholeSpan(ret, new ForegroundColorSpan(Color.parseColor("#0909C3")));
-                } // else default to whatever default is?
+                    wholeSpan(ret, new ForegroundColorSpan(getCol(ColorCache.X.color_high_bg_values)));
+                } else {
+                    wholeSpan(ret, new ForegroundColorSpan(getCol(ColorCache.X.color_inrange_bg_values)));
+                }
             }
             return ret;
         }
