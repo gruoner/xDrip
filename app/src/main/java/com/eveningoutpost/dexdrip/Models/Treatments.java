@@ -995,7 +995,6 @@ public class Treatments extends Model {
         // First process all IoB calculations
         for (Treatments thisTreatment : theTreatments) {
             // early optimisation exclusion
-
             mytime = (long) ((thisTreatment.timestamp / stepms) * stepms); // effects of treatment occur only after it is given / fit to slot time
             tendtime = mytime + 36 * HOUR_IN_MS;     // 36 hours max look (24h history plus 12h forecast)
             if (tendtime > startTime + 30 * HOUR_IN_MS)

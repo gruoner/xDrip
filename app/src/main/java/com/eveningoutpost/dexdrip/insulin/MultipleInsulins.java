@@ -12,4 +12,8 @@ public class MultipleInsulins {
         return Pref.getBooleanDefaultFalse("multiple_insulin_use_basal_activity");
     }
 
+    public static boolean useProfilespecificColoring() {
+        return Pref.getBooleanDefaultFalse("multiple_insulin_use_profilespecific_coloring");
+    }
+
 }

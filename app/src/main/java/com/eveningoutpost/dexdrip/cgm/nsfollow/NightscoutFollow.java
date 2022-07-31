@@ -66,6 +66,7 @@ public class NightscoutFollow {
         public String enabled;
         public String type;
         public List<Double> IOB1Min;
+        public String color;
     }
 
 
@@ -160,7 +161,7 @@ public class NightscoutFollow {
                 }
             }
             if (insulinDownloadEnabled()) {
-                if (JoH.ratelimit("nsfollow-insulin-download", 60*10)) {
+                if (JoH.ratelimit("nsfollow-insulin-download", 60*60)) {    // load insulin every hour
                     try {
                         getService().getInsulinProfiles(session.url.getHashedSecret()).enqueue(session.insulinCallback);
                     } catch (Exception e) {

@@ -30,13 +30,15 @@ public class InsulinProfile extends Model {
     private String pharmacyProductNumber;
     @Column(name = "curve")
     private String curve;
+    @Column(name = "color")
+    private String color;
     @Column(name = "deleted")
     private Integer deleted;
 
     public InsulinProfile() {
         super();
     }
-    public InsulinProfile(String n, String dn, List<String> ppn, InsulinManager.insulinCurve curveData, Boolean del) {
+    public InsulinProfile(String n, String dn, List<String> ppn, InsulinManager.insulinCurve curveData, String c, Boolean del) {
         name = n;
         displayName = dn;
         Gson gson = new Gson();
@@ -44,11 +46,12 @@ public class InsulinProfile extends Model {
         curve = gson.toJson(curveData, InsulinManager.insulinCurve.class);
         if (del) deleted = 1;
         else deleted = 0;
+        color = c;
     }
 
-    public static InsulinProfile create(String n, String d, List<String> ppn, InsulinManager.insulinCurve cu, Boolean del)
+    public static InsulinProfile create(String n, String d, List<String> ppn, InsulinManager.insulinCurve cu, String c, Boolean del)
     {
-        InsulinProfile ret = new InsulinProfile(n, d, ppn, cu, del);
+        InsulinProfile ret = new InsulinProfile(n, d, ppn, cu, c, del);
         ret.setLastupdate(JoH.tsl());
         try {
             ret.save();
@@ -64,6 +67,9 @@ public class InsulinProfile extends Model {
     }
     public String getDisplayName() {
         return displayName;
+    }
+    public String getColor() {
+        return color;
     }
     public ArrayList<String> getPharmacyProductNumber() {
         Gson gson = new Gson();
@@ -87,6 +93,16 @@ public class InsulinProfile extends Model {
 
     public void setLastupdate(long lastupdate) {
         this.lastupdate = lastupdate;
+    }
+    public void setColor(String c) {
+        color = c;
+        setLastupdate(JoH.tsl());
+        try {
+            save();
+        } catch (android.database.sqlite.SQLiteException e) {
+            fixUpTable();
+            save();
+        }
     }
     public void setDisplayName(String dn) {
         displayName = dn;
@@ -140,6 +156,7 @@ public class InsulinProfile extends Model {
                 "ALTER TABLE InsulinProfiles ADD COLUMN lastupdate INTEGER;",
                 "ALTER TABLE InsulinProfiles ADD COLUMN name TEXT;",
                 "ALTER TABLE InsulinProfiles ADD COLUMN displayName TEXT;",
+                "ALTER TABLE InsulinProfiles ADD COLUMN color TEXT;",
                 "ALTER TABLE InsulinProfiles ADD COLUMN concentration TEXT;",
                 "ALTER TABLE InsulinProfiles ADD COLUMN pharmacyProductNumber TEXT;",
                 "ALTER TABLE InsulinProfiles ADD COLUMN curve TEXT;",
