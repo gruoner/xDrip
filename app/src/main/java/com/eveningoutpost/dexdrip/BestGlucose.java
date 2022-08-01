@@ -114,11 +114,14 @@ public class BestGlucose {
             if (isStale()) wholeSpan(ret, new StrikethroughSpan());
             if (color) {
                 if (isLow()) {
-                    wholeSpan(ret, new ForegroundColorSpan(getCol(ColorCache.X.color_low_bg_values)));
+                    wholeSpan(ret, new BackgroundColorSpan(getCol(ColorCache.X.color_low_bg_values)));
+                    wholeSpan(ret, new ForegroundColorSpan(Color.parseColor("#ffffff")));
                 } else if (isHigh()) {
-                    wholeSpan(ret, new ForegroundColorSpan(getCol(ColorCache.X.color_high_bg_values)));
+                    wholeSpan(ret, new BackgroundColorSpan(getCol(ColorCache.X.color_high_bg_values)));
+                    wholeSpan(ret, new ForegroundColorSpan(Color.parseColor("#0909C3")));
                 } else {
-                    wholeSpan(ret, new ForegroundColorSpan(getCol(ColorCache.X.color_inrange_bg_values)));
+//                    wholeSpan(ret, new BackgroundColorSpan(getCol(ColorCache.X.color_inrange_bg_values)));
+                    wholeSpan(ret, new ForegroundColorSpan(Color.parseColor("#000000")));
                 }
             }
             return ret;
