@@ -149,6 +149,7 @@ public class FoodProfileEditor extends BaseAppCompatActivity {
         getCatCheckboxes("FoodCat3");
         getCatCheckboxes("FoodCat4");
         getFavCheckboxes("FoodCat1");
+        FoodManager.resetInitialization();
         finish();
     }
     public void foodProfileUndoButton(View myview) {

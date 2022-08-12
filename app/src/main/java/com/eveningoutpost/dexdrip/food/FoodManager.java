@@ -14,6 +14,7 @@ public class FoodManager {
 
     private static final String TAG = "FoodManager";
     private static List<Food> profiles = new ArrayList<>();
+    private static Boolean initialized = false;
 
     public static Boolean updateFromNightscout(List<NightscoutFollow.NightscoutFoodStructure> p) {
         Log.d(TAG, "updating food profiles from Nightscout");
@@ -102,7 +103,7 @@ public class FoodManager {
                 Log.d(TAG, "deleting " + toDel.getName() + " (with ID: " + toDel.getFoodID() + ")");
                 somethingChanged = true;
             }
-        if (somethingChanged) getDefaultInstance();
+        if (somethingChanged) getDefaultInstance(true);
 //        LoadDisabledProfilesFromPrefs();
         Log.d(TAG, "FoodManager initialized from nightscout");
         return somethingChanged;
@@ -110,11 +111,18 @@ public class FoodManager {
 
     // populate the data set with predefined resource as otherwise the static reference could be lost
     // as we are not really safely handling it
-    public static List<Food> getDefaultInstance() {
-        profiles = new ArrayList<>();
-        for (FoodProfile d : FoodProfile.all())
-            getFood(d.getFoodID());
+    public static List<Food> getDefaultInstance(Boolean forced) {
+        if (!initialized || forced) {
+            profiles = new ArrayList<>();
+            for (FoodProfile d : FoodProfile.all())
+                getFood(d.getFoodID());
+            initialized = true;
+        }
         return profiles;
+    }
+
+    public static void resetInitialization() {
+        initialized = false;
     }
 
     public static List<Food> getFood() {
