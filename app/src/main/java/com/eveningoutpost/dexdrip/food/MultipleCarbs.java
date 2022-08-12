@@ -12,7 +12,7 @@ public class MultipleCarbs {
 
     public static boolean isAvailable() {
         if (!isEnabled()) return false;
-        if (FoodManager.getDefaultInstance().size() == 0) return false;
+        if (FoodManager.getDefaultInstance(false).size() == 0) return false;
         return true;
     }
 
