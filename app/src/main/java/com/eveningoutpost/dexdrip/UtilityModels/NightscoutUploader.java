@@ -282,7 +282,7 @@ public class NightscoutUploader {
                     if (treatmensDownloadEnabled())
                         if (doRESTtreatmentDownload(prefs))
                             refresh = true;
-                    if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
+                    if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
                         if (doRESTinsulinDownload(prefs))
                             refresh = true;
                     if (MultipleCarbs.isEnabled() && MultipleCarbs.isDownloadAllowed() && JoH.ratelimit("ns-food-download", 24*60*60))    // load FOOD every day when allowed to do so
@@ -317,7 +317,7 @@ public class NightscoutUploader {
                 if (treatmensDownloadEnabled())
                     if (doRESTtreatmentDownload(prefs))
                         substatus = true;
-                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
+                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
                     if (doRESTinsulinDownload(prefs))
                         substatus = true;
                 if (MultipleCarbs.isEnabled() && (JoH.ratelimit("ns-food-download", 24*60*60)))    // load FOOD every day

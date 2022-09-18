@@ -1,17 +1,10 @@
 package com.eveningoutpost.dexdrip.food;
 
-import android.content.Context;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import android.widget.Switch;
-
 import com.eveningoutpost.dexdrip.Models.JoH;
-import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 import com.eveningoutpost.dexdrip.utils.HomeWifi;
 import com.google.common.base.Strings;
-
 import static com.eveningoutpost.dexdrip.utils.DexCollectionType.NSFollow;
 
 public class MultipleCarbs {
