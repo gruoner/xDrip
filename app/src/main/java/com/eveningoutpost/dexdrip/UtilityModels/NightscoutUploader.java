@@ -284,7 +284,7 @@ public class NightscoutUploader {
                     if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
                         if (doRESTinsulinDownload(prefs))
                             refresh = true;
-                    if (MultipleCarbs.isEnabled() && (JoH.ratelimit("ns-food-download", 24*60*60)))    // load FOOD every day
+                    if (MultipleCarbs.isEnabled() && MultipleCarbs.isDownloadAllowed() && JoH.ratelimit("ns-food-download", 24*60*60))    // load FOOD every day when allowed to do so
                         if (doRESTfoodDownload(prefs))
                         {
                             refresh = true;

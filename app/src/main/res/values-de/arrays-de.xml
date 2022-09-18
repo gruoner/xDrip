@@ -41,4 +41,9 @@
         <item>Nur vibrieren</item>
         <item>Lautlos</item>
     </string-array>
+    <string-array name="FoodDownloadWifiOptions">
+        <item>egal, auch wenn am GSM</item>
+        <item>immer wenn am WLAN</item>
+        <item>nur wenn am Heimat-WLAN</item>
+    </string-array>
 </resources>
