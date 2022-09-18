@@ -213,7 +213,7 @@ public class NightscoutFollow {
                 }
             }
             if (MultipleCarbs.isEnabled()) {
-                if (JoH.ratelimit("ns-food-download", 24*60*60)) {   // load food every day
+                if (MultipleCarbs.isDownloadAllowed() && JoH.ratelimit("ns-food-download", 24*60*60)) {   // load food every day when it's allowed to do so
                     try {
                         getService().getFoodProfiles(session.url.getHashedSecret()).enqueue(session.foodCallback);
                     } catch (Exception e) {
