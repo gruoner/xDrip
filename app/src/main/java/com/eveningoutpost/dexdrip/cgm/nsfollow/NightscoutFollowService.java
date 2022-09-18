@@ -251,6 +251,11 @@ public class NightscoutFollowService extends ForegroundService {
             s = "generally " + s + " but currently " + gs(R.string.no);
         }
         statuses.add(new StatusItem("Download insulin", s));
+        String t = MultipleCarbs.isEnabled() ? gs(R.string.yes) : gs(R.string.no);
+        if (MultipleCarbs.isEnabled() && !MultipleCarbs.isDownloadAllowed()) {
+            t = "generally " + t + " but currently " + gs(R.string.no);
+        }
+        statuses.add(new StatusItem("Download food", t));
 
         if (StringUtils.isNotBlank(lastState)) {
             statuses.add(new StatusItem());
