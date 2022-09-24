@@ -284,7 +284,7 @@ public class NightscoutUploader {
                     if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("ns-insulin-download", 60*60))    // load insulin every hour
                         if (doRESTinsulinDownload(prefs))
                             refresh = true;
-                    if (MultipleCarbs.isEnabled() && MultipleCarbs.isDownloadAllowed() && JoH.ratelimit("ns-food-download", 24*60*60))    // load FOOD every day when allowed to do so
+                    if (foodDownloadEnabled() && MultipleCarbs.isEnabled() && MultipleCarbs.isDownloadAllowed() && JoH.ratelimit("ns-food-download", 24*60*60))    // load FOOD every day when allowed to do so
                         if (doRESTfoodDownload(prefs))
                         {
                             refresh = true;
@@ -319,7 +319,7 @@ public class NightscoutUploader {
                 if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("ns-insulin-download", 60*60))    // load insulin every hour
                     if (doRESTinsulinDownload(prefs))
                         substatus = true;
-                if (MultipleCarbs.isEnabled() && MultipleCarbs.isDownloadAllowed() && (JoH.ratelimit("ns-food-download", 24*60*60)))    // load FOOD every day
+                if (foodDownloadEnabled() && MultipleCarbs.isEnabled() && MultipleCarbs.isDownloadAllowed() && (JoH.ratelimit("ns-food-download", 24*60*60)))    // load FOOD every day
                     if (doRESTfoodDownload(prefs))
                     {
                         substatus = true;
@@ -565,8 +565,8 @@ public class NightscoutUploader {
                                     checkGzipSupport(r);
                                     ActiveAndroid.clearCache();
                                     new_data = true;
-                                    updateInsulinDownloaded();
                                 }
+                                updateInsulinDownloaded();
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 android.util.Log.d(TAG, "Got exception during insulin load: " + e.toString());
@@ -670,8 +670,8 @@ public class NightscoutUploader {
                                     checkGzipSupport(r);
                                     ActiveAndroid.clearCache();
                                     new_data = true;
-                                    updateFoodDownloaded();
                                 }
+                                updateFoodDownloaded();
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 android.util.Log.d(TAG, "Got exception during food load: " + e.toString());
@@ -1808,6 +1808,14 @@ public class NightscoutUploader {
         if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
                 Pref.getBooleanDefaultFalse("cloud_storage_api_download_enable") &&
                 Pref.getBooleanDefaultFalse("cloud_storage_api_download_insulin_enable"))
+            return true;
+        else return false;
+    }
+
+    public static boolean foodDownloadEnabled() {
+
+        if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
+                Pref.getBooleanDefaultFalse("cloud_storage_api_download_enable"))
             return true;
         else return false;
     }

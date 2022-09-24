@@ -553,7 +553,7 @@ public class UploaderQueue extends Model {
                             l.add(new StatusItem("Download insulin", s));
                         }
 
-                        if(MultipleCarbs.isEnabled()) {
+                        if(NightscoutUploader.foodDownloadEnabled() && MultipleCarbs.isEnabled()) {
                             l.add(new StatusItem("Latest Food Download", ageLastFood + " ago (Rate: " + rateLastFood+ " ago)"));
                             String s = gs(R.string.yes);
                             if (!MultipleCarbs.isDownloadAllowed()) {
