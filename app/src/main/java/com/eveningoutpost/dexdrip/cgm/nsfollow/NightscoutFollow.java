@@ -161,7 +161,7 @@ public class NightscoutFollow {
                     if (InsulinManager.updateFromNightscout(session.insulin)) ActiveAndroid.clearCache();   // when at least one profile has been changed ActiveAndroid Cache will be cleared to reload all insulin injections from scratch
                     NightscoutFollowService.updateInsulinDownloaded();
                 } catch (Exception e) {
-                    JoH.clearRatelimit("nsfollow-insulin-download");
+                    JoH.clearRatelimit("ns-insulin-download");
                     msg("Insulin: " + e);
                 }
             })
@@ -175,7 +175,7 @@ public class NightscoutFollow {
                     if (FoodManager.updateFromNightscout(session.food)) ActiveAndroid.clearCache();   // when at least one profile has been changed ActiveAndroid Cache will be cleared to reload all insulin injections from scratch
                     NightscoutFollowService.updateFoodDownloaded();
                 } catch (Exception e) {
-                    JoH.clearRatelimit("nsfollow-food-download");
+                    JoH.clearRatelimit("ns-food-download");
                     msg("Food: " + e);
                 }
             })
@@ -202,11 +202,11 @@ public class NightscoutFollow {
                 }
             }
             if (insulinDownloadEnabled() && MultipleInsulins.isDownloadAllowed()) {
-                if (JoH.ratelimit("nsfollow-insulin-download", 60*60)) {    // load insulin every hour
+                if (JoH.ratelimit("ns-insulin-download", 60*60)) {    // load insulin every hour
                     try {
                         getService().getInsulinProfiles(session.url.getHashedSecret()).enqueue(session.insulinCallback);
                     } catch (Exception e) {
-                        JoH.clearRatelimit("nsfollow-insulin-download");
+                        JoH.clearRatelimit("ns-insulin-download");
                         UserError.Log.e(TAG, "Exception in insulin work() " + e);
                         msg("Nightscout follow insulin error: " + e);
                     }

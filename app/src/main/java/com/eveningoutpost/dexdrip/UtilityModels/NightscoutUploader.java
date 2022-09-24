@@ -281,7 +281,7 @@ public class NightscoutUploader {
                     if (treatmensDownloadEnabled())
                         if (doRESTtreatmentDownload(prefs))
                             refresh = true;
-                    if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
+                    if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("ns-insulin-download", 60*60))    // load insulin every hour
                         if (doRESTinsulinDownload(prefs))
                             refresh = true;
                     if (MultipleCarbs.isEnabled() && MultipleCarbs.isDownloadAllowed() && JoH.ratelimit("ns-food-download", 24*60*60))    // load FOOD every day when allowed to do so
@@ -316,10 +316,10 @@ public class NightscoutUploader {
                 if (treatmensDownloadEnabled())
                     if (doRESTtreatmentDownload(prefs))
                         substatus = true;
-                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
+                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("ns-insulin-download", 60*60))    // load insulin every hour
                     if (doRESTinsulinDownload(prefs))
                         substatus = true;
-                if (MultipleCarbs.isEnabled() && (JoH.ratelimit("ns-food-download", 24*60*60)))    // load FOOD every day
+                if (MultipleCarbs.isEnabled() && MultipleCarbs.isDownloadAllowed() && (JoH.ratelimit("ns-food-download", 24*60*60)))    // load FOOD every day
                     if (doRESTfoodDownload(prefs))
                     {
                         substatus = true;
@@ -380,7 +380,7 @@ public class NightscoutUploader {
             
             
         } catch (UnknownHostException e) {
-            Log.w(TAG, "UnknownHostException error nanme not resovled" + fullHost);
+            Log.w(TAG, "UnknownHostException error name not resovled" + fullHost);
             return baseURI;
         }
     }
@@ -570,10 +570,12 @@ public class NightscoutUploader {
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 android.util.Log.d(TAG, "Got exception during insulin load: " + e.toString());
+                                JoH.clearRatelimit("ns-insulin-download");
                             }
 
                         } else {
                             Log.d(TAG, "Failed to get insulin from: " + baseURI);
+                            JoH.clearRatelimit("ns-insulin-download");
                         }
 
                     } else {
@@ -585,6 +587,7 @@ public class NightscoutUploader {
             } catch (Exception e) {
                 String msg = "Unable to do REST API Download " + e + " " + e.getMessage() + " url: " + baseURI;
                 handleRestFailure(msg);
+                JoH.clearRatelimit("ns-insulin-download");
             }
         }
         Log.d(TAG, "doRESTinsulinDownload() finishing run");
@@ -672,10 +675,12 @@ public class NightscoutUploader {
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 android.util.Log.d(TAG, "Got exception during food load: " + e.toString());
+                                JoH.clearRatelimit("ns-food-download");
                             }
 
                         } else {
                             Log.d(TAG, "Failed to get food from: " + baseURI);
+                            JoH.clearRatelimit("ns-food-download");
                         }
 
                     } else {
@@ -687,6 +692,7 @@ public class NightscoutUploader {
             } catch (Exception e) {
                 String msg = "Unable to do REST API Download " + e + " " + e.getMessage() + " url: " + baseURI;
                 handleRestFailure(msg);
+                JoH.clearRatelimit("ns-food-download");
             }
         }
         Log.d(TAG, "doRESTfoodDownload() finishing run");

@@ -400,16 +400,25 @@ public class UploaderQueue extends Model {
 
         // Status for Insulin
         String ageLastInsulin = "n/a";
+        String rateLastInsulin = "n/a";
         if(NightscoutUploader.lastInsulinDownloaded != 0) {
             long age = JoH.msSince(NightscoutUploader.lastInsulinDownloaded);
             ageLastInsulin = JoH.niceTimeScalar(age);
         }
-
+        if(JoH.getRateLimit("ns-insulin-download") != 0) {
+            long age = JoH.msSince(JoH.getRateLimit("ns-insulin-download"));
+            rateLastInsulin = JoH.niceTimeScalar(age);
+        }
         // Status for Food
         String ageLastFood = "n/a";
+        String rateLastFood = "n/a";
         if(NightscoutUploader.lastFoodDownloaded != 0) {
             long age = JoH.msSince(NightscoutUploader.lastFoodDownloaded);
             ageLastFood = JoH.niceTimeScalar(age);
+        }
+        if(JoH.getRateLimit("ns-food-download") != 0) {
+            long age = JoH.msSince(JoH.getRateLimit("ns-food-download"));
+            rateLastFood = JoH.niceTimeScalar(age);
         }
 
         // per circuit
@@ -536,7 +545,7 @@ public class UploaderQueue extends Model {
                                     }));
 
                         if(NightscoutUploader.insulinDownloadEnabled() && MultipleInsulins.isEnabled()) {
-                            l.add(new StatusItem("Latest Insulin Download", ageLastInsulin + " ago"));
+                            l.add(new StatusItem("Latest Insulin Download", ageLastInsulin + " ago (Rate: " + rateLastInsulin + " ago)"));
                             String s = gs(R.string.yes);
                             if (!MultipleInsulins.isDownloadAllowed()) {
                                 s = "generally " + s + " but currently " + gs(R.string.no);
@@ -545,7 +554,7 @@ public class UploaderQueue extends Model {
                         }
 
                         if(MultipleCarbs.isEnabled()) {
-                            l.add(new StatusItem("Latest Food Download", ageLastFood + " ago"));
+                            l.add(new StatusItem("Latest Food Download", ageLastFood + " ago (Rate: " + rateLastFood+ " ago)"));
                             String s = gs(R.string.yes);
                             if (!MultipleCarbs.isDownloadAllowed()) {
                                 s = "generally " + s + " but currently " + gs(R.string.no);

@@ -202,16 +202,26 @@ public class NightscoutFollowService extends ForegroundService {
 
         // Status for Insulin
         String ageLastInsulin = "n/a";
+        String rateLastInsulin = "n/a";
         if(lastInsulinDownloaded != 0) {
             long age = JoH.msSince(lastInsulinDownloaded);
             ageLastInsulin = JoH.niceTimeScalar(age);
         }
+        if(JoH.getRateLimit("ns-insulin-download") != 0) {
+            long age = JoH.msSince(JoH.getRateLimit("ns-insulin-download"));
+            rateLastInsulin = JoH.niceTimeScalar(age);
+        }
 
         // Status for Food
         String ageLastFood = "n/a";
+        String rateLastFood = "n/a";
         if(lastFoodDownloaded != 0) {
             long age = JoH.msSince(lastFoodDownloaded);
             ageLastFood = JoH.niceTimeScalar(age);
+        }
+        if(JoH.getRateLimit("ns-food-download") != 0) {
+            long age = JoH.msSince(JoH.getRateLimit("ns-food-download"));
+            rateLastFood = JoH.niceTimeScalar(age);
         }
 
         // Build status
@@ -228,12 +238,12 @@ public class NightscoutFollowService extends ForegroundService {
 
         if(NightscoutFollow.insulinDownloadEnabled()) {
             statuses.add(new StatusItem());
-            statuses.add(new StatusItem("Latest Insulin Download", ageLastInsulin + " ago"));
+            statuses.add(new StatusItem("Latest Insulin Download", ageLastInsulin + " ago (Rate: " + rateLastInsulin + " ago)"));
         }
 
         if(MultipleCarbs.isEnabled()) {
             statuses.add(new StatusItem());
-            statuses.add(new StatusItem("Latest Food Download", ageLastFood + " ago"));
+            statuses.add(new StatusItem("Latest Food Download", ageLastFood + " ago (Rate: " + rateLastFood + " ago)"));
         }
 
         statuses.add(new StatusItem());
