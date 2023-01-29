@@ -236,6 +236,18 @@
         <item>AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE</item>
     </string-array>
 
+    <string-array name="InsulinDownloadWifiOptionsData">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    <string-array name="InsulinDownloadWifiOptions">
+        <item>even when on GSM</item>
+        <item>when on wifi</item>
+        <item>only when on HomeWifi</item>
+        <item>never download Insulin</item>
+    </string-array>
     <string-array name="carelinkCountryEntries">
         <item>Albania</item>
         <item>Algeria</item>
@@ -470,4 +482,14 @@
         <item>vn</item>
     </string-array>
 
+    <string-array name="FoodDownloadWifiOptionsData">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="FoodDownloadWifiOptions">
+        <item>even when on GSM</item>
+        <item>when on wifi</item>
+        <item>only when on HomeWifi</item>
+    </string-array>
 </resources>

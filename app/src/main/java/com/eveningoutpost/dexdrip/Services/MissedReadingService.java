@@ -157,7 +157,7 @@ public class MissedReadingService extends IntentService {
         int endMinutes = Pref.getInt("missed_readings_end", 0);
         boolean allDay = Pref.getBoolean("missed_readings_all_day", true);
 
-        return AlertType.s_in_time_frame(allDay, startMinutes, endMinutes);
+        return AlertType.s_in_time_frame(AlertType.ALL_DAYS, allDay, startMinutes, endMinutes);
     }
 
     private void checkBackAfterSnoozeTime(Context context, long now) {

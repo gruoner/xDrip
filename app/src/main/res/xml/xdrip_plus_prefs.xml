@@ -669,6 +669,70 @@
                     android:key="multiple_insulin_use_basal_activity"
                     android:summary="@string/summary_multiple_insulin_use_basal_activity"
                     android:title="@string/title_multiple_insulin_use_basal_activity"/>
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:key="multiple_insulin_use_profilespecific_coloring"
+                    android:summary="@string/summary_multiple_insulin_use_profilespecific_coloring"
+                    android:title="@string/title_multiple_insulin_use_profilespecific_coloring"/>
+                <ListPreference
+                    android:key="download_insulin_just_when_in_wifi"
+                    android:entries="@array/InsulinDownloadWifiOptions"
+                    android:entryValues="@array/InsulinDownloadWifiOptionsData"
+                    android:summary="Just download insulin database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
+                    android:title="Insulin download only from Wifi"/>
+
+            </PreferenceScreen>
+
+            <PreferenceScreen
+                android:title="Multiple Carbs Types"
+                android:summary="Options for working with multiple Carbs types">
+                <SwitchPreference
+                    android:defaultValue="false"
+                    android:key="multiple_carbs_types"
+                    android:switchTextOff="@string/short_off_text_for_switches"
+                    android:switchTextOn="@string/short_on_text_for_switches"
+                    android:title="Multiple Carbs Types" />
+                <Preference
+                    android:key="carbs_profiles"
+                    android:dependency="multiple_carbs_types"
+                    android:summary="@string/desc_enable_dedicated_food_profiles"
+                    android:title="@string/enable_dedicated_food_profiles">
+                    <intent
+                        android:action="android.intent.action.MAIN"
+                        android:targetClass="com.eveningoutpost.dexdrip.food.FoodProfileEditor"
+                        android:targetPackage="@string/local_target_package" />
+                </Preference>
+                <ListPreference
+                    android:defaultValue="false"
+                    android:key="download_food_just_when_in_wifi"
+                    android:entries="@array/FoodDownloadWifiOptions"
+                    android:entryValues="@array/FoodDownloadWifiOptionsData"
+                    android:summary="Just download food database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
+                    android:title="Food download only from Wifi"/>
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:key="multiple_carbs_use_for_prediction"
+                    android:summary="use extended carbs profiles as predictive model"
+                    android:title="Use in prediction"/>
+                <Preference
+                    android:id="@+id/nightscout_force_food_download"
+                    android:summary="@string/summary_force_food_download"
+                    android:title="@string/title_force_food_download">
+                    <intent
+                        android:action="android.intent.action.MAIN"
+                        android:targetClass="com.eveningoutpost.dexdrip.food.NightscoutForceDownloadActivity"
+                        android:targetPackage="@string/local_target_package" />
+                </Preference>
+                <Preference
+                    android:id="@+id/drop_food_db"
+                    android:summary="@string/summary_drop_food_db"
+                    android:title="@string/title_drop_food_db">
+                    <intent
+                        android:action="android.intent.action.MAIN"
+                        android:targetClass="com.eveningoutpost.dexdrip.food.DropFoodDBActivity"
+                        android:targetPackage="@string/local_target_package" />
+                </Preference>
+
             </PreferenceScreen>
 
             <Preference

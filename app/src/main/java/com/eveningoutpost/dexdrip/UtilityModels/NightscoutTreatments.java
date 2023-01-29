@@ -51,7 +51,12 @@ public class NightscoutTreatments {
                 if (tr.getString("enteredBy").startsWith(Treatments.XDRIP_TAG)) {
                     from_xdrip = true;
                     if (d) UserError.Log.d(TAG, "This record came from xDrip");
-                }
+                    /// gruoner 12/04/19: added new feature because of usage of two xdrip's
+                    if (Pref.getBooleanDefaultFalse("nsfollow_download_treatments_even_xdrip"))
+                    {
+                        from_xdrip = false;
+                        if (d) UserError.Log.d(TAG, "This record came from xDrip BUT thats OK");
+                    }                }
             } catch (JSONException e) {
                 //
             }
@@ -95,6 +100,7 @@ public class NightscoutTreatments {
 
             // extract treatment data if present
             double carbs = 0;
+            String food = null;
             double insulin = 0;
             String injections = null;
             String notes = null;
@@ -102,6 +108,11 @@ public class NightscoutTreatments {
                 carbs = tr.getDouble("carbs");
             } catch (JSONException e) {
                 //  Log.d(TAG, "json processing: " + e);
+            }
+            try {
+                food = tr.getString("foodIntake");
+            } catch (JSONException e) {
+                // Log.d(TAG, "json processing: " + e);
             }
             try {
                 insulin = tr.getDouble("insulin");
@@ -140,8 +151,9 @@ public class NightscoutTreatments {
                             UserError.Log.ueh(TAG, "New Treatment from Nightscout: Carbs: " + carbs + " Insulin: " + insulin + " timestamp: " + JoH.dateTimeText(timestamp) + ((notes != null) ? " Note: " + notes : ""));
                             final Treatments t;
                             if ((carbs > 0) || (insulin > 0)) {
-                                t = Treatments.create(carbs, insulin, new ArrayList<InsulinInjection>(), timestamp, nightscout_id);
+                                t = Treatments.create(carbs, null, insulin, new ArrayList<InsulinInjection>(), timestamp, nightscout_id);
                                if (t != null) {
+                                   if (carbs > 0) t.setFoodJSON(food);
                                    if (insulin > 0) t.setInsulinJSON(injections);
                                    if (notes != null) t.notes = notes;
                                }
@@ -180,6 +192,8 @@ public class NightscoutTreatments {
                                     || (!existing.notes.contains(notes))) {
                                 UserError.Log.ueh(TAG, "Treatment changes from Nightscout: " + carbs + " Insulin: " + insulin + " timestamp: " + JoH.dateTimeText(timestamp) + " " + notes + " " + " vs " + existing.carbs + " " + existing.insulin + " " + JoH.dateTimeText(existing.timestamp) + " " + existing.notes);
                                 existing.carbs = carbs;
+                                if (carbs > 0)
+                                    existing.setFoodJSON(food);
                                 existing.insulin = insulin;
                                 if (insulin > 0)
                                     existing.setInsulinJSON(injections);

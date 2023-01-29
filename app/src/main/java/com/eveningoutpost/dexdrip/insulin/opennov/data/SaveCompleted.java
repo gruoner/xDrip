@@ -76,7 +76,7 @@ public class SaveCompleted implements ICompleted {
                         if (trackPens) {
                             insulinType = Treatments.convertLegacyDoseToInjectionListByName(pens.getPenTypeBySerial(serial), dose.units);
                         }
-                        val treatment = Treatments.create(0, dose.units, insulinType, dose.absoluteTime, uuid);
+                        val treatment = Treatments.create(0, null, dose.units, insulinType, dose.absoluteTime, uuid);
                         if (treatment != null) {
                             treatment.enteredBy = MARKER + " @ " + JoH.dateTimeText(tsl());
                             treatment.notes = NOTE_PREFIX + " " + serial + "\n" + msg.getContext().model.getModel(); // must be same for each dose for a specific pen

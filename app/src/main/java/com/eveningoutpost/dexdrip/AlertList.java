@@ -62,6 +62,21 @@ public class AlertList extends ActivityWithMenu {
         return start + " - " + end;
     }
 
+    String stringDaysFromAlert(AlertType alert) {
+        if (alert.days_of_week == AlertType.ALL_DAYS)
+            return "all weekdays";
+        String ret = "";
+        if ((alert.days_of_week & AlertType.MONDAY) > 0) ret = ret + "MON, ";
+        if ((alert.days_of_week & AlertType.TUESDAY) > 0) ret = ret + "TUE, ";
+        if ((alert.days_of_week & AlertType.WEDNESDAY) > 0) ret = ret + "WED, ";
+        if ((alert.days_of_week & AlertType.THURSDAY) > 0) ret = ret + "THU, ";
+        if ((alert.days_of_week & AlertType.FRIDAY) > 0) ret = ret + "FRI, ";
+        if ((alert.days_of_week & AlertType.SATURDAY) > 0) ret = ret + "SAT, ";
+        if ((alert.days_of_week & AlertType.SUNDAY) > 0) ret = ret + "SUN, ";
+
+        return ret;
+    }
+
     HashMap<String, String> createAlertMap(AlertType alert) {
         HashMap<String, String> map = new HashMap<String, String>();
         String overrideSilentMode = "Override Silent Mode";
@@ -78,6 +93,7 @@ public class AlertList extends ActivityWithMenu {
         map.put("alertName", extra + alert.name);
         map.put("alertThreshold", extra + EditAlertActivity.unitsConvert2Disp(doMgdl, alert.threshold));
         map.put("alertTime", extra + stringTimeFromAlert(alert));
+        map.put("alertDays", extra + stringDaysFromAlert(alert));
         map.put("alertMp3File", extra + shortPath(alert.mp3_file));
         map.put("alertOverrideSilenceMode", extra + overrideSilentMode);
         map.put("uuid", alert.uuid);
@@ -242,13 +258,13 @@ public class AlertList extends ActivityWithMenu {
 
         ArrayList<HashMap<String, String>> feedList;
         feedList = createAlertsMap(false);
-        SimpleAdapter simpleAdapterLow = new SimpleAdapter(this, feedList, R.layout.row_alerts, new String[]{"alertName", "alertThreshold", "alertTime", "alertMp3File", "alertOverrideSilenceMode"}, new int[]{R.id.alertName, R.id.alertThreshold, R.id.alertTime, R.id.alertMp3File, R.id.alertOverrideSilent});
+        SimpleAdapter simpleAdapterLow = new SimpleAdapter(this, feedList, R.layout.row_alerts, new String[]{"alertName", "alertThreshold", "alertDays", "alertTime", "alertMp3File", "alertOverrideSilenceMode"}, new int[]{R.id.alertName, R.id.alertThreshold, R.id.alertDays, R.id.alertTime, R.id.alertMp3File, R.id.alertOverrideSilent});
         simpleAdapterLow.setViewBinder(vb);
 
         listViewLow.setAdapter(simpleAdapterLow);
 
         feedList = createAlertsMap(true);
-        SimpleAdapter simpleAdapterHigh = new SimpleAdapter(this, feedList, R.layout.row_alerts, new String[]{"alertName", "alertThreshold", "alertTime", "alertMp3File", "alertOverrideSilenceMode"}, new int[]{R.id.alertName, R.id.alertThreshold, R.id.alertTime, R.id.alertMp3File, R.id.alertOverrideSilent});
+        SimpleAdapter simpleAdapterHigh = new SimpleAdapter(this, feedList, R.layout.row_alerts, new String[]{"alertName", "alertThreshold", "alertDays", "alertTime", "alertMp3File", "alertOverrideSilenceMode"}, new int[]{R.id.alertName, R.id.alertThreshold, R.id.alertDays, R.id.alertTime, R.id.alertMp3File, R.id.alertOverrideSilent});
         simpleAdapterHigh.setViewBinder(vb);
         listViewHigh.setAdapter(simpleAdapterHigh);
     }
