@@ -3,8 +3,10 @@ package com.eveningoutpost.dexdrip;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 
 import com.eveningoutpost.dexdrip.G5Model.FirmwareCapability;
 import com.eveningoutpost.dexdrip.Models.BgReading;

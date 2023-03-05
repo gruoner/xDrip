@@ -75,6 +75,7 @@ import com.eveningoutpost.dexdrip.G5Model.SensorDays;
 import com.eveningoutpost.dexdrip.ImportedLibraries.usbserial.util.HexDump;
 import com.eveningoutpost.dexdrip.Models.ActiveBgAlert;
 import com.eveningoutpost.dexdrip.Models.ActiveBluetoothDevice;
+import com.eveningoutpost.dexdrip.Models.AudioRecorder;
 import com.eveningoutpost.dexdrip.Models.BgReading;
 import com.eveningoutpost.dexdrip.Models.BloodTest;
 import com.eveningoutpost.dexdrip.Models.Calibration;
@@ -87,6 +88,7 @@ import com.eveningoutpost.dexdrip.Models.Sensor;
 import com.eveningoutpost.dexdrip.Models.StepCounter;
 import com.eveningoutpost.dexdrip.Models.Treatments;
 import com.eveningoutpost.dexdrip.Models.UserError;
+import com.eveningoutpost.dexdrip.Recorder.ManageRecorder;
 import com.eveningoutpost.dexdrip.Services.ActivityRecognizedService;
 import com.eveningoutpost.dexdrip.Services.DexCollectionService;
 import com.eveningoutpost.dexdrip.Services.Ob1G5CollectionService;
@@ -194,6 +196,15 @@ import lecho.lib.hellocharts.view.PreviewLineChartView;
 import lombok.Getter;
 import lombok.val;
 
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static com.eveningoutpost.dexdrip.UtilityModels.ColorCache.X;
+import static com.eveningoutpost.dexdrip.UtilityModels.ColorCache.getCol;
+import static com.eveningoutpost.dexdrip.UtilityModels.Constants.DAY_IN_MS;
+import static com.eveningoutpost.dexdrip.UtilityModels.Constants.HOUR_IN_MS;
+import static com.eveningoutpost.dexdrip.UtilityModels.Constants.MINUTE_IN_MS;
+import static com.eveningoutpost.dexdrip.xdrip.getAppContext;
+import static com.eveningoutpost.dexdrip.xdrip.gs;
+
 public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPermissionsResultCallback {
     private final static String TAG = "jamorham " + Home.class.getSimpleName();
     private final static boolean d = false;
@@ -210,6 +221,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     public final static String BLUETOOTH_METER_CALIBRATION = "BLUETOOTH_METER_CALIBRATION";
     public final static String ACTIVITY_SHOWCASE_INFO = "ACTIVITY_SHOWCASE_INFO";
     public final static String ENABLE_STREAMING_DIALOG = "ENABLE_STREAMING_DIALOG";
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     public final static String CHOOSE_INSULIN_PEN = "CHOOSE_INSULIN_PEN";
     public final static int SENSOR_READY_ID = 4912;
     private final UiPing ui = new UiPing();
@@ -424,6 +436,15 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         dexbridgeBattery.setText("");
         parakeetBattery.setText("");
         sensorAge.setText("");
+
+        this.currentBgValueText.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Intent myIntent = new Intent(view.getContext(), ManageRecorder.class);
+                startActivity(myIntent);
+                return false;
+            }
+        });
 
         if (BgGraphBuilder.isXLargeTablet(getApplicationContext())) {
             this.currentBgValueText.setTextSize(100);
@@ -640,6 +661,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
 
         currentBgValueText.setText(""); // clear any design prototyping default
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
+        }
     }
 
     private boolean firstRunDialogs(final boolean checkedeula) {
