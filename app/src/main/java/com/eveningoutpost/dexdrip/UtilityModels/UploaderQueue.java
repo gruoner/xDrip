@@ -12,7 +12,6 @@ import com.activeandroid.annotation.Table;
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
 import com.activeandroid.util.SQLiteUtils;
-import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.Models.BgReading;
 import com.eveningoutpost.dexdrip.Models.BloodTest;
 import com.eveningoutpost.dexdrip.Models.Calibration;
@@ -21,6 +20,9 @@ import com.eveningoutpost.dexdrip.Models.LibreBlock;
 import com.eveningoutpost.dexdrip.Models.TransmitterData;
 import com.eveningoutpost.dexdrip.Models.Treatments;
 import com.eveningoutpost.dexdrip.Models.UserError;
+import com.eveningoutpost.dexdrip.R;
+import com.eveningoutpost.dexdrip.food.MultipleCarbs;
+import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
 import com.eveningoutpost.dexdrip.tidepool.TidepoolEntry;
 import com.eveningoutpost.dexdrip.tidepool.TidepoolStatus;
 import com.eveningoutpost.dexdrip.tidepool.TidepoolUploader;
@@ -36,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.eveningoutpost.dexdrip.Services.SyncService.startSyncService;
+import static com.eveningoutpost.dexdrip.xdrip.gs;
 
 /**
  * Created by jamorham on 15/11/2016.
@@ -394,6 +397,30 @@ public class UploaderQueue extends Model {
 
     public static List<StatusItem> megaStatus() {
         final List<StatusItem> l = new ArrayList<>();
+
+        // Status for Insulin
+        String ageLastInsulin = "n/a";
+        String rateLastInsulin = "n/a";
+        if(NightscoutUploader.lastInsulinDownloaded != 0) {
+            long age = JoH.msSince(NightscoutUploader.lastInsulinDownloaded);
+            ageLastInsulin = JoH.niceTimeScalar(age);
+        }
+        if(JoH.getRateLimit("ns-insulin-download") != 0) {
+            long age = JoH.msSince(JoH.getRateLimit("ns-insulin-download"));
+            rateLastInsulin = JoH.niceTimeScalar(age);
+        }
+        // Status for Food
+        String ageLastFood = "n/a";
+        String rateLastFood = "n/a";
+        if(NightscoutUploader.lastFoodDownloaded != 0) {
+            long age = JoH.msSince(NightscoutUploader.lastFoodDownloaded);
+            ageLastFood = JoH.niceTimeScalar(age);
+        }
+        if(JoH.getRateLimit("ns-food-download") != 0) {
+            long age = JoH.msSince(JoH.getRateLimit("ns-food-download"));
+            rateLastFood = JoH.niceTimeScalar(age);
+        }
+
         // per circuit
         for (int i = 0, size = circuits_for_stats.size(); i < size; i++) {
             final long bitfield = circuits_for_stats.keyAt(i);
@@ -517,6 +544,23 @@ public class UploaderQueue extends Model {
                                         }
                                     }));
 
+                        if(NightscoutUploader.insulinDownloadEnabled() && MultipleInsulins.isEnabled()) {
+                            l.add(new StatusItem("Latest Insulin Download", ageLastInsulin + " ago (Rate: " + rateLastInsulin + " ago)"));
+                            String s = gs(R.string.yes);
+                            if (!MultipleInsulins.isDownloadAllowed()) {
+                                s = "generally " + s + " but currently " + gs(R.string.no);
+                            }
+                            l.add(new StatusItem("Download insulin", s));
+                        }
+
+                        if(NightscoutUploader.foodDownloadEnabled() && MultipleCarbs.isEnabled()) {
+                            l.add(new StatusItem("Latest Food Download", ageLastFood + " ago (Rate: " + rateLastFood+ " ago)"));
+                            String s = gs(R.string.yes);
+                            if (!MultipleCarbs.isDownloadAllowed()) {
+                                s = "generally " + s + " but currently " + gs(R.string.no);
+                            }
+                            l.add(new StatusItem("Download food", s));
+                        }
 
                     } catch (JSONException e) {
 

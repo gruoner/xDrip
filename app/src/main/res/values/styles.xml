@@ -17,10 +17,9 @@
 
 
     <style name="AppThemeToolBar" parent="Theme.AppCompat.NoActionBar">
-    <item name="android:background">#212121</item>
-
-    <item name="android:textColor">@android:color/white</item>
-</style>
+        <item name="android:background">#212121</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
     <style name="AppThemeToolBarLite" parent="Theme.AppCompat.NoActionBar">
         <item name="android:actionBarStyle">@style/MyActionBar</item>
         <item name="android:textColor">@android:color/white</item>
@@ -45,8 +44,8 @@
         <item name="android:windowCloseOnTouchOutside">true</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-
     </style>
+
     <style name="KeypadButton">
         <item name="android:layout_margin">5dp</item>
         <item name="android:background">#666666</item>
@@ -112,4 +111,9 @@
     <style name="WhiteActionBar.Subtitle">
         <item name="android:textColor">@android:color/black</item>
     </style>
+
+    <style name="AppTheme.Picker" parent="Theme.AppCompat.Light.NoActionBar" >
+        <item name="android:textColorPrimary">@android:color/white</item>
+    </style>
+
 </resources>

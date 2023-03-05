@@ -629,6 +629,12 @@ public class JoH {
         return true;
     }
 
+    public static synchronized long getRateLimit(String name) {
+        if (rateLimits.containsKey(name))
+            return rateLimits.get(name);
+        else return 0;
+    }
+
     public static String getDeviceDetails() {
         final String manufacturer = Build.MANUFACTURER.replace(" ", "_");
         final String model = Build.MODEL.replace(" ", "_");

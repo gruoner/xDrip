@@ -36,7 +36,9 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.preference.SwitchPreference;
 import android.provider.Settings;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
@@ -123,6 +125,9 @@ import com.eveningoutpost.dexdrip.databinding.ActivityHomeBinding;
 import com.eveningoutpost.dexdrip.databinding.ActivityHomeShelfSettingsBinding;
 import com.eveningoutpost.dexdrip.databinding.PopupInitialStatusHelperBinding;
 import com.eveningoutpost.dexdrip.eassist.EmergencyAssistActivity;
+import com.eveningoutpost.dexdrip.eassist.GetLocationByLM;
+import com.eveningoutpost.dexdrip.food.FoodManager;
+import com.eveningoutpost.dexdrip.food.MultipleCarbs;
 import com.eveningoutpost.dexdrip.insulin.Insulin;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
@@ -144,6 +149,7 @@ import com.eveningoutpost.dexdrip.ui.graphic.ITrendArrow;
 import com.eveningoutpost.dexdrip.ui.graphic.TrendArrowFactory;
 import com.eveningoutpost.dexdrip.utils.ActivityWithMenu;
 import com.eveningoutpost.dexdrip.utils.BgToSpeech;
+import com.eveningoutpost.dexdrip.utils.ConfigureImportExport;
 import com.eveningoutpost.dexdrip.utils.DatabaseUtil;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 import com.eveningoutpost.dexdrip.utils.DisplayQRCode;
@@ -281,6 +287,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     private static double last_speech_time = 0;
     private static float hours = DEFAULT_CHART_HOURS;
     private PreviewLineChartView previewChart;
+    private ImageButton foodButton;
     private Button stepsButton;
     private Button bpmButton;
     private TextView dexbridgeBattery;
@@ -301,7 +308,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     double thisInsulinSumNumber = 0;
     double[] thisinsulinnumber = new double[MAX_INSULIN_PROFILES];
     Insulin[] thisinsulinprofile = new Insulin[MAX_INSULIN_PROFILES];
-    ArrayList<Insulin> insulins = null;
     double thistimeoffset = 0;
     String thisword = "";
     String thisuuid = "";
@@ -484,8 +490,20 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         if (searchWords == null) {
             initializeSearchWords("");
         }
-        if (insulins == null)   // TODO only when using multiples?
-            insulins = InsulinManager.getDefaultInstance();
+        if (MultipleInsulins.isEnabled())   // alway load all Insulin profiles because even in single mode we store injections with the default bolus
+            InsulinManager.getDefaultInstance();
+        if (MultipleCarbs.isEnabled())   // alway load all Food profiles
+            FoodManager.getDefaultInstance(false);
+
+        if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
+                Pref.getBooleanDefaultFalse("nightscout_device_append_location_info")) {
+            if ((ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) &&
+                    (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED))
+            {
+                ActivityCompat.requestPermissions(this, new String[] {android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, GetLocationByLM.MY_PERMISSIONS_REQUEST_GPS);
+            }
+            GetLocationByLM.prepareForLocation();
+        }
 
         this.btnSpeak = (ImageButton) findViewById(R.id.btnTreatment);
         btnSpeak.setOnClickListener(v -> promptTextInput());
@@ -493,6 +511,12 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             promptSpeechInput();
             return true;
         });
+
+        this.foodButton = (ImageButton) findViewById(R.id.foodButton);
+        if (MultipleCarbs.isAvailable())
+            foodButton.setVisibility(View.VISIBLE);
+        else foodButton.setVisibility(View.INVISIBLE);
+        foodButton.setOnClickListener(v -> promptFoodInput());
 
         this.btnNote = (ImageButton) findViewById(R.id.btnNote);
         btnNote.setOnLongClickListener(v -> {
@@ -537,7 +561,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                     textInsulinDose[finalI].setVisibility(View.INVISIBLE);
                     btnInsulinDose[finalI].setVisibility(View.INVISIBLE);
                     // create individual treatment just for this entry
-                    Treatments.create(0, thisinsulinnumber[finalI], Treatments.convertLegacyDoseToInjectionListByName(thisinsulinprofile[finalI].getName(), thisinsulinnumber[finalI]), Treatments.getTimeStampWithOffset(thistimeoffset));
+                    Treatments.create(0, null, thisinsulinnumber[finalI], Treatments.convertLegacyDoseToInjectionListByName(thisinsulinprofile[finalI].getName(), thisinsulinnumber[finalI]), Treatments.getTimeStampWithOffset(thistimeoffset));
 
                     thisinsulinnumber[finalI] = 0;
                     insulinset[finalI] = false;
@@ -557,7 +581,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             textCarbohydrates.setVisibility(View.INVISIBLE);
             btnCarbohydrates.setVisibility(View.INVISIBLE);
             reset_viewport = true;
-            Treatments.create(thiscarbsnumber, 0, new ArrayList<InsulinInjection>(), Treatments.getTimeStampWithOffset(thistimeoffset));
+            Treatments.create(thiscarbsnumber, null,0, new ArrayList<InsulinInjection>(), Treatments.getTimeStampWithOffset(thistimeoffset));
             thiscarbsnumber = 0;
             if (hideTreatmentButtonsIfAllDone()) {
                 updateCurrentBgInfo("carbs button");
@@ -915,7 +939,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                             injections.add(injection);
                         }
                     Log.d(TAG, "processAndApproveTreatment create watchkeypad Treatment carbs=" + thiscarbsnumber + " insulin=" + thisInsulinSumNumber + " timestamp=" + JoH.dateTimeText(time) + " uuid=" + thisuuid);
-                    Treatments.create(thiscarbsnumber, thisInsulinSumNumber, injections, time, thisuuid);
+                    Treatments.create(thiscarbsnumber, null, thisInsulinSumNumber, injections, time, thisuuid);
 // gruoner: changed pendiq handling 09/12/19        TODO remove duplicate code with helper function
 // in case of multiple injections in a treatment, select the injection with the primary insulin profile defined in the profile editor; if not found, take 0
 // in case of a single injection in a treatment, assume thats the #units to send to pendiq
@@ -938,7 +962,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                     InsulinInjection injection = new InsulinInjection(thisinsulinprofile[i], thisinsulinnumber[i]);
                     injections.add(injection);
                 }
-            Treatments.create(thiscarbsnumber, thisInsulinSumNumber, injections, Treatments.getTimeStampWithOffset(mytimeoffset));
+            Treatments.create(thiscarbsnumber, null, thisInsulinSumNumber, injections, Treatments.getTimeStampWithOffset(mytimeoffset));
 // gruoner: changed pendiq handling 09/12/19   TODO remove duplicate code with helper function
 // in case of multiple injections in a treatment, select the injection with the primary insulin profile defined in the profile editor; if not found, take 0
 // in case of a single injection in a treatment, assume thats the #units to send to pendiq
@@ -1300,6 +1324,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
         startActivity(new Intent(this, PhoneKeypadInputActivity.class));
     }
+    private void promptFoodInput() {
+        Log.d(TAG, "Showing pop-up");
+        startActivity(new Intent(this, FoodInputActivity.class));
+    }
 
     private void promptTextInput() {
 
@@ -1622,6 +1650,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                             if (thisnumber > 0) {
                                 thisinsulinnumber[number] = thisnumber;
                                 textInsulinDose[number].setText(thisNumberStr + " " + insulin.getName());
+                                if (MultipleInsulins.useProfilespecificColoring())
+                                    textInsulinDose[number].setTextColor(insulin.getColor());
                                 Log.d(TAG, insulin.getName() + " dose: " + thisNumberStr);
                                 insulinset[number] = true;
                                 btnInsulinDose[number].setVisibility(View.VISIBLE);
@@ -1925,6 +1955,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         activityVisible = true;
         updateCurrentBgInfo("generic on resume");
         updateHealthInfo("generic on resume");
+
+        if (MultipleCarbs.isAvailable())
+            foodButton.setVisibility(View.VISIBLE);
+        else foodButton.setVisibility(View.INVISIBLE);
 
         NFControl.initNFC(this, false);
 
@@ -3424,6 +3458,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         startActivity(new Intent(getApplicationContext(), SdcardImportExport.class));
     }
 
+    public void configureImportExport(MenuItem myitem) {
+        startActivity(new Intent(getApplicationContext(), ConfigureImportExport.class));
+    }
+
     public void showMapFromMenu(MenuItem myitem) {
         startActivity(new Intent(getApplicationContext(), MapsActivity.class));
     }
@@ -3611,12 +3649,136 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.action_resend_last_bg:
+                WatchUpdaterService.startServiceAndResendData(0);
+                if (Pref.getBooleanDefaultFalse("pref_amazfit_enable_key")) {
+                    Amazfitservice.start("xDrip_synced_SGV_data");
+                }
+                break;
+            case R.id.action_open_watch_settings:
+                startService(new Intent(this, WatchUpdaterService.class).setAction(WatchUpdaterService.ACTION_OPEN_SETTINGS));
+                break;
+            case R.id.action_sync_watch_db:
+                startService(new Intent(this, WatchUpdaterService.class).setAction(WatchUpdaterService.ACTION_RESET_DB));
+                break;
+        }
+
+        if (item.getItemId() == R.id.action_export_database) {
+            new AsyncTask<Void, Void, String>() {
+                @Override
+                protected String doInBackground(Void... params) {
+                    int permissionCheck = ContextCompat.checkSelfPermission(Home.this,
+                            Manifest.permission.READ_EXTERNAL_STORAGE);
+                    if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(Home.this,
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                0);
+                        return null;
+                    } else {
+                        String f =  DatabaseUtil.saveSql(getBaseContext());
+                        ConfigureImportExport.dispatchAdditionalExports(f, true, false);
+                        return f;
+                    }
+
+                }
+
+                @Override
+                protected void onPostExecute(String filename) {
+                    super.onPostExecute(filename);
+                    if (filename != null) {
+                        snackBar(R.string.share, getString(R.string.exported_to) + filename, makeSnackBarUriLauncher(Uri.fromFile(new File(filename)), getString(R.string.share_database)), Home.this);
+                        startActivity(new Intent(xdrip.getAppContext(), SdcardImportExport.class).putExtra("backup", "now").setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                    /*    SnackbarManager.show(
+                                Snackbar.with(Home.this)
+                                        .type(SnackbarType.MULTI_LINE)
+                                        .duration(4000)
+                                        .text(getString(R.string.exported_to) + filename) // text to display
+                                        .actionLabel("Share") // action button label
+                                        .actionListener(new SnackbarUriListener(Uri.fromFile(new File(filename)))),
+                                Home.this);*/
+                    } else {
+                        Toast.makeText(Home.this, R.string.could_not_export_database, Toast.LENGTH_LONG).show();
+                    }
+                }
+            }.execute();
+
+            return true;
+        }
+
+        if (item.getItemId() == R.id.action_import_db) {
+            startActivity(new Intent(this, ImportDatabaseActivity.class));
+            return true;
+        }
+
         /*// jamorham additions
         if (item.getItemId() == R.id.synctreatments) {
             startActivity(new Intent(this, GoogleDriveInterface.class));
             return true;
 
         }*/
+        ///
+
+        if (item.getItemId() == R.id.action_export_csv_sidiary) {
+
+            long from = Pref.getLong("sidiary_last_exportdate", 0);
+            final GregorianCalendar date = new GregorianCalendar();
+            final DatePickerFragment datePickerFragment = new DatePickerFragment();
+            if (from > 0) datePickerFragment.setInitiallySelectedDate(from);
+            datePickerFragment.setAllowFuture(false);
+            datePickerFragment.setTitle(getString(R.string.sidiary_date_title));
+            datePickerFragment.setDateCallback(new ProfileAdapter.DatePickerCallbacks() {
+                @Override
+                public void onDateSet(int year, int month, int day) {
+                    date.set(year, month, day);
+                    date.set(Calendar.HOUR_OF_DAY, 0);
+                    date.set(Calendar.MINUTE, 0);
+                    date.set(Calendar.SECOND, 0);
+                    date.set(Calendar.MILLISECOND, 0);
+                    new AsyncTask<Void, Void, String>() {
+                        @Override
+                        protected String doInBackground(Void... params) {
+                            int permissionCheck = ContextCompat.checkSelfPermission(Home.this,
+                                    Manifest.permission.READ_EXTERNAL_STORAGE);
+                            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                                ActivityCompat.requestPermissions(Home.this,
+                                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                        0);
+                                return null;
+                            } else {
+                                String f =  DatabaseUtil.saveCSV(getBaseContext(), date.getTimeInMillis());
+                                ConfigureImportExport.dispatchAdditionalExports(f, false, false);
+                                return f;
+                            }
+                        }
+
+                        @Override
+                        protected void onPostExecute(String filename) {
+                            super.onPostExecute(filename);
+                            if (filename != null) {
+                                Pref.setLong("sidiary_last_exportdate", System.currentTimeMillis());
+                                snackBar(R.string.share, getString(R.string.exported_to) + filename, makeSnackBarUriLauncher(Uri.fromFile(new File(filename)), getString(R.string.share_database)), Home.this);
+                            } else {
+                                Toast.makeText(Home.this, gs(R.string.could_not_export_csv_), Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }.execute();
+                }
+            });
+            datePickerFragment.show(getFragmentManager(), "DatePicker");
+            return true;
+        }
+
+        if (item.getItemId() == R.id.action_toggle_speakreadings) {
+            Pref.toggleBoolean("bg_to_speech");
+            invalidateOptionsMenu();
+            if (Pref.getBooleanDefaultFalse("bg_to_speech")) {
+                BgToSpeech.testSpeech();
+            }
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -3811,6 +3973,11 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                 && permissions.length > 0 && grantResults.length > 0
                 && permissions[0].equals(WRITE_EXTERNAL_STORAGE) && grantResults[0] == 0) {
             SdcardImportExport.restoreSettingsNow(this);
+        }
+        if ((requestCode == GetLocationByLM.MY_PERMISSIONS_REQUEST_GPS)
+                && permissions.length > 0 && grantResults.length > 0
+                && permissions[0].equals(android.Manifest.permission.ACCESS_FINE_LOCATION) && grantResults[0] == 0) {
+            GetLocationByLM.prepareForLocation();
         }
     }
 

@@ -1,25 +1,21 @@
-package com.eveningoutpost.dexdrip.insulin;
+package com.eveningoutpost.dexdrip.food;
 
 import com.eveningoutpost.dexdrip.Models.JoH;
 import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 import com.eveningoutpost.dexdrip.utils.HomeWifi;
 import com.google.common.base.Strings;
-
 import static com.eveningoutpost.dexdrip.utils.DexCollectionType.NSFollow;
 
-public class MultipleInsulins {
-
+public class MultipleCarbs {
     public static boolean isEnabled() {
-        return Pref.getBooleanDefaultFalse("multiple_insulin_types");
+        return Pref.getBooleanDefaultFalse("multiple_carbs_types");
     }
 
-    public static boolean useBasalActivity() {
-        return Pref.getBooleanDefaultFalse("multiple_insulin_use_basal_activity");
-    }
-
-    public static boolean useProfilespecificColoring() {
-        return Pref.getBooleanDefaultFalse("multiple_insulin_use_profilespecific_coloring");
+    public static boolean isAvailable() {
+        if (!isEnabled()) return false;
+        if (FoodManager.getDefaultInstance(false).size() == 0) return false;
+        return true;
     }
 
     public static boolean isDownloadableByUploader() {
@@ -34,7 +30,7 @@ public class MultipleInsulins {
     {
         if (isDownloadableByFollower() || isDownloadableByUploader())
         {
-            String p = Pref.getStringDefaultBlank("download_insulin_just_when_in_wifi");
+            String p = Pref.getStringDefaultBlank("download_food_just_when_in_wifi");
             if (Strings.isNullOrEmpty(p))
                 return true;
             int decision = 99;
@@ -49,13 +45,15 @@ public class MultipleInsulins {
                     else return true;
                 case 2:
                     return HomeWifi.isSet() && HomeWifi.isConnected();
-                case 3:
-                    return false;
                 case 99:    // case when not parsable Pref
                     return false;
             }
             return true;    // catchall
         }
         return false;
+    }
+
+    public static boolean useExtendedCarbs4Prediction() {
+        return Pref.getBooleanDefaultFalse("multiple_carbs_use_for_prediction");
     }
 }
