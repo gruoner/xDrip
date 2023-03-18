@@ -86,7 +86,7 @@ public class GetLocationByLM {
 
     public static String getMapUrl() {
         if (lastLocation == null) return "";
-        return "https://maps.google.com/?q=" + lastLocation.getLatitude() + "," + lastLocation.getLongitude();
+        return "https://maps.google.de/?q=" + lastLocation.getLatitude() + "," + lastLocation.getLongitude();
     }
 
 
