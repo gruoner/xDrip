@@ -2,9 +2,9 @@ package com.eveningoutpost.dexdrip.insulin;
 
 import android.util.Log;
 
-import com.eveningoutpost.dexdrip.Models.InsulinProfile;
+import com.eveningoutpost.dexdrip.models.InsulinProfile;
 import com.eveningoutpost.dexdrip.R;
-import com.eveningoutpost.dexdrip.UtilityModels.Pref;
+import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
 import com.eveningoutpost.dexdrip.xdrip;
 import com.google.common.base.Strings;
