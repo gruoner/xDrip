@@ -539,4 +539,14 @@
         <item>400</item>
     </string-array>
 
+    <string-array name="FoodDownloadWifiOptionsData">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="FoodDownloadWifiOptions">
+        <item>even when on GSM</item>
+        <item>when on wifi</item>
+        <item>only when on HomeWifi</item>
+    </string-array>
 </resources>

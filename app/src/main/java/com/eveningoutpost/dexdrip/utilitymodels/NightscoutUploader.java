@@ -10,6 +10,8 @@ import com.activeandroid.ActiveAndroid;
 import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.MegaStatus;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
+import com.eveningoutpost.dexdrip.food.FoodManager;
+import com.eveningoutpost.dexdrip.food.MultipleCarbs;
 import com.eveningoutpost.dexdrip.insulin.Insulin;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
@@ -116,8 +118,10 @@ public class NightscoutUploader {
 
         private static final String LAST_SUCCESS_TREATMENT_DOWNLOAD = "NS-Last-Treatment-Download-Modified";
         private static final String LAST_SUCCESS_INSULIN_DOWNLOAD = "NS-Last-Insulin-Download-Modified";
+        private static final String LAST_SUCCESS_FOOD_DOWNLOAD = "NS-Last-Food-Download-Modified";
         private static final String ETAG = "ETAG";
-
+        protected static volatile long lastInsulinDownloaded = 0;
+        protected static volatile long lastFoodDownloaded = 0;
 
         private static int failurecount = 0;
 
@@ -175,6 +179,9 @@ public class NightscoutUploader {
 
             @GET("insulin")
             Call<ResponseBody> getInsulin(@Header("api-secret") String secret);
+
+            @GET("food")
+            Call<ResponseBody> getFood(@Header("api-secret") String secret);
         }
 
         private class UploaderException extends RuntimeException {
@@ -280,9 +287,14 @@ public class NightscoutUploader {
                     if (treatmensDownloadEnabled())
                         if (doRESTtreatmentDownload(prefs))
                             refresh = true;
-                    if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
+                    if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("ns-insulin-download", 60*60))    // load insulin every hour
                         if (doRESTinsulinDownload(prefs))
                             refresh = true;
+                    if (foodDownloadEnabled() && MultipleCarbs.isEnabled() && MultipleCarbs.isDownloadAllowed() && JoH.ratelimit("ns-food-download", 24*60*60))    // load FOOD every day when allowed to do so
+                        if (doRESTfoodDownload(prefs))
+                        {
+                            refresh = true;
+                        }
                     if (refresh) {
                         Home.staticRefreshBGCharts();
                     }
@@ -310,9 +322,14 @@ public class NightscoutUploader {
                 if (treatmensDownloadEnabled())
                     if (doRESTtreatmentDownload(prefs))
                         substatus = true;
-                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
+                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("ns-insulin-download", 60*60))    // load insulin every hour
                     if (doRESTinsulinDownload(prefs))
                         substatus = true;
+                if (foodDownloadEnabled() && MultipleCarbs.isEnabled() && MultipleCarbs.isDownloadAllowed() && (JoH.ratelimit("ns-food-download", 24*60*60)))    // load FOOD every day
+                    if (doRESTfoodDownload(prefs))
+                    {
+                        substatus = true;
+                    }
                 if (substatus) {
                     Home.staticRefreshBGCharts();
                 }
@@ -369,7 +386,7 @@ public class NightscoutUploader {
             
             
         } catch (UnknownHostException e) {
-            Log.w(TAG, "UnknownHostException error nanme not resovled" + fullHost);
+            Log.w(TAG, "UnknownHostException error name not resovled" + fullHost);
             return baseURI;
         }
     }
@@ -541,7 +558,7 @@ public class NightscoutUploader {
                         r = nightscoutService.getInsulin(hashedSecret).execute();
 
                         if ((r != null) && (r.raw().networkResponse().code() == HttpURLConnection.HTTP_NOT_MODIFIED)) {
-                            Log.d(TAG, "Treatments on " + uri.getHost() + ":" + uri.getPort() + " not modified since: " + last_modified_string);
+                            Log.d(TAG, "Insulin on " + uri.getHost() + ":" + uri.getPort() + " not modified since: " + last_modified_string);
                             continue; // skip further processing of this url
                         }
 
@@ -550,29 +567,21 @@ public class NightscoutUploader {
                             try {
                                 NSprofiles = new GsonBuilder().create().fromJson(r.body().string(), NightscoutFollow.NightscoutInsulinStructure[].class);
                                 android.util.Log.d(TAG, "insulin profiles loaded from nightscout");
-                                last_modified_string = r.raw().header("Last-Modified", JoH.getRFC822String(request_start));
-                                final String this_etag = r.raw().header("Etag", "");
-                                if (this_etag.length() > 0) {
-                                    // older versions of nightscout don't support if-modified-since so check the etag for duplication
-                                    if (this_etag.equals(PersistentStore.getString(ETAG + LAST_MODIFIED_KEY))) {
-                                        Log.d(TAG, "Skipping Insulin on " + uri.getHost() + ":" + uri.getPort() + " due to etag duplicate: " + this_etag);
-                                        continue;
-                                    }
-                                    PersistentStore.setString(ETAG + LAST_MODIFIED_KEY, this_etag);
-                                }
                                 if (InsulinManager.updateFromNightscout(new ArrayList<>(Arrays.asList(NSprofiles)))) {
-                                    PersistentStore.setString(LAST_MODIFIED_KEY, last_modified_string);
                                     checkGzipSupport(r);
                                     ActiveAndroid.clearCache();
                                     new_data = true;
                                 }
+                                updateInsulinDownloaded();
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 android.util.Log.d(TAG, "Got exception during insulin load: " + e.toString());
+                                JoH.clearRatelimit("ns-insulin-download");
                             }
 
                         } else {
                             Log.d(TAG, "Failed to get insulin from: " + baseURI);
+                            JoH.clearRatelimit("ns-insulin-download");
                         }
 
                     } else {
@@ -584,9 +593,115 @@ public class NightscoutUploader {
             } catch (Exception e) {
                 String msg = "Unable to do REST API Download " + e + " " + e.getMessage() + " url: " + baseURI;
                 handleRestFailure(msg);
+                JoH.clearRatelimit("ns-insulin-download");
             }
         }
         Log.d(TAG, "doRESTinsulinDownload() finishing run");
+        return new_data;
+    }
+
+    private synchronized boolean doRESTfoodDownload(SharedPreferences prefs) {
+        final String baseURLSettings = prefs.getString("cloud_storage_api_base", "");
+        final ArrayList<String> baseURIs = new ArrayList<>();
+
+        boolean new_data = false;
+        Log.d(TAG, "doRESTfoodDownload() starting run");
+
+        try {
+            for (String baseURLSetting : baseURLSettings.split(" ")) {
+                String baseURL = baseURLSetting.trim();
+                if (baseURL.isEmpty()) continue;
+                baseURIs.add(baseURL + (baseURL.endsWith("/") ? "" : "/"));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Unable to process API Base URL: " + e);
+            return false;
+        }
+
+        // process a list of base uris
+        for (String baseURI : baseURIs) {
+            try {
+                baseURI = TryResolveName(baseURI);
+                int apiVersion = 0;
+                URI uri = new URI(baseURI);
+                if ((uri.getHost().startsWith("192.168.")) && prefs.getBoolean("skip_lan_uploads_when_no_lan", true) && (!JoH.isLANConnected())) {
+                    Log.d(TAG, "Skipping Nighscout download from: " + uri.getHost() + " due to no LAN connection");
+                    continue;
+                }
+
+                if (uri.getPath().endsWith("/v1/")) apiVersion = 1;
+                String baseURL;
+                String secret = uri.getUserInfo();
+                if ((secret == null || secret.isEmpty()) && apiVersion == 0) {
+                    baseURL = baseURI;
+                } else if ((secret == null || secret.isEmpty())) {
+                    throw new Exception("Starting with API v1, a pass phase is required");
+                } else if (apiVersion > 0) {
+                    baseURL = baseURI.replaceFirst("//[^@]+@", "//");
+                } else {
+                    throw new Exception("Unexpected baseURI: " + baseURI);
+                }
+
+                final Retrofit retrofit = new Retrofit.Builder().baseUrl(baseURL).client(client).build();
+                final NightscoutService nightscoutService = retrofit.create(NightscoutService.class);
+
+                final String checkurl = retrofit.baseUrl().url().toString();
+                if (!isNightscoutCompatible(checkurl)) {
+                    Log.e(TAG, "Nightscout version: " + getNightscoutVersion(checkurl) + " on " + checkurl + " is not compatible with the Rest-API download feature!");
+                    continue;
+                }
+
+                if (apiVersion == 1) {
+                    final String hashedSecret = Hashing.sha1().hashBytes(secret.getBytes(Charsets.UTF_8)).toString();
+                    final Response<ResponseBody> r;
+                    if (hashedSecret != null) {
+                        doStatusUpdate(nightscoutService, retrofit.baseUrl().url().toString(), hashedSecret); // update status if needed
+                        final String LAST_MODIFIED_KEY = LAST_SUCCESS_FOOD_DOWNLOAD + CipherUtils.getMD5(uri.toString()); // per uri marker
+                        String last_modified_string = PersistentStore.getString(LAST_MODIFIED_KEY);
+                        if (last_modified_string.equals("")) last_modified_string = JoH.getRFC822String(0);
+                        final long request_start = JoH.tsl();
+                        r = nightscoutService.getFood(hashedSecret).execute();
+
+                        if ((r != null) && (r.raw().networkResponse().code() == HttpURLConnection.HTTP_NOT_MODIFIED)) {
+                            Log.d(TAG, "Food on " + uri.getHost() + ":" + uri.getPort() + " not modified since: " + last_modified_string);
+                            continue; // skip further processing of this url
+                        }
+
+                        if ((r != null) && (r.isSuccessful())) {
+                            NightscoutFollow.NightscoutFoodStructure[] NSprofiles = null;
+                            try {
+                                NSprofiles = new GsonBuilder().create().fromJson(r.body().string(), NightscoutFollow.NightscoutFoodStructure[].class);
+                                android.util.Log.d(TAG, "food profiles loaded from nightscout");
+                                if (FoodManager.updateFromNightscout(new ArrayList<>(Arrays.asList(NSprofiles)))) {
+                                    checkGzipSupport(r);
+                                    ActiveAndroid.clearCache();
+                                    new_data = true;
+                                }
+                                updateFoodDownloaded();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                android.util.Log.d(TAG, "Got exception during food load: " + e.toString());
+                                JoH.clearRatelimit("ns-food-download");
+                            }
+
+                        } else {
+                            Log.d(TAG, "Failed to get food from: " + baseURI);
+                            JoH.clearRatelimit("ns-food-download");
+                        }
+
+                    } else {
+                        Log.d(TAG, "Old api version not supported");
+                    }
+                }
+
+
+            } catch (Exception e) {
+                String msg = "Unable to do REST API Download " + e + " " + e.getMessage() + " url: " + baseURI;
+                handleRestFailure(msg);
+                JoH.clearRatelimit("ns-food-download");
+            }
+        }
+        Log.d(TAG, "doRESTfoodDownload() finishing run");
         return new_data;
     }
 
@@ -899,6 +1014,9 @@ public class NightscoutUploader {
         record.put("notes", treatment.notes);
         record.put("uuid", treatment.uuid);
         record.put("carbs", treatment.carbs);
+        if (treatment.foodJSON != null) {
+            record.put("foodIntake", treatment.foodJSON);
+        }
         record.put("insulin", treatment.insulin);
         if (treatment.insulinJSON != null) {
             record.put("insulinInjections", treatment.insulinJSON);
@@ -1451,6 +1569,9 @@ public class NightscoutUploader {
                                         if (treatment.notes != null) record.put("notes", treatment.notes);
                                         record.put("uuid", treatment.uuid);
                                         record.put("carbs", treatment.carbs);
+                                        if (treatment.foodJSON != null) {
+                                            record.put("foodIntake", treatment.foodJSON);
+                                        }
                                         record.put("insulin", treatment.insulin);
                                         if (treatment.insulinJSON != null) {
                                             record.put("insulinInjections", treatment.insulinJSON);
@@ -1704,11 +1825,27 @@ public class NightscoutUploader {
         else return false;
     }
 
+    public static boolean foodDownloadEnabled() {
+
+        if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
+                Pref.getBooleanDefaultFalse("cloud_storage_api_download_enable"))
+            return true;
+        else return false;
+    }
+
     public static boolean treatmensDownloadEnabled() {
         if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
                 Pref.getBooleanDefaultFalse("cloud_storage_api_download_enable") &&
                 Pref.getBooleanDefaultFalse("cloud_storage_api_download_treatments_enable"))
             return true;
         else return false;
+    }
+
+    static void updateInsulinDownloaded() {
+        lastInsulinDownloaded = JoH.tsl();
+    }
+
+    static void updateFoodDownloaded() {
+        lastFoodDownloaded = JoH.tsl();
     }
 }

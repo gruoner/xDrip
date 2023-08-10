@@ -133,6 +133,8 @@
     <string name="blood_test">Bluttest</string>
     <string name="share">Teilen</string>
     <string name="title_activity_profile_editor">Behandlungen ändern</string>
+    <string name="title_activity_insulinprofile_editor">Insulin Profile Editor</string>
+    <string name="title_activity_foodprofile_editor">Food Profile Editor</string>
     <string name="first_use_menu_to_scan">Zuerst sollte nach dem BT-Gerät gescannt werden oder die Datenquelle in den Einstellungen geändert werden.</string>
     <string name="first_configure_ip_address">Zuerst sollte das Wifi-Wixel über IP-Adressen oder Parakeet-URL konfiguriert werden</string>
     <string name="now_start_your_sensor">Jetzt den Sensor starten oder Einstellungen überprüfen.</string>
@@ -245,6 +247,8 @@
     <string name="extra_tags_dialog_message">Die hier eingegebenen Tags werden in xDrip protokolliert. Format ist tag:level. Level kann v, d oder i sein. Zum Beispiel bgreading:i, DexCollectionService:v. Diese Tags werden mit niedriger Priorität protokolliert in der Fehler- und Ereignisliste.</string>
     <string name="extra_tags_dialog_title">Gib weitere Tags ein, die protokolliert werden sollen</string>
     <string name="data_source_settings">Einstellung der Datenquelle</string>
+    <string name="summary_nsfollow_download_treatments_even_xdrip">Lade Treatments von Nightscout herunter auch wenn sie von XDrip+ stammen</string>
+    <string name="title_nsfollow_download_treatments_even_xdrip">Download Treatments auch von XDrip+</string>
     <string name="smart_watch_features">Smart Watch Eigenschaften</string>
     <string name="wear_integration">Wear Integration</string>
     <string name="send_data_to_android_wear_watch">Daten an Watchface senden</string>
@@ -1613,6 +1617,11 @@
     <string name="enable_streaming_dialog_text">Möchtest du xDrip mit diesem Sensor verbinden? Das Libre Lesegerät und die LibreLink App werden dann keine Alarme mehr empfangen. Drücke \"Ja\" und scanne erneut für eine Verbindung (wähle \"nicht verbinden\", wenn du xDrip mit der gepatchten Libre App nutzen möchtest)</string>
     <string name="enable_streaming_dialog_title">Verbinde Libre-Sensor mit Bluetooth</string>
     <string name="without_camera_permission_cannot_scan_barcode">Ohne Kamera-Berechtigung können wir keinen Barcode scannen</string>
+    <string name="NameFoodCategory_one">Frühstück</string>
+    <string name="NameFoodCategory_two">Mittag</string>
+    <string name="NameFoodCategory_three">Nacht</string>
+    <string name="NameFoodCategory_four">Snacks</string>
+    <string name="NameFoodCategory_all">alle Kateorien</string>
     <string name="summary_create_missing_filtered">Gefilterte Daten bei Bedarf erstellen</string>
     <string name="title_create_missing_filtered">Ergänze fehlende gefilterte Werte</string>
     <string name="summary_widget_hide_graph">Graph auf Widgets ausblenden (wird beim nächsten Wert aktiv)</string>
@@ -1659,6 +1668,8 @@
     <string name="message_variant">xDrip+ Varianten erlauben es, mehrere Apps gleichzeitig zu installieren. Entweder für den fortgeschrittenen Einsatz oder zur gleichzeitigen Installation von xDrip-Experimental und xDrip+.\n\nMit Varianten könnten einige Dinge nicht richtig funktionieren, da die eine oder andere App exklusiven Zugriff hat, zum Beispiel Bluetooth-Kopplung. Feedback und Fehlerberichte über Varianten sind willkommen!</string>
     <string name="expires_unknown">Läuft ab: ???</string>
     <string name="sensor_expired">Abgelaufen!</string>
+    <string name="amountoffood">Wie viel davon?</string>
+    <string name="foodintakeconfirmation">Am %s %dg Kohlenhydrate (%s) gegessen.</string>
     <plurals name="sensor_expires">
         <item quantity="one">Läuft ab: %sd</item>
         <item quantity="other">Läuft ab: %sd</item>
