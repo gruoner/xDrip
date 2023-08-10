@@ -3,8 +3,8 @@ package com.eveningoutpost.dexdrip.food;
 import android.annotation.SuppressLint;
 import java.util.ArrayList;
 import java.util.Collections;
-import com.eveningoutpost.dexdrip.Models.FoodIntake;
-import com.eveningoutpost.dexdrip.Models.FoodProfile;
+import com.eveningoutpost.dexdrip.models.FoodIntake;
+import com.eveningoutpost.dexdrip.models.FoodProfile;
 import com.google.common.base.Strings;
 
 public class Food {
