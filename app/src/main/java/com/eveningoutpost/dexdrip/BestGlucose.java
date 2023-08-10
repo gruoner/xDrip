@@ -1,6 +1,7 @@
 package com.eveningoutpost.dexdrip;
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.text.SpannableString;
 import android.text.style.BackgroundColorSpan;
