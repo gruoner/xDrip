@@ -1,8 +1,8 @@
 package com.eveningoutpost.dexdrip.food;
 
 import android.util.Log;
-import com.eveningoutpost.dexdrip.Models.FoodProfile;
-import com.eveningoutpost.dexdrip.Models.JoH;
+import com.eveningoutpost.dexdrip.models.FoodProfile;
+import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
 import com.google.common.base.Strings;
 import java.util.ArrayList;

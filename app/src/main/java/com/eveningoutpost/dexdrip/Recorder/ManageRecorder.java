@@ -4,11 +4,11 @@ import android.os.Bundle;
 import android.widget.Button;
 
 import com.eveningoutpost.dexdrip.Home;
-import com.eveningoutpost.dexdrip.Models.AudioRecorder;
-import com.eveningoutpost.dexdrip.Models.JoH;
+import com.eveningoutpost.dexdrip.models.AudioRecorder;
+import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.R;
 
-import com.eveningoutpost.dexdrip.UtilityModels.Pref;
+import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import com.eveningoutpost.dexdrip.ui.dialog.GenericConfirmDialog;
 import com.eveningoutpost.dexdrip.utils.ActivityWithMenu;
 

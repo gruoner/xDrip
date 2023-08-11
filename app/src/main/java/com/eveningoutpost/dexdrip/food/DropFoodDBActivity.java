@@ -4,9 +4,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.eveningoutpost.dexdrip.Home;
-import com.eveningoutpost.dexdrip.Models.FoodProfile;
-import com.eveningoutpost.dexdrip.Models.JoH;
-import com.eveningoutpost.dexdrip.UtilityModels.NightscoutUploader;
+import com.eveningoutpost.dexdrip.models.FoodProfile;
+import com.eveningoutpost.dexdrip.models.JoH;
+import com.eveningoutpost.dexdrip.utilitymodels.NightscoutUploader;
 
 /**
  * Created by gruoner on 12/03/2022.
