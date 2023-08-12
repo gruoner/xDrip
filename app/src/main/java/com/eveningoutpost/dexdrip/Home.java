@@ -3394,7 +3394,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                     ConfigureImportExport.dispatchAdditionalExports(f, true, false);
                     return f;
                 }
-
             }
 
             @Override
