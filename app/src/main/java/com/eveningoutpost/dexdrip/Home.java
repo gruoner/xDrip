@@ -3390,9 +3390,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                             0);
                     return null;
                 } else {
-                    return DatabaseUtil.saveSql(getBaseContext());
+                    String f =  DatabaseUtil.saveSql(getBaseContext());
+                    ConfigureImportExport.dispatchAdditionalExports(f, true, false);
+                    return f;
                 }
-
             }
 
             @Override
