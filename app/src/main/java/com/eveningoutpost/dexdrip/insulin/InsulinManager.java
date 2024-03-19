@@ -3,6 +3,7 @@ package com.eveningoutpost.dexdrip.insulin;
 import android.util.Log;
 
 import com.eveningoutpost.dexdrip.models.InsulinProfile;
+import androidx.annotation.Keep;
 import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
@@ -12,6 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.annotations.Expose;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,9 +29,10 @@ public class InsulinManager {
     private static volatile Insulin basalProfile, bolusProfile;
     private static Boolean loadConfigFromNightscout;
 
-    public static class insulinCurve {
-        public String type;
-        public JsonObject data;
+    @Keep
+    class insulinDataWrapper {
+        @Expose
+        public ArrayList<insulinData> profiles;
 
         public boolean isEqual(insulinCurve c) {
             if (!this.type.equalsIgnoreCase(c.type))
@@ -39,11 +42,26 @@ public class InsulinManager {
             return true;
         }
     }
-    static class insulinData {
+
+    @Keep
+    class insulinCurve {
+        @Expose
+        public String type;
+        @Expose
+        public JsonObject data;
+    }
+
+    @Keep
+    class insulinData {
+        @Expose
         public String displayName;
+        @Expose
         public String name;
+        @Expose
         public ArrayList<String> PPN;
+        @Expose
         public String concentration;
+        @Expose
         public insulinCurve Curve;
     }
     static class insulinDataWrapper {
@@ -148,6 +166,7 @@ public class InsulinManager {
         insulinDataWrapper iDW;
         try {
             String input = readTextFile(in_s);
+            Log.d(TAG,"read text bytes: " + input.length());
             Gson gson = new Gson();
             iDW = gson.fromJson(input, insulinDataWrapper.class);
             Boolean somethingChanged = false;
@@ -245,7 +264,9 @@ public class InsulinManager {
     }
 
     public static ArrayList<Insulin> getAllProfiles() {
-        checkInitialized();
+        if (profiles == null) {
+            InsulinManager.getDefaultInstance(); // this entire feature needs a serious rework
+        }
         return profiles;
     }
 
