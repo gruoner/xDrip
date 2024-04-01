@@ -44,13 +44,11 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.provider.Settings;
-
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.ContextThemeWrapper;
-import androidx.core.app.NotificationCompat;
-import androidx.loader.content.CursorLoader;
-
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.CursorLoader;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ContextThemeWrapper;
 import android.text.InputType;
 import android.text.method.DigitsKeyListener;
 import android.util.Base64;
@@ -1723,13 +1721,10 @@ public class JoH {
     public synchronized static void setBluetoothEnabled(Context context, boolean state) {
         try {
 
-           /*
-           // bluetooth is usually allowed on airplanes these days afaik
-                if (isAirplaneModeEnabled(context)) {
+            if (isAirplaneModeEnabled(context)) {
                 UserError.Log.e(TAG, "Not setting bluetooth to state: " + state + " due to airplane mode being enabled");
                 return;
             }
-            */
 
             if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
 

@@ -4,8 +4,8 @@ import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
-import androidx.annotation.ColorInt;
-import androidx.core.graphics.ColorUtils;
+import android.support.annotation.ColorInt;
+import android.support.v4.graphics.ColorUtils;
 
 public class ColorUtil {
 

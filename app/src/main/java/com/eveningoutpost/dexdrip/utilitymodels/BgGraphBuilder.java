@@ -7,7 +7,7 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.preference.PreferenceManager;
-import androidx.annotation.NonNull;
+import android.support.annotation.NonNull;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.util.Pair;

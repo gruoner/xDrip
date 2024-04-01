@@ -3,9 +3,8 @@ package com.eveningoutpost.dexdrip.services;
 // jamorham
 
 import android.content.Intent;
-import androidx.annotation.NonNull;
-import androidx.core.app.JobIntentService;
-
+import android.support.annotation.NonNull;
+import android.support.v4.app.JobIntentService;
 
 import com.eveningoutpost.dexdrip.models.UserError;
 import com.eveningoutpost.dexdrip.utilitymodels.Constants;

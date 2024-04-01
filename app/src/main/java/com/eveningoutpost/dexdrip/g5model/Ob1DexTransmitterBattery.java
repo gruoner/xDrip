@@ -1,8 +1,6 @@
 package com.eveningoutpost.dexdrip.g5model;
 
 
-import static com.eveningoutpost.dexdrip.g5model.Ob1G5StateMachine.shortTxId;
-
 import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.services.G5BaseService;
 import com.eveningoutpost.dexdrip.services.Ob1G5CollectionService;
@@ -63,7 +61,7 @@ public class Ob1DexTransmitterBattery {
 
         StringBuilder b = new StringBuilder();
 
-        if (battery.runtime > -1 && !shortTxId()) { // Excluding G7
+        if (battery.runtime > -1) {
             b.append(battery.runtime);
         }
 
@@ -95,9 +93,6 @@ public class Ob1DexTransmitterBattery {
     }
 
     public boolean voltageBWarning() {
-        if (shortTxId()) { // G7 only
-            return voltageB() < (G5BaseService.LOW_BATTERY_WARNING_LEVEL - 25);
-        }
         return voltageB() < (G5BaseService.LOW_BATTERY_WARNING_LEVEL - 10);
     };
 

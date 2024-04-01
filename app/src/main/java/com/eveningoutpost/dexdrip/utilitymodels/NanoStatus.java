@@ -12,7 +12,7 @@ package com.eveningoutpost.dexdrip.utilitymodels;
  *
  */
 
-import androidx.databinding.ObservableField;
+import android.databinding.ObservableField;
 import android.text.SpannableString;
 import android.util.Log;
 

@@ -7,7 +7,7 @@ import android.content.ContextWrapper;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import androidx.annotation.StringRes;
+import android.support.annotation.StringRes;
 import android.util.Log;
 
 import com.eveningoutpost.dexdrip.models.AlertType;
@@ -24,7 +24,6 @@ import com.eveningoutpost.dexdrip.utilitymodels.PlusAsyncExecutor;
 import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import com.eveningoutpost.dexdrip.utilitymodels.VersionTracker;
 import com.eveningoutpost.dexdrip.calibrations.PluggableCalibration;
-import com.eveningoutpost.dexdrip.utils.AppCenterCrashReporting;
 import com.eveningoutpost.dexdrip.utils.NewRelicCrashReporting;
 import com.eveningoutpost.dexdrip.utils.jobs.DailyJob;
 import com.eveningoutpost.dexdrip.utils.jobs.XDripJobCreator;
@@ -65,8 +64,7 @@ public class xdrip extends Application {
         JodaTimeAndroid.init(this);
         try {
             if (PreferenceManager.getDefaultSharedPreferences(xdrip.context).getBoolean("enable_crashlytics", true)) {
-                //NewRelicCrashReporting.start();
-                AppCenterCrashReporting.start(this);
+                NewRelicCrashReporting.start();
             }
         } catch (Exception e) {
             Log.e(TAG, e.toString());

@@ -1,6 +1,6 @@
 package com.eveningoutpost.dexdrip.utils.jobs;
 
-import androidx.annotation.NonNull;
+import android.support.annotation.NonNull;
 
 import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.models.UserError;

@@ -1,9 +1,5 @@
 package com.eveningoutpost.dexdrip.cgm.carelinkfollow.client;
 
-import com.eveningoutpost.dexdrip.cgm.carelinkfollow.auth.CareLinkAuthType;
-import com.eveningoutpost.dexdrip.cgm.carelinkfollow.auth.CareLinkAuthentication;
-import com.eveningoutpost.dexdrip.cgm.carelinkfollow.auth.CareLinkCredentialStore;
-import com.eveningoutpost.dexdrip.cgm.carelinkfollow.auth.EditableCookieJar;
 import com.eveningoutpost.dexdrip.cgm.carelinkfollow.message.ActiveNotification;
 import com.eveningoutpost.dexdrip.cgm.carelinkfollow.message.ClearedNotification;
 import com.eveningoutpost.dexdrip.cgm.carelinkfollow.message.CountrySettings;
@@ -28,13 +24,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import okhttp3.ConnectionPool;
 import okhttp3.FormBody;
-import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -67,10 +60,8 @@ public class CareLinkClient {
             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX")
     };
 
-    //Communication info
     protected OkHttpClient httpClient = null;
     protected boolean loginInProcess = false;
-    protected boolean collectingSessionInfos = false;
     protected int lastResponseCode;
 
     public int getLastResponseCode() {
@@ -101,11 +92,7 @@ public class CareLinkClient {
         return lastStackTraceString;
     }
 
-    //Credentials
-    protected CareLinkCredentialStore credentialStore;
-
     //Session info
-    protected  boolean sessionInfosLoaded = false;
     protected User sessionUser;
 
     public User getSessionUser() {
@@ -168,28 +155,6 @@ public class CareLinkClient {
 
     }
 
-    public CareLinkClient(CareLinkCredentialStore credentialStore) {
-        this.carelinkCountry = credentialStore.getCredential().country;
-        this.credentialStore = credentialStore;
-        this.createHttpClient();
-    }
-
-    private void createHttpClient(){
-
-        EditableCookieJar cookieJar = null;
-
-        cookieJar = new EditableCookieJar();
-        //Add cookies if there are any
-        if(this.credentialStore.getCredential().cookies != null && this.credentialStore.getCredential().cookies.length > 0) {
-            cookieJar.AddCookies(this.credentialStore.getCredential().cookies);
-        }
-
-        this.httpClient = new OkHttpClient.Builder()
-                .cookieJar(cookieJar)
-                .connectionPool(new ConnectionPool(5, 10, TimeUnit.MINUTES))
-                .build();
-    }
-
     protected String careLinkServer() {
         if (this.carelinkCountry.equals("us"))
             return CARELINK_CONNECT_SERVER_US;
@@ -210,7 +175,7 @@ public class CareLinkClient {
     public RecentData getRecentData(String patientUsername) {
 
         // Force login to get basic info
-        if (getAuthentication() == null)
+        if (getAuthorizationToken() == null)
             return null;
 
         // 7xxG
@@ -230,7 +195,7 @@ public class CareLinkClient {
     public String getDefaultPatientUsername() {
 
         // Force login to get basic info
-        if (getAuthentication() == null)
+        if (getAuthorizationToken() == null)
             return null;
 
         // Care Partner + multi follow => first patient
@@ -255,7 +220,7 @@ public class CareLinkClient {
             return sessionDeviceIsBle;
 
         // Force login to get basic info
-        if(getAuthentication() == null)
+        if(getAuthorizationToken() == null)
             return  false;
 
         // Patient: device from recent uploads if possible
@@ -311,8 +276,14 @@ public class CareLinkClient {
         lastErrorMessage = "";
 
         try {
-            //Clear session
-            this.clearSessionInfos();
+            //Clear cookies
+            ((SimpleOkHttpCookieJar) this.httpClient.cookieJar()).deleteAllCookies();
+
+            // Clear basic infos
+            this.sessionUser = null;
+            this.sessionProfile = null;
+            this.sessionCountrySettings = null;
+            this.sessionMonitorData = null;
 
             //Open login (get SessionId and SessionData)
             loginSessionResponse = this.getLoginSession();
@@ -330,26 +301,6 @@ public class CareLinkClient {
             consentResponse.close();
 
             // Get required sessions infos
-            if(this.getSessionInfos())
-                lastLoginSuccess = true;
-
-        } catch (Exception e) {
-            lastErrorMessage = e.getClass().getSimpleName() + ":" + e.getMessage();
-            // lastStackTraceString = Log.getStackTraceString(e);
-        } finally {
-            loginInProcess = false;
-        }
-
-        return lastLoginSuccess;
-
-    }
-
-    protected boolean getSessionInfos(){
-
-        collectingSessionInfos = true;
-
-        try {
-            this.clearSessionInfos();
             // User
             this.sessionUser = this.getMyUser();
             // Profile
@@ -357,8 +308,9 @@ public class CareLinkClient {
             // Country settings
             this.sessionCountrySettings = this.getMyCountrySettings();
             // Recent uploads (only for patients)
-            if (!this.sessionUser.isCarePartner())
+            if(!this.sessionUser.isCarePartner())
                 this.sessionRecentUploads = this.getRecentUploads(30);
+            // Multi follow enabled on server
             this.sessionM2MEnabled = this.getM2MEnabled().value;
             // Multi follow + Care Partner => patients
             if (this.sessionM2MEnabled && this.sessionUser.isCarePartner())
@@ -367,33 +319,34 @@ public class CareLinkClient {
             else
                 this.sessionMonitorData = this.getMonitorData();
 
-            if (this.sessionUser != null && this.sessionProfile != null && this.sessionCountrySettings != null && this.sessionM2MEnabled != null &&
-                    (((!this.sessionM2MEnabled || !this.sessionUser.isCarePartner()) && this.sessionMonitorData != null) ||
-                            (this.sessionM2MEnabled && this.sessionUser.isCarePartner() && this.sessionPatients != null)))
-                this.sessionInfosLoaded = true;
-            else {
-                this.clearSessionInfos();
-            }
-        } catch (Exception ex) {
-
+        } catch (Exception e) {
+            lastErrorMessage = e.getClass().getSimpleName() + ":" + e.getMessage();
+            // lastStackTraceString = Log.getStackTraceString(e);
         } finally {
-            collectingSessionInfos = false;
+            loginInProcess = false;
         }
 
+        // Set login success if everything was ok:
+        if (this.sessionUser != null && this.sessionProfile != null && this.sessionCountrySettings != null && this.sessionM2MEnabled != null &&
+                (((!this.sessionM2MEnabled || !this.sessionUser.isCarePartner()) && this.sessionMonitorData != null) ||
+                        (this.sessionM2MEnabled && this.sessionUser.isCarePartner() && this.sessionPatients != null)))
+            lastLoginSuccess = true;
+            //Clear cookies if error occured during logon
+        else
+            this.clearSessionInfos();
 
-        return this.sessionInfosLoaded;
+        return lastLoginSuccess;
 
     }
 
     protected void clearSessionInfos()
     {
-        //((SimpleOkHttpCookieJar) this.httpClient.cookieJar()).deleteAllCookies();
+        ((SimpleOkHttpCookieJar) this.httpClient.cookieJar()).deleteAllCookies();
         this.sessionUser = null;
         this.sessionProfile = null;
         this.sessionCountrySettings = null;
         this.sessionMonitorData = null;
         this.sessionPatients = null;
-        this.sessionInfosLoaded = false;
     }
 
     protected Response getLoginSession() throws IOException {
@@ -413,7 +366,7 @@ public class CareLinkClient {
         requestBuilder = new Request.Builder()
                 .url(url);
 
-        this.addHttpHeaders(requestBuilder, RequestType.HtmlGet, true);
+        this.addHttpHeaders(requestBuilder, RequestType.HtmlGet);
 
         return this.httpClient.newCall(requestBuilder.build()).execute();
 
@@ -447,7 +400,7 @@ public class CareLinkClient {
                 .url(url)
                 .post(form);
 
-        this.addHttpHeaders(requestBuilder, RequestType.HtmlGet, true);
+        this.addHttpHeaders(requestBuilder, RequestType.HtmlGet);
 
         return this.httpClient.newCall(requestBuilder.build()).execute();
 
@@ -479,7 +432,7 @@ public class CareLinkClient {
                 .url(consentUrl)
                 .post(form);
 
-        this.addHttpHeaders(requestBuilder, RequestType.HtmlPost, true);
+        this.addHttpHeaders(requestBuilder, RequestType.HtmlPost);
 
         return this.httpClient.newCall(requestBuilder.build()).execute();
 
@@ -500,42 +453,27 @@ public class CareLinkClient {
 
     }
 
-    protected CareLinkAuthentication getAuthentication() {
+    protected String getAuthorizationToken() {
 
-        // CredentialStore is used
-        if(this.credentialStore != null){
-            if(!this.sessionInfosLoaded && this.credentialStore.getAuthStatus() == CareLinkCredentialStore.AUTHENTICATED && !this.collectingSessionInfos)
-            {
-                this.getSessionInfos();
-            }
-            if(!this.collectingSessionInfos && !this.sessionInfosLoaded)
-                return  null;
-            else
-                return this.credentialStore.getCredential().getAuthentication();
         // New token is needed:
         // a) no token or about to expire => execute authentication
         // b) last response 401
-        } else {
-            if (!((SimpleOkHttpCookieJar) httpClient.cookieJar()).contains(CARELINK_AUTH_TOKEN_COOKIE_NAME)
-                    || !((SimpleOkHttpCookieJar) httpClient.cookieJar()).contains(CARELINK_TOKEN_VALIDTO_COOKIE_NAME)
-                    || !((new Date(Date.parse(((SimpleOkHttpCookieJar) httpClient.cookieJar())
-                    .getCookies(CARELINK_TOKEN_VALIDTO_COOKIE_NAME).get(0).value())))
-                    .after(new Date(new Date(System.currentTimeMillis()).getTime()
-                            + AUTH_EXPIRE_DEADLINE_MINUTES * 60000)))
-                    || this.lastResponseCode == 401
-                    || (!loginInProcess && !this.lastLoginSuccess)
-            ) {
-                //execute new login process
-                if (this.loginInProcess || !this.executeLoginProcedure())
-                    return null;
-            }
-
-            //there can be only one auth cookie
-            return new CareLinkAuthentication(
-                    new Headers.Builder().add("Authorization", "Bearer" + " " + ((SimpleOkHttpCookieJar) httpClient.cookieJar()).getCookies(CARELINK_AUTH_TOKEN_COOKIE_NAME).get(0).value()).build(),
-                    CareLinkAuthType.Browser);
-            //return "Bearer" + " " + ((SimpleOkHttpCookieJar) httpClient.cookieJar()).getCookies(CARELINK_AUTH_TOKEN_COOKIE_NAME).get(0).value();
+        if (!((SimpleOkHttpCookieJar) httpClient.cookieJar()).contains(CARELINK_AUTH_TOKEN_COOKIE_NAME)
+                || !((SimpleOkHttpCookieJar) httpClient.cookieJar()).contains(CARELINK_TOKEN_VALIDTO_COOKIE_NAME)
+                || !((new Date(Date.parse(((SimpleOkHttpCookieJar) httpClient.cookieJar())
+                .getCookies(CARELINK_TOKEN_VALIDTO_COOKIE_NAME).get(0).value())))
+                .after(new Date(new Date(System.currentTimeMillis()).getTime()
+                        + AUTH_EXPIRE_DEADLINE_MINUTES * 60000)))
+                || this.lastResponseCode == 401
+                || (!loginInProcess && !this.lastLoginSuccess)
+        ) {
+            //execute new login process
+            if (this.loginInProcess || !this.executeLoginProcedure())
+                return null;
         }
+
+        //there can be only one
+        return "Bearer" + " " + ((SimpleOkHttpCookieJar) httpClient.cookieJar()).getCookies(CARELINK_AUTH_TOKEN_COOKIE_NAME).get(0).value();
 
 
     }
@@ -672,30 +610,28 @@ public class CareLinkClient {
 
         Request.Builder requestBuilder = null;
         HttpUrl.Builder urlBuilder = null;
-        CareLinkAuthentication authentication = null;
+        String authToken = null;
         String responseString = null;
         Response response = null;
         Object data = null;
-        boolean isBrowserClient = true;
 
         this.lastDataSuccess = false;
         this.lastErrorMessage = "";
 
-        // Get authentication
-        authentication = this.getAuthentication();
+        // Get auth token
+        authToken = this.getAuthorizationToken();
 
-        if (authentication != null) {
+        if (authToken != null) {
 
             // Create request for URL with authToken
-            //requestBuilder = new Request.Builder().url(url).addHeader("Authorization", authToken);
-            requestBuilder = new Request.Builder().url(url).headers(authentication.getHeaders());
+            requestBuilder = new Request.Builder().url(url).addHeader("Authorization", authToken);
 
-            // Add additional headers
+            // Add header
             if (requestBody == null) {
-                this.addHttpHeaders(requestBuilder, RequestType.Json, authentication.authType == CareLinkAuthType.Browser);
+                this.addHttpHeaders(requestBuilder, RequestType.Json);
             } else {
                 requestBuilder.post(requestBody);
-                this.addHttpHeaders(requestBuilder, RequestType.HtmlPost, authentication.authType == CareLinkAuthType.Browser);
+                this.addHttpHeaders(requestBuilder, RequestType.HtmlPost);
             }
 
             // Send request
@@ -747,16 +683,13 @@ public class CareLinkClient {
     }
 
     // Http header builder for requests
-    protected void addHttpHeaders(Request.Builder requestBuilder, RequestType type, boolean isBrowserClient) {
+    protected void addHttpHeaders(Request.Builder requestBuilder, RequestType type) {
 
         //Add common browser headers
-        if(isBrowserClient) {
-            requestBuilder
-                    .addHeader("Accept-Language", "en;q=0.9, *;q=0.8")
-                    .addHeader("Connection", "keep-alive")
-                    .addHeader("Sec-Ch-Ua", "\"Google Chrome\";v=\"117\", \"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"117\"")
-                    .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Mobile Safari/537.36");
-        }
+        requestBuilder
+                .addHeader("Accept-Language", "en;q=0.9, *;q=0.8")
+                .addHeader("sec-ch-ua", "\"Chromium\";v=\"115\", \"Google Chrome\";v=\"115\", \"Not:A-Brand\";v=\"99\"")
+                .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36");
 
         //Set media type based on request type
         switch (type) {

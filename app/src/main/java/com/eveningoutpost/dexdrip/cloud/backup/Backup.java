@@ -62,7 +62,6 @@ public class Backup {
     private static final String TAG = "xDrip-Backup";
     private static final String PREF_BACKUP_URI = "backup-document-uri";
     public static final String PREF_AUTO_BACKUP = "backup-automatic-enabled";
-    public static final String PREF_AUTO_BACKUP_MOBILE = "backup-automatic-mobile";
     private static final String XDRIP_CONTENT_TYPE = "xDripBackup://";
     private static final String[] dbSuffix = {"-journal", "-shm", "-wal"};
 
@@ -299,7 +298,7 @@ public class Backup {
 
     public static void doCompleteBackupIfEnabled() {
         if (Pref.getBooleanDefaultFalse(PREF_AUTO_BACKUP)
-                && isBackupSuitableForAutomatic() && ((Pref.getBoolean(PREF_AUTO_BACKUP_MOBILE, true)) || (JoH.isLANConnected()))) {
+                && isBackupSuitableForAutomatic()) {
             UserError.Log.e(TAG, "Attempting automatic backup");
             val success = doCompleteBackup(new LogStatus());
             if (!success) {

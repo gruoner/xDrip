@@ -7,7 +7,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.Drawable;
-import androidx.core.content.res.ResourcesCompat;
+import android.support.v4.content.res.ResourcesCompat;
 
 import com.github.amlcurran.showcaseview.ShowcaseDrawer;
 

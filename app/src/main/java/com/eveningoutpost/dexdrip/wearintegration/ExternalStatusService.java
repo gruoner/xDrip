@@ -2,9 +2,8 @@ package com.eveningoutpost.dexdrip.wearintegration;
 
 import android.app.IntentService;
 import android.content.Intent;
-import androidx.annotation.NonNull;
-import androidx.legacy.content.WakefulBroadcastReceiver;
-
+import android.support.annotation.NonNull;
+import android.support.v4.content.WakefulBroadcastReceiver;
 
 import com.eveningoutpost.dexdrip.models.APStatus;
 import com.eveningoutpost.dexdrip.models.JoH;
@@ -27,7 +26,7 @@ public class ExternalStatusService extends IntentService {
     private static final String EXTRA_STATUSLINE = "com.eveningoutpost.dexdrip.Extras.Statusline";
     public static final String ACTION_NEW_EXTERNAL_STATUSLINE = "com.eveningoutpost.dexdrip.ExternalStatusline";
     //public static final String RECEIVER_PERMISSION = "com.eveningoutpost.dexdrip.permissions.RECEIVE_EXTERNAL_STATUSLINE";
-    private static final int MAX_LEN = 70;
+    private static final int MAX_LEN = 40;
     private final static String TAG = ExternalStatusService.class.getSimpleName();
 
     public ExternalStatusService() {

@@ -3,9 +3,7 @@ package com.eveningoutpost.dexdrip;
 // jamorham
 
 import android.content.Context;
-
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.support.v7.app.AppCompatActivity;
 
 public abstract class BaseAppCompatActivity extends AppCompatActivity {
 

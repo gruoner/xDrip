@@ -8,7 +8,7 @@
         <import type="android.view.View"/>
     </data>
 
-    <androidx.drawerlayout.widget.DrawerLayout
+    <android.support.v4.widget.DrawerLayout
 
         android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
@@ -81,5 +81,5 @@
             android:layout_gravity="start"
             tools:layout="@layout/fragment_navigation_drawer" />
 
-    </androidx.drawerlayout.widget.DrawerLayout>
+    </android.support.v4.widget.DrawerLayout>
 </layout>

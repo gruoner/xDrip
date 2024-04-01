@@ -1,7 +1,7 @@
 package com.eveningoutpost.dexdrip.ui;
 
-import androidx.databinding.BaseObservable;
-import androidx.databinding.ObservableInt;
+import android.databinding.BaseObservable;
+import android.databinding.ObservableInt;
 
 /**
  * Created by jamorham on 11/03/2018.

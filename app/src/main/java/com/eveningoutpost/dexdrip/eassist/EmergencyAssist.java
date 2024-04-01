@@ -1,6 +1,6 @@
 package com.eveningoutpost.dexdrip.eassist;
 
-import androidx.databinding.ObservableField;
+import android.databinding.ObservableField;
 import android.os.PowerManager;
 
 import com.eveningoutpost.dexdrip.models.JoH;

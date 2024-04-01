@@ -1,6 +1,5 @@
 package com.eveningoutpost.dexdrip.models;
 
-import static com.eveningoutpost.dexdrip.g5model.Ob1G5StateMachine.shortTxId;
 import static com.eveningoutpost.dexdrip.importedlibraries.dexcom.Dex_Constants.TREND_ARROW_VALUES.NOT_COMPUTABLE;
 import static com.eveningoutpost.dexdrip.importedlibraries.dexcom.Dex_Constants.TREND_ARROW_VALUES.getTrend;
 import static com.eveningoutpost.dexdrip.calibrations.PluggableCalibration.getCalibrationPluginFromPreferences;
@@ -611,7 +610,7 @@ public class BgReading extends Model implements ShareUploadableBg {
                     Log.d(TAG, "USING CALIBRATION PLUGIN AS PRIMARY!!!");
                     if (plugin.isCalibrationSane(pcalibration)) {
                         bgReading.calculated_value = (pcalibration.slope * bgReading.age_adjusted_raw_value) + pcalibration.intercept;
-                        bgReading.filtered_calculated_value = (pcalibration.slope * bgReading.ageAdjustedFiltered()) + pcalibration.intercept;
+                        bgReading.filtered_calculated_value = (pcalibration.slope * bgReading.ageAdjustedFiltered()) + calibration.intercept;
                     } else {
                         UserError.Log.wtf(TAG, "Calibration plugin failed intercept sanity check: " + pcalibration.toS());
                         Home.toaststaticnext("Calibration plugin failed intercept sanity check");
@@ -1123,11 +1122,7 @@ public class BgReading extends Model implements ShareUploadableBg {
             bgr.calculated_value = calculated_value;
             bgr.raw_data = SPECIAL_G5_PLACEHOLDER; // placeholder
             if (Ob1G5CollectionService.usingG6()) {
-                if (shortTxId()) { // If using G7
-                    bgr.appendSourceInfo("G7");
-                } else {
-                    bgr.appendSourceInfo("G6 Native");
-                }
+                bgr.appendSourceInfo("G6 Native");
             } else {
                 bgr.appendSourceInfo("G5 Native");
             }

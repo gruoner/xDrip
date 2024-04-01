@@ -1,6 +1,6 @@
 package com.eveningoutpost.dexdrip.receivers.aidex;
 
-import androidx.annotation.StringRes;
+import android.support.annotation.StringRes;
 
 import com.eveningoutpost.dexdrip.R;
 

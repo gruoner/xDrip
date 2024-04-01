@@ -2,9 +2,7 @@ package com.eveningoutpost.dexdrip.utilitymodels;
 
 import android.os.Build;
 import android.os.Bundle;
-
-
-import androidx.appcompat.app.AppCompatActivity;
+import android.support.v7.app.AppCompatActivity;
 
 import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.databinding.ActivityMtpConfigureBinding;
