@@ -163,6 +163,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.internal.bind.DateTypeAdapter;
 import static com.eveningoutpost.dexdrip.utils.DexCollectionType.DexcomG5;
+import com.eveningoutpost.dexdrip.models.AudioRecorder;
+import com.eveningoutpost.dexdrip.Recorder.ManageRecorder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -210,6 +212,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     public final static String BLUETOOTH_METER_CALIBRATION = "BLUETOOTH_METER_CALIBRATION";
     public final static String ACTIVITY_SHOWCASE_INFO = "ACTIVITY_SHOWCASE_INFO";
     public final static String ENABLE_STREAMING_DIALOG = "ENABLE_STREAMING_DIALOG";
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     public final static String CHOOSE_INSULIN_PEN = "CHOOSE_INSULIN_PEN";
     public final static int SENSOR_READY_ID = 4912;
     private final UiPing ui = new UiPing();
@@ -425,6 +428,15 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         parakeetBattery.setText("");
         sensorAge.setText("");
 
+        this.currentBgValueText.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Intent myIntent = new Intent(view.getContext(), ManageRecorder.class);
+                startActivity(myIntent);
+                return false;
+            }
+        });
+
         if (BgGraphBuilder.isXLargeTablet(getApplicationContext())) {
             this.currentBgValueText.setTextSize(100);
         }
@@ -622,6 +634,9 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
 
         currentBgValueText.setText(""); // clear any design prototyping default
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
+        }
     }
 
     private boolean firstRunDialogs(final boolean checkedeula) {
