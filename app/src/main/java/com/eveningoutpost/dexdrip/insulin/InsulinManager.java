@@ -3,6 +3,7 @@ package com.eveningoutpost.dexdrip.insulin;
 import android.util.Log;
 
 import com.eveningoutpost.dexdrip.models.InsulinProfile;
+import androidx.annotation.Keep;
 import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
@@ -12,9 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
-import org.apache.commons.lang3.StringUtils;
-
+import com.google.gson.annotations.Expose;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,33 +26,69 @@ public class InsulinManager {
     private static volatile Insulin basalProfile, bolusProfile;
     private static Boolean loadConfigFromNightscout;
 
-    public static class insulinCurve {
-        public String type;
-        public JsonObject data;
+    @Keep
+    class insulinDataWrapper {
+        @Expose
+        public ArrayList<insulinData> profiles;
 
-        public boolean isEqual(insulinCurve c) {
-            if (!this.type.equalsIgnoreCase(c.type))
-                return false;
-            if (!this.data.toString().equals(c.data.toString()))
-                return false;
+        insulinDataWrapper() {
+            profiles = new ArrayList<insulinData>();
+        }
+
+        public ArrayList<Insulin> getInsulinProfiles() {
+            if (!checkUniquenessPPN())
+                return null;
+            ArrayList<Insulin> ret = new ArrayList<Insulin>();
+            for (insulinData d : profiles) {
+                Insulin insulin;
+                switch (d.Curve.type.toLowerCase()) {
+                    case "linear trapezoid":
+                        insulin = new LinearTrapezoidInsulin(d.name, d.displayName, d.PPN, d.concentration, d.Curve.data, false);
+                        Log.d(TAG, "initialized linear trapezoid insulin " + d.displayName);
+                        break;
+                    default:
+                        Log.d(TAG, "UNKNOWN Curve-Type " + d.Curve.type);
+                        return null;
+                }
+                ret.add(insulin);
+            }
+            return ret;
+        }
+
+        private Boolean checkUniquenessPPN() {
+            Log.d(TAG, "checking for uniqueness");
+            ArrayList<String> PPNs = new ArrayList<String>();
+            for (insulinData d : profiles)
+                for (String ppn : d.PPN)
+                    if (PPNs.contains(ppn)) {
+                        Log.d(TAG, "pharmacy product number duplicated " + ppn + ". That's not allowed!");
+                        return false;
+                    } else PPNs.add(ppn);
+            Log.d(TAG, "pharmacy product numbers unique");
             return true;
         }
     }
-    static class insulinData {
-        public String displayName;
-        public String name;
-        public ArrayList<String> PPN;
-        public String concentration;
-        public insulinCurve Curve;
-    }
-    static class insulinDataWrapper {
-        public ArrayList<insulinData> profiles;
-        public String defaultBolus;
 
-        insulinDataWrapper() {
-            defaultBolus = null;
-            profiles = new ArrayList<insulinData>();
-        }
+    @Keep
+    class insulinCurve {
+        @Expose
+        public String type;
+        @Expose
+        public JsonObject data;
+    }
+
+    @Keep
+    class insulinData {
+        @Expose
+        public String displayName;
+        @Expose
+        public String name;
+        @Expose
+        public ArrayList<String> PPN;
+        @Expose
+        public String concentration;
+        @Expose
+        public insulinCurve Curve;
     }
 
     private static String readTextFile(InputStream inputStream) {
@@ -148,6 +183,7 @@ public class InsulinManager {
         insulinDataWrapper iDW;
         try {
             String input = readTextFile(in_s);
+            Log.d(TAG,"read text bytes: " + input.length());
             Gson gson = new Gson();
             iDW = gson.fromJson(input, insulinDataWrapper.class);
             Boolean somethingChanged = false;
@@ -245,7 +281,9 @@ public class InsulinManager {
     }
 
     public static ArrayList<Insulin> getAllProfiles() {
-        checkInitialized();
+        if (profiles == null) {
+            InsulinManager.getDefaultInstance(); // this entire feature needs a serious rework
+        }
         return profiles;
     }
 

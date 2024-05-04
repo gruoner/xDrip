@@ -14,9 +14,12 @@ import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.utilitymodels.NightscoutUploader;
 import com.eveningoutpost.dexdrip.utilitymodels.PersistentStore;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
+import com.eveningoutpost.dexdrip.models.JoH;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import lombok.val;
 
 /**
  * Created by gruoner on 28/07/2019.
@@ -57,35 +60,41 @@ public class InsulinProfileEditor extends BaseAppCompatActivity {
         bolusSpinner = (Spinner) findViewById(R.id.bolusSpinner);
         loadFromNightscout = (CheckBox) findViewById(R.id.load_from_ms);
 
-        for (Insulin i : InsulinManager.getAllProfiles())
-            if (!i.isDeleted()) {
-                LinearLayout v = new LinearLayout(this);
-                v.setOrientation(LinearLayout.HORIZONTAL);
-                CheckBox cb = new CheckBox(this);
-                if (InsulinManager.isProfileEnabled(i))
-                    cb.setChecked(true);
-                else
-                    cb.setChecked(false);
-                cb.setText(i.getDisplayName());
-                cb.setTextSize(20);
-                checkboxes.put(i, cb);
-                cb.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (InsulinManager.isProfileEnabled(i))
-                            InsulinManager.disableProfile(i);
-                        else
-                            InsulinManager.enableProfile(i);
-                        if (InsulinManager.isProfileEnabled(i))
-                            cb.setChecked(true);
-                        else
-                            cb.setChecked(false);
-                    }
-                });
-                v.addView(cb);
-                linearLayout.addView(v);
-                profiles.put(i.getDisplayName(), i);
-            }
+        val iprofiles = InsulinManager.getAllProfiles();
+        if (iprofiles == null) {
+            JoH.static_toast_long("Can't initialize insulin profiles");
+            finish();
+            return;
+        }
+        for (Insulin i : iprofiles) {
+            LinearLayout v = new LinearLayout(this);
+            v.setOrientation(LinearLayout.HORIZONTAL);
+            CheckBox cb = new CheckBox(this);
+            if (InsulinManager.isProfileEnabled(i))
+                cb.setChecked(true);
+            else
+                cb.setChecked(false);
+            cb.setText(i.getDisplayName());
+            cb.setTextSize(20);
+            checkboxes.put(i, cb);
+            cb.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (InsulinManager.isProfileEnabled(i))
+                        InsulinManager.disableProfile(i);
+                    else
+                        InsulinManager.enableProfile(i);
+                    if (InsulinManager.isProfileEnabled(i))
+                        cb.setChecked(true);
+                    else
+                        cb.setChecked(false);
+                }
+            });
+            v.addView(cb);
+            linearLayout.addView(v);
+            profiles.put(i.getDisplayName(), i);
+        }
+
         ArrayList<String> p = new ArrayList<String>(profiles.keySet());
         ArrayAdapter<String> profilesAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, p);
         profilesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

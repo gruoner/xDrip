@@ -1,5 +1,6 @@
 package com.eveningoutpost.dexdrip.models;
 
+import static com.eveningoutpost.dexdrip.g5model.Ob1G5StateMachine.shortTxId;
 import static com.eveningoutpost.dexdrip.importedlibraries.dexcom.Dex_Constants.TREND_ARROW_VALUES.NOT_COMPUTABLE;
 import static com.eveningoutpost.dexdrip.importedlibraries.dexcom.Dex_Constants.TREND_ARROW_VALUES.getTrend;
 import static com.eveningoutpost.dexdrip.calibrations.PluggableCalibration.getCalibrationPluginFromPreferences;
@@ -610,7 +611,7 @@ public class BgReading extends Model implements ShareUploadableBg {
                     Log.d(TAG, "USING CALIBRATION PLUGIN AS PRIMARY!!!");
                     if (plugin.isCalibrationSane(pcalibration)) {
                         bgReading.calculated_value = (pcalibration.slope * bgReading.age_adjusted_raw_value) + pcalibration.intercept;
-                        bgReading.filtered_calculated_value = (pcalibration.slope * bgReading.ageAdjustedFiltered()) + calibration.intercept;
+                        bgReading.filtered_calculated_value = (pcalibration.slope * bgReading.ageAdjustedFiltered()) + pcalibration.intercept;
                     } else {
                         UserError.Log.wtf(TAG, "Calibration plugin failed intercept sanity check: " + pcalibration.toS());
                         Home.toaststaticnext("Calibration plugin failed intercept sanity check");
@@ -1122,7 +1123,11 @@ public class BgReading extends Model implements ShareUploadableBg {
             bgr.calculated_value = calculated_value;
             bgr.raw_data = SPECIAL_G5_PLACEHOLDER; // placeholder
             if (Ob1G5CollectionService.usingG6()) {
-                bgr.appendSourceInfo("G6 Native");
+                if (shortTxId()) { // If using G7
+                    bgr.appendSourceInfo("G7");
+                } else {
+                    bgr.appendSourceInfo("G6 Native");
+                }
             } else {
                 bgr.appendSourceInfo("G5 Native");
             }
@@ -2035,6 +2040,7 @@ public class BgReading extends Model implements ShareUploadableBg {
             return false;
         }
 
+        // TODO: Should we add documentation to address possible misbehavior in case of 1-minute readings?
         if(above == false) {
             // This is a low alert, we should be going up
             if((latest.get(0).calculated_value - latest.get(1).calculated_value > 4) ||
@@ -2044,8 +2050,8 @@ public class BgReading extends Model implements ShareUploadableBg {
             }
         } else {
             // This is a high alert we should be heading down
-            if((latest.get(1).calculated_value - latest.get(0).calculated_value > 4) ||
-               (latest.get(2).calculated_value - latest.get(0).calculated_value > 10)) {
+            if((latest.get(1).calculated_value - latest.get(0).calculated_value > 1) ||
+               (latest.get(2).calculated_value - latest.get(0).calculated_value > 2)) {
                 Log.d(TAG_ALERT, "trendingToAlertEnd returning true for high alert");
                 return true;
             }
