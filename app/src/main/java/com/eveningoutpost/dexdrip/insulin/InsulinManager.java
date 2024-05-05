@@ -27,86 +27,15 @@ public class InsulinManager {
     private static Boolean loadConfigFromNightscout;
 
     @Keep
-    class insulinDataWrapper {
+    static class insulinDataWrapper {
         @Expose
         public ArrayList<insulinData> profiles;
-
+        @Expose
+        public String defaultBolus;
         insulinDataWrapper() {
+            defaultBolus = null;
             profiles = new ArrayList<insulinData>();
         }
-
-        public ArrayList<Insulin> getInsulinProfiles() {
-            if (!checkUniquenessPPN())
-                return null;
-            ArrayList<Insulin> ret = new ArrayList<Insulin>();
-            for (insulinData d : profiles) {
-                Insulin insulin;
-                switch (d.Curve.type.toLowerCase()) {
-                    case "linear trapezoid":
-                        insulin = new LinearTrapezoidInsulin(d.name, d.displayName, d.PPN, d.concentration, d.Curve.data, false);
-                        Log.d(TAG, "initialized linear trapezoid insulin " + d.displayName);
-                        break;
-                    default:
-                        Log.d(TAG, "UNKNOWN Curve-Type " + d.Curve.type);
-                        return null;
-                }
-                ret.add(insulin);
-            }
-            return ret;
-        }
-
-        private Boolean checkUniquenessPPN() {
-            Log.d(TAG, "checking for uniqueness");
-            ArrayList<String> PPNs = new ArrayList<String>();
-            for (insulinData d : profiles)
-                for (String ppn : d.PPN)
-                    if (PPNs.contains(ppn)) {
-                        Log.d(TAG, "pharmacy product number duplicated " + ppn + ". That's not allowed!");
-                        return false;
-                    } else PPNs.add(ppn);
-            Log.d(TAG, "pharmacy product numbers unique");
-            return true;
-        }
-    }
-
-    @Keep
-    class insulinCurve {
-        @Expose
-        public String type;
-        @Expose
-        public JsonObject data;
-    }
-
-    @Keep
-    class insulinData {
-        @Expose
-        public String displayName;
-        @Expose
-        public String name;
-        @Expose
-        public ArrayList<String> PPN;
-        @Expose
-        public String concentration;
-        @Expose
-        public insulinCurve Curve;
-    }
-
-    private static String readTextFile(InputStream inputStream) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        if (inputStream != null) {
-            byte buf[] = new byte[1024];
-            int len;
-            try {
-                while ((len = inputStream.read(buf)) != -1) {
-                    outputStream.write(buf, 0, len);
-                }
-                outputStream.close();
-                inputStream.close();
-            } catch (IOException e) {
-
-            }
-        }
-        return outputStream.toString();
     }
 
     public static Boolean updateFromNightscout(List<NightscoutFollow.NightscoutInsulinStructure> p)
@@ -211,6 +140,7 @@ public class InsulinManager {
             if (somethingChanged) profiles = getInsulinProfiles();
             if ((iDW.defaultBolus != null) && !iDW.defaultBolus.isEmpty())
                 bolusProfile = getProfile(iDW.defaultBolus);
+            else bolusProfile = profiles.get(0);
             Log.d(TAG, "Loaded Insulin Profiles: " + Integer.toString(profiles.size()));
             Log.d(TAG, "InsulinManager initialized from config file");
             return somethingChanged;
@@ -242,6 +172,68 @@ public class InsulinManager {
         }
         return ret;
     }
+
+    @Keep
+    static public class insulinCurve {
+        @Expose
+        public String type;
+        @Expose
+        public JsonObject data;
+        public boolean isEqual(insulinCurve c) {
+            if (!this.type.equalsIgnoreCase(c.type))
+                return false;
+            if (!this.data.toString().equals(c.data.toString()))
+                return false;
+            return true;
+        }
+    }
+
+    @Keep
+    static class insulinData {
+        @Expose
+        public String displayName;
+        @Expose
+        public String name;
+        @Expose
+        public ArrayList<String> PPN;
+        @Expose
+        public String concentration;
+        @Expose
+        public insulinCurve Curve;
+    }
+
+    private static String readTextFile(InputStream inputStream) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        if (inputStream != null) {
+            byte buf[] = new byte[1024];
+            int len;
+            try {
+                while ((len = inputStream.read(buf)) != -1) {
+                    outputStream.write(buf, 0, len);
+                }
+                outputStream.close();
+                inputStream.close();
+            } catch (IOException e) {
+
+            }
+        }
+        return outputStream.toString();
+    }
+
+    private static void initializeInsulinManager(InputStream in_s) {
+        Log.d(TAG, "Initialize insulin profiles");
+        insulinDataWrapper iDW;
+        try {
+            if (!updateFromiDWStream(in_s))  profiles = getInsulinProfiles();
+            Log.d(TAG, "Loaded Insulin Profiles: " + Integer.toString(profiles.size()));
+            LoadDisabledProfilesFromPrefs();
+            Log.d(TAG, "InsulinManager initialized from config file and Prefs");
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.d(TAG, "Got exception during insulin load: " + e.toString());
+        }
+    }
+
     private static void checkInitialized() {
         if (profiles == null) {
             getDefaultInstance();
@@ -251,9 +243,12 @@ public class InsulinManager {
     // populate the data set with predefined resource as otherwise the static reference could be lost
     // as we are not really safely handling it
     public static ArrayList<Insulin> getDefaultInstance() {
-        profiles = getInsulinProfiles();
-        updateFromiDWStream(xdrip.getAppContext().getResources().openRawResource(R.raw.insulin_profiles));
-        LoadDisabledProfilesFromPrefs();
+        return getInstance(xdrip.getAppContext().getResources().openRawResource(R.raw.insulin_profiles));
+    }
+
+    // before this can be public, the issue of what to do if profiles is null needs to be resolved.
+    private static ArrayList<Insulin> getInstance(InputStream in_s) {
+        initializeInsulinManager(in_s);
         return profiles;
     }
 
@@ -271,13 +266,6 @@ public class InsulinManager {
     }
     public static void setBolusProfile(Insulin p) {
         bolusProfile = p;
-    }
-
-    public static Boolean getLoadConfigFromNightscout() {
-        return loadConfigFromNightscout;
-    }
-    public static void setLoadConfigFromNightscout(Boolean l) {
-        loadConfigFromNightscout = l;
     }
 
     public static ArrayList<Insulin> getAllProfiles() {
@@ -396,5 +384,12 @@ public class InsulinManager {
             Log.d(TAG, "saved bolus Insulin Profiles to Prefs: " + bolusProfile.getName());
         }
         Pref.setString("saved_load_insulinprofilesconfig_from_ns", loadConfigFromNightscout.toString());
+    }
+
+    public static Boolean getLoadConfigFromNightscout() {
+        return loadConfigFromNightscout;
+    }
+    public static void setLoadConfigFromNightscout(Boolean l) {
+        loadConfigFromNightscout = l;
     }
 }
