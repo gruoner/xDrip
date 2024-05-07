@@ -21,6 +21,7 @@ public class Session {
     public BaseCallback<List<Entry>> entriesCallback;
     public BaseCallback<ResponseBody> treatmentsCallback;
     public BaseCallback<List<NightscoutFollow.NightscoutInsulinStructure>> insulinCallback;
+    public BaseCallback<ResponseBody> statusCallback;
 
 
     // most recent set of entries
@@ -28,10 +29,11 @@ public class Session {
     // most recent treatments raw json
     public ResponseBody treatments;
     public List<NightscoutFollow.NightscoutInsulinStructure> insulin;
+    public ResponseBody status;
 
 
     // populate session data from a response object which could be any supported type
-    public void populate(final Object object) {
+    public void populate(final String url, final Object object) {
         if (object instanceof List) {
             final List<Object> someList = (List<Object>)object;
 
@@ -41,9 +43,10 @@ public class Session {
                 insulin = (List<NightscoutFollow.NightscoutInsulinStructure>)object;
             }
 
+        } else if (object instanceof ResponseBody && url.contains("/status.json")) {
+            status = (ResponseBody)object;
         } else if (object instanceof ResponseBody) {
             treatments = (ResponseBody)object;
         }
     }
-
 }

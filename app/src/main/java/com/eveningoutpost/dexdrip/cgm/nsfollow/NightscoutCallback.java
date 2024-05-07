@@ -19,7 +19,7 @@ public class NightscoutCallback<T> extends BaseCallback<T> {
     @Override
     public void onResponse(Call<T> call, Response<T> response) {
         if (response.isSuccessful() && response.body() != null) {
-            session.populate(response.body());
+            session.populate(call.request().url().toString(), response.body());
         }
         super.onResponse(call, response);
     }
