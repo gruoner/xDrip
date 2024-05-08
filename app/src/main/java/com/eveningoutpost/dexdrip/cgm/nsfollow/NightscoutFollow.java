@@ -194,7 +194,7 @@ public class NightscoutFollow {
                     }
                 }
             }
-            if (insulinDownloadEnabled() && MultipleInsulins.isDownloadAllowed()) {
+            if (insulinDownloadEnabled() && MultipleInsulins.isDownloadAllowed(urlString)) {
                 if (JoH.ratelimit("nsfollow-insulin-download", 60*60)) {    // load insulin every hour
                     try {
                         getService().getInsulinProfiles(session.url.getHashedSecret()).enqueue(session.insulinCallback);
@@ -210,7 +210,7 @@ public class NightscoutFollow {
         }
     }
 
-    private static String getUrl() {
+    public static String getUrl() {
         return Pref.getString("nsfollow_url", "");
     }
 

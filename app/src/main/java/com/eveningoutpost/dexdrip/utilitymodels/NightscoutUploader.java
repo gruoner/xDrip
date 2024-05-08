@@ -280,7 +280,7 @@ public class NightscoutUploader {
                     if (treatmensDownloadEnabled())
                         if (doRESTtreatmentDownload(prefs))
                             refresh = true;
-                    if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
+                    if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
                         if (doRESTinsulinDownload(prefs))
                             refresh = true;
                     if (refresh) {
@@ -310,7 +310,7 @@ public class NightscoutUploader {
                 if (treatmensDownloadEnabled())
                     if (doRESTtreatmentDownload(prefs))
                         substatus = true;
-                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
+                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && JoH.ratelimit("nsupload-insulin-download", 60*60))    // load insulin every hour
                     if (doRESTinsulinDownload(prefs))
                         substatus = true;
                 if (substatus) {
@@ -520,66 +520,68 @@ public class NightscoutUploader {
                     throw new Exception("Unexpected baseURI: " + baseURI);
                 }
 
-                final Retrofit retrofit = new Retrofit.Builder().baseUrl(baseURL).client(client).build();
-                final NightscoutService nightscoutService = retrofit.create(NightscoutService.class);
+                if (MultipleInsulins.isDownloadAllowed(baseURL)) {
+                    final Retrofit retrofit = new Retrofit.Builder().baseUrl(baseURL).client(client).build();
+                    final NightscoutService nightscoutService = retrofit.create(NightscoutService.class);
 
-                final String checkurl = retrofit.baseUrl().url().toString();
-                if (!isNightscoutCompatible(checkurl)) {
-                    Log.e(TAG, "Nightscout version: " + getNightscoutVersion(checkurl) + " on " + checkurl + " is not compatible with the Rest-API download feature!");
-                    continue;
-                }
+                    final String checkurl = retrofit.baseUrl().url().toString();
+                    if (!isNightscoutCompatible(checkurl)) {
+                        Log.e(TAG, "Nightscout version: " + getNightscoutVersion(checkurl) + " on " + checkurl + " is not compatible with the Rest-API download feature!");
+                        continue;
+                    }
 
-                if (apiVersion == 1) {
-                    final String hashedSecret = Hashing.sha1().hashBytes(secret.getBytes(Charsets.UTF_8)).toString();
-                    final Response<ResponseBody> r;
-                    if (hashedSecret != null) {
-                        doStatusUpdate(nightscoutService, retrofit.baseUrl().url().toString(), hashedSecret); // update status if needed
-                        final String LAST_MODIFIED_KEY = LAST_SUCCESS_INSULIN_DOWNLOAD + CipherUtils.getMD5(uri.toString()); // per uri marker
-                        String last_modified_string = PersistentStore.getString(LAST_MODIFIED_KEY);
-                        if (last_modified_string.equals("")) last_modified_string = JoH.getRFC822String(0);
-                        final long request_start = JoH.tsl();
-                        r = nightscoutService.getInsulin(hashedSecret).execute();
+                    if (apiVersion == 1) {
+                        final String hashedSecret = Hashing.sha1().hashBytes(secret.getBytes(Charsets.UTF_8)).toString();
+                        final Response<ResponseBody> r;
+                        if (hashedSecret != null) {
+                            doStatusUpdate(nightscoutService, retrofit.baseUrl().url().toString(), hashedSecret); // update status if needed
+                            final String LAST_MODIFIED_KEY = LAST_SUCCESS_INSULIN_DOWNLOAD + CipherUtils.getMD5(uri.toString()); // per uri marker
+                            String last_modified_string = PersistentStore.getString(LAST_MODIFIED_KEY);
+                            if (last_modified_string.equals(""))
+                                last_modified_string = JoH.getRFC822String(0);
+                            final long request_start = JoH.tsl();
+                            r = nightscoutService.getInsulin(hashedSecret).execute();
 
-                        if ((r != null) && (r.raw().networkResponse().code() == HttpURLConnection.HTTP_NOT_MODIFIED)) {
-                            Log.d(TAG, "Treatments on " + uri.getHost() + ":" + uri.getPort() + " not modified since: " + last_modified_string);
-                            continue; // skip further processing of this url
-                        }
+                            if ((r != null) && (r.raw().networkResponse().code() == HttpURLConnection.HTTP_NOT_MODIFIED)) {
+                                Log.d(TAG, "Treatments on " + uri.getHost() + ":" + uri.getPort() + " not modified since: " + last_modified_string);
+                                continue; // skip further processing of this url
+                            }
 
-                        if ((r != null) && (r.isSuccessful())) {
-                            NightscoutFollow.NightscoutInsulinStructure[] NSprofiles = null;
-                            try {
-                                NSprofiles = new GsonBuilder().create().fromJson(r.body().string(), NightscoutFollow.NightscoutInsulinStructure[].class);
-                                android.util.Log.d(TAG, "insulin profiles loaded from nightscout");
-                                last_modified_string = r.raw().header("Last-Modified", JoH.getRFC822String(request_start));
-                                final String this_etag = r.raw().header("Etag", "");
-                                if (this_etag.length() > 0) {
-                                    // older versions of nightscout don't support if-modified-since so check the etag for duplication
-                                    if (this_etag.equals(PersistentStore.getString(ETAG + LAST_MODIFIED_KEY))) {
-                                        Log.d(TAG, "Skipping Insulin on " + uri.getHost() + ":" + uri.getPort() + " due to etag duplicate: " + this_etag);
-                                        continue;
+                            if ((r != null) && (r.isSuccessful())) {
+                                NightscoutFollow.NightscoutInsulinStructure[] NSprofiles = null;
+                                try {
+                                    NSprofiles = new GsonBuilder().create().fromJson(r.body().string(), NightscoutFollow.NightscoutInsulinStructure[].class);
+                                    android.util.Log.d(TAG, "insulin profiles loaded from nightscout");
+                                    last_modified_string = r.raw().header("Last-Modified", JoH.getRFC822String(request_start));
+                                    final String this_etag = r.raw().header("Etag", "");
+                                    if (this_etag.length() > 0) {
+                                        // older versions of nightscout don't support if-modified-since so check the etag for duplication
+                                        if (this_etag.equals(PersistentStore.getString(ETAG + LAST_MODIFIED_KEY))) {
+                                            Log.d(TAG, "Skipping Insulin on " + uri.getHost() + ":" + uri.getPort() + " due to etag duplicate: " + this_etag);
+                                            continue;
+                                        }
+                                        PersistentStore.setString(ETAG + LAST_MODIFIED_KEY, this_etag);
                                     }
-                                    PersistentStore.setString(ETAG + LAST_MODIFIED_KEY, this_etag);
+                                    if (InsulinManager.updateFromNightscout(new ArrayList<>(Arrays.asList(NSprofiles)))) {
+                                        PersistentStore.setString(LAST_MODIFIED_KEY, last_modified_string);
+                                        checkGzipSupport(r);
+                                        ActiveAndroid.clearCache();
+                                        new_data = true;
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    android.util.Log.d(TAG, "Got exception during insulin load: " + e.toString());
                                 }
-                                if (InsulinManager.updateFromNightscout(new ArrayList<>(Arrays.asList(NSprofiles)))) {
-                                    PersistentStore.setString(LAST_MODIFIED_KEY, last_modified_string);
-                                    checkGzipSupport(r);
-                                    ActiveAndroid.clearCache();
-                                    new_data = true;
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                android.util.Log.d(TAG, "Got exception during insulin load: " + e.toString());
+
+                            } else {
+                                Log.d(TAG, "Failed to get insulin from: " + baseURI);
                             }
 
                         } else {
-                            Log.d(TAG, "Failed to get insulin from: " + baseURI);
+                            Log.d(TAG, "Old api version not supported");
                         }
-
-                    } else {
-                        Log.d(TAG, "Old api version not supported");
                     }
-                }
-
+                } else Log.d(TAG, "multiInsulin download not allowed on " + baseURI);
 
             } catch (Exception e) {
                 String msg = "Unable to do REST API Download " + e + " " + e.getMessage() + " url: " + baseURI;
