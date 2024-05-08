@@ -137,7 +137,7 @@ public class InsulinManager {
                         somethingChanged = true;
                     }
                 }
-            if (somethingChanged) profiles = getInsulinProfiles();
+            if (somethingChanged || (profiles == null)) profiles = getInsulinProfiles();
             if ((iDW.defaultBolus != null) && !iDW.defaultBolus.isEmpty())
                 bolusProfile = getProfile(iDW.defaultBolus);
             else bolusProfile = profiles.get(0);
@@ -340,7 +340,10 @@ public class InsulinManager {
 
     public static void LoadDisabledProfilesFromPrefs() {
         checkInitialized();
-        String json = Pref.getString("saved_enabled_insulinprofiles_json", "[" + bolusProfile.getName() + "]");
+        String def = "[]";
+        if (bolusProfile != null)
+            def = "[" + bolusProfile.getName() + "]";
+        String json = Pref.getString("saved_enabled_insulinprofiles_json", def);
         Log.d(TAG, "Loaded enabled Insulin Profiles from Prefs: " + json);
         String[] enabled = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create().fromJson(json, String[].class);
         for (String d : enabled) {
