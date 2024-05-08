@@ -24,7 +24,7 @@ public class InsulinManager {
     private static final String TAG = "InsulinManager";
     private static ArrayList<Insulin> profiles;
     private static volatile Insulin basalProfile, bolusProfile;
-    private static Boolean loadConfigFromNightscout;
+    private static Boolean loadConfigFromNightscout = false;
 
     @Keep
     static class insulinDataWrapper {
