@@ -25,7 +25,7 @@ public class MultipleInsulins {
         return Pref.getBooleanDefaultFalse("multiple_insulin_use_profilespecific_coloring");
     }
 
-    private static boolean isNightscoutInsulinAPIavailable(String url) {
+    public static boolean isNightscoutInsulinAPIavailable(String url) {
         try {
             final String store_marker = "nightscout-status-poll-" + url;
             final JSONObject status = new JSONObject(PersistentStore.getString(store_marker));
