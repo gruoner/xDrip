@@ -11,6 +11,7 @@ public class NightscoutCallback<T> extends BaseCallback<T> {
 
 
     public NightscoutCallback(final String name, final Session session, final Runnable onSuccess) {
+/// gruoner, 05/09/2024: even when creating a compiler error, MUST be left active otherwise we get an other compiler error
         super(name);
         this.session = session;
         this.setOnSuccess(onSuccess);
