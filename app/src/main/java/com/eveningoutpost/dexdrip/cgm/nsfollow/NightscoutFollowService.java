@@ -5,7 +5,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import androidx.annotation.Nullable;
 import android.text.SpannableString;
-
+import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.models.BgReading;
 import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.models.Treatments;
@@ -23,12 +23,9 @@ import com.eveningoutpost.dexdrip.utils.framework.BuggySamsung;
 import com.eveningoutpost.dexdrip.utils.framework.ForegroundService;
 import com.eveningoutpost.dexdrip.utils.framework.WakeLockTrampoline;
 import com.eveningoutpost.dexdrip.xdrip;
-
 import org.apache.commons.lang3.StringUtils;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import static com.eveningoutpost.dexdrip.utilitymodels.BgGraphBuilder.DEXCOM_PERIOD;
 import static com.eveningoutpost.dexdrip.utils.DexCollectionType.NSFollow;
 import static com.eveningoutpost.dexdrip.xdrip.gs;
@@ -59,8 +56,6 @@ public class NightscoutFollowService extends ForegroundService {
     private static volatile Treatments lastTreatment;
     private static volatile long lastTreatmentTime = 0;
     private static volatile long treatmentReceivedDelay = 0;
-
-    private static volatile long lastInsulinDownloaded = 0;
 
     private void buggySamsungCheck() {
         if (buggySamsung == null) {
@@ -126,10 +121,6 @@ public class NightscoutFollowService extends ForegroundService {
             treatmentReceivedDelay = JoH.msSince(lastTreatment.timestamp);
             lastTreatmentTime = lastTreatment.timestamp;
         }
-    }
-
-    static void updateInsulinDownloaded() {
-        lastInsulinDownloaded = JoH.tsl();
     }
 
     static void scheduleWakeUp() {
@@ -198,9 +189,14 @@ public class NightscoutFollowService extends ForegroundService {
 
         // Status for Insulin
         String ageLastInsulin = "n/a";
-        if(lastInsulinDownloaded != 0) {
-            long age = JoH.msSince(lastInsulinDownloaded);
+        String rateLastInsulin = "n/a";
+        if(InsulinManager.lastInsulinDownloaded() != 0) {
+            long age = JoH.msSince(InsulinManager.lastInsulinDownloaded());
             ageLastInsulin = JoH.niceTimeScalar(age);
+        }
+        if(JoH.getRateLimit(InsulinManager.NAME4nsfollow_insulin_downloadRATE) != 0) {
+            long age = JoH.msSince(JoH.getRateLimit(InsulinManager.NAME4nsfollow_insulin_downloadRATE));
+            rateLastInsulin = JoH.niceTimeScalar(age);
         }
 
         // Build status
@@ -217,7 +213,7 @@ public class NightscoutFollowService extends ForegroundService {
 
         if(NightscoutFollow.insulinDownloadEnabled()) {
             statuses.add(new StatusItem());
-            statuses.add(new StatusItem("Latest Insulin Download", ageLastInsulin + " ago"));
+            statuses.add(new StatusItem("Latest Insulin Download", ageLastInsulin + " ago (Rate: " + rateLastInsulin + " ago)"));
         }
 
         statuses.add(new StatusItem());

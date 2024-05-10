@@ -12,6 +12,9 @@ import com.activeandroid.annotation.Table;
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
 import com.activeandroid.util.SQLiteUtils;
+import com.eveningoutpost.dexdrip.R;
+import com.eveningoutpost.dexdrip.insulin.InsulinManager;
+import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
 import com.eveningoutpost.dexdrip.models.BgReading;
 import com.eveningoutpost.dexdrip.models.BloodTest;
 import com.eveningoutpost.dexdrip.models.Calibration;
@@ -35,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.eveningoutpost.dexdrip.services.SyncService.startSyncService;
+import static com.eveningoutpost.dexdrip.xdrip.gs;
 
 /**
  * Created by jamorham on 15/11/2016.
@@ -393,6 +397,23 @@ public class UploaderQueue extends Model {
 
     public static List<StatusItem> megaStatus() {
         final List<StatusItem> l = new ArrayList<>();
+
+        String ageLastInsulinUpload = "n/a";
+        if(NightscoutUploader.lastInsulinUploaded() != 0) {
+            long age = JoH.msSince(NightscoutUploader.lastInsulinUploaded());
+            ageLastInsulinUpload = JoH.niceTimeScalar(age);
+        }
+        String ageLastInsulinDownload = "n/a";
+        String rateLastInsulin = "n/a";
+        if(InsulinManager.lastInsulinDownloaded() != 0) {
+            long age = JoH.msSince(InsulinManager.lastInsulinDownloaded());
+            ageLastInsulinDownload = JoH.niceTimeScalar(age);
+        }
+        if(JoH.getRateLimit(InsulinManager.NAME4nsupload_insulin_downloadRATE) != 0) {
+            long age = JoH.msSince(JoH.getRateLimit(InsulinManager.NAME4nsupload_insulin_downloadRATE));
+            rateLastInsulin = JoH.niceTimeScalar(age);
+        }
+
         // per circuit
         for (int i = 0, size = circuits_for_stats.size(); i < size; i++) {
             final long bitfield = circuits_for_stats.keyAt(i);
@@ -437,23 +458,6 @@ public class UploaderQueue extends Model {
                     }));
         }
 
-
-        if (last_query > 0)
-            l.add(new StatusItem("Last poll", JoH.niceTimeSince(last_query) + " ago", StatusItem.Highlight.NORMAL, "long-press",
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            if (JoH.ratelimit("nightscout-manual-poll", 15)) {
-                                startSyncService(100);
-                                JoH.static_toast_short("Polling");
-                                if (TidepoolEntry.enabled()) {
-                                    TidepoolUploader.doLogin(true);
-                                }
-                            }
-                        }
-                    }));
-
-
         // enumerate status items for nightscout rest-api
         if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable")) {
             try {
@@ -484,6 +488,16 @@ public class UploaderQueue extends Model {
 
                 // lookup status for each url in cache
                 for (int i = 0; i < processedBaseURIs.size(); i++) {
+                    if(NightscoutUploader.insulinUploadEnabled() && MultipleInsulins.isEnabled()) {
+                        l.add(new StatusItem("Nightscout REST", InsulinManager.getAllProfiles().size() + " Insulin Profiles"));
+                        l.add(new StatusItem("Last Insulin Uploaded", ageLastInsulinUpload + " ago"));
+                        String s = gs(R.string.yes);
+                        if (!MultipleInsulins.isNightscoutInsulinAPIavailable(processedBaseURIs.get(i))) {
+                            s = "generally " + s + " but currently " + gs(R.string.no);
+                        }
+                        l.add(new StatusItem("Upload insulin", s));
+                    }
+
                     try {
                         final String store_marker = "nightscout-status-poll-" + processedBaseURIs.get(i);
                         final JSONObject status = new JSONObject(PersistentStore.getString(store_marker));
@@ -516,6 +530,14 @@ public class UploaderQueue extends Model {
                                         }
                                     }));
 
+                        if(NightscoutUploader.insulinDownloadEnabled() && MultipleInsulins.isEnabled()) {
+                            l.add(new StatusItem("Latest Insulin Download", ageLastInsulinDownload + " ago (Rate: " + rateLastInsulin + " ago)"));
+                            String s = gs(R.string.yes);
+                            if (!MultipleInsulins.isDownloadAllowed(processedBaseURIs.get(i))) {
+                                s = "generally " + s + " but currently " + gs(R.string.no);
+                            }
+                            l.add(new StatusItem("Download insulin", s));
+                        }
 
                     } catch (JSONException e) {
 
@@ -527,6 +549,20 @@ public class UploaderQueue extends Model {
 
         }
 
+        if (last_query > 0)
+            l.add(new StatusItem("Last poll", JoH.niceTimeSince(last_query) + " ago", StatusItem.Highlight.NORMAL, "long-press",
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            if (JoH.ratelimit("nightscout-manual-poll", 15)) {
+                                startSyncService(100);
+                                JoH.static_toast_short("Polling");
+                                if (TidepoolEntry.enabled()) {
+                                    TidepoolUploader.doLogin(true);
+                                }
+                            }
+                        }
+                    }));
 
         ///
 

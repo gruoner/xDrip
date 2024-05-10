@@ -7,7 +7,6 @@ import com.eveningoutpost.dexdrip.models.UserError;
 import com.eveningoutpost.dexdrip.utilitymodels.CollectionServiceStarter;
 import com.eveningoutpost.dexdrip.utilitymodels.Constants;
 import com.eveningoutpost.dexdrip.utilitymodels.NightscoutTreatments;
-import com.eveningoutpost.dexdrip.utilitymodels.NightscoutUploader;
 import com.eveningoutpost.dexdrip.utilitymodels.PersistentStore;
 import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.messages.Entry;
@@ -25,28 +24,22 @@ import com.google.gson.internal.bind.TypeAdapters;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-
 import java.io.IOException;
 import java.util.List;
-
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.Query;
-
 import static com.eveningoutpost.dexdrip.models.JoH.emptyString;
 import static com.eveningoutpost.dexdrip.utilitymodels.BgGraphBuilder.DEXCOM_PERIOD;
 import static com.eveningoutpost.dexdrip.utilitymodels.OkHttpWrapper.enableTls12OnPreLollipop;
 import static com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollowService.msg;
-
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -141,9 +134,9 @@ public class NightscoutFollow {
                 // process data
                 try {
                     if (InsulinManager.updateFromNightscout(session.insulin)) ActiveAndroid.clearCache();   // when at least one profile has been changed ActiveAndroid Cache will be cleared to reload all insulin injections from scratch
-                    NightscoutFollowService.updateInsulinDownloaded();
+                    InsulinManager.setLastInsulinDownload();
                 } catch (Exception e) {
-                    JoH.clearRatelimit("nsfollow-insulin-download");
+                    JoH.clearRatelimit(InsulinManager.NAME4nsfollow_insulin_downloadRATE);
                     msg("Insulin: " + e);
                 }
             })
@@ -195,11 +188,11 @@ public class NightscoutFollow {
                 }
             }
             if (insulinDownloadEnabled() && MultipleInsulins.isDownloadAllowed(urlString)) {
-                if (JoH.ratelimit("nsfollow-insulin-download", 60*60)) {    // load insulin every hour
+                if (JoH.ratelimit(InsulinManager.NAME4nsfollow_insulin_downloadRATE, 60*60)) {    // load insulin every hour
                     try {
                         getService().getInsulinProfiles(session.url.getHashedSecret()).enqueue(session.insulinCallback);
                     } catch (Exception e) {
-                        JoH.clearRatelimit("nsfollow-insulin-download");
+                        JoH.clearRatelimit(InsulinManager.NAME4nsfollow_insulin_downloadRATE);
                         UserError.Log.e(TAG, "Exception in insulin work() " + e);
                         msg("Nightscout follow insulin error: " + e);
                     }
