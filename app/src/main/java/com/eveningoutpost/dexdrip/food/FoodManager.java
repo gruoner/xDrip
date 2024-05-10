@@ -4,6 +4,8 @@ import android.util.Log;
 import com.eveningoutpost.dexdrip.models.FoodProfile;
 import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
+import com.eveningoutpost.dexdrip.utilitymodels.Constants;
+import com.eveningoutpost.dexdrip.utilitymodels.PersistentStore;
 import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,6 +17,9 @@ public class FoodManager {
     private static final String TAG = "FoodManager";
     private static List<Food> profiles = new ArrayList<>();
     private static Boolean initialized = false;
+    static final String LAST_FOOD_DOWNLOAD_STORE_COUNTER = "nightscout-rest-food-download-time";
+    public static final String NAME4nsupload_food_downloadRATE = "ns-food-download";
+    public static final String NAME4nsfollow_food_downloadRATE = "ns-food-download";
 
     public static Boolean updateFromNightscout(List<NightscoutFollow.NightscoutFoodStructure> p) {
         Log.d(TAG, "updating food profiles from Nightscout");
@@ -182,5 +187,20 @@ public class FoodManager {
             return food;
         }
         return null;
+    }
+
+    public static long lastFoodDownloaded() {
+        return PersistentStore.getLong(LAST_FOOD_DOWNLOAD_STORE_COUNTER);
+    }
+    public static boolean time2DownloadFood() {
+        if (PersistentStore.getLong(LAST_FOOD_DOWNLOAD_STORE_COUNTER) > JoH.tsl() - Constants.DAY_IN_MS)
+            return false;
+        else return true;
+    }
+    public static void setLastFoodDownload() {
+        PersistentStore.setLong(LAST_FOOD_DOWNLOAD_STORE_COUNTER, JoH.tsl());
+    }
+    public static void resetLastFoodDownload() {
+        PersistentStore.setLong(LAST_FOOD_DOWNLOAD_STORE_COUNTER, 0);
     }
 }

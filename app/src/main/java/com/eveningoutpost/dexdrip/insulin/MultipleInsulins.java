@@ -5,10 +5,8 @@ import com.eveningoutpost.dexdrip.utilitymodels.PersistentStore;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 import com.eveningoutpost.dexdrip.utils.HomeWifi;
 import com.google.common.base.Strings;
-
 import static com.eveningoutpost.dexdrip.utils.DexCollectionType.NSFollow;
 import com.eveningoutpost.dexdrip.utilitymodels.Pref;
-
 import org.json.JSONObject;
 
 public class MultipleInsulins {

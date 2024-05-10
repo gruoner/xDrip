@@ -5,6 +5,9 @@ import android.util.Log;
 import com.eveningoutpost.dexdrip.models.InsulinProfile;
 import androidx.annotation.Keep;
 import com.eveningoutpost.dexdrip.R;
+import com.eveningoutpost.dexdrip.models.JoH;
+import com.eveningoutpost.dexdrip.utilitymodels.Constants;
+import com.eveningoutpost.dexdrip.utilitymodels.PersistentStore;
 import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
 import com.eveningoutpost.dexdrip.xdrip;
@@ -25,6 +28,9 @@ public class InsulinManager {
     private static ArrayList<Insulin> profiles;
     private static volatile Insulin basalProfile, bolusProfile;
     private static Boolean loadConfigFromNightscout = false;
+    static final String LAST_INSULIN_DOWNLOAD_STORE_COUNTER = "nightscout-rest-insulin-download-time";
+    public static final String NAME4nsupload_insulin_downloadRATE = "ns-insulin-download";
+    public static final String NAME4nsfollow_insulin_downloadRATE = "ns-insulin-download";
 
     @Keep
     static class insulinDataWrapper {
@@ -395,4 +401,17 @@ public class InsulinManager {
     public static void setLoadConfigFromNightscout(Boolean l) {
         loadConfigFromNightscout = l;
     }
+
+    public static long lastInsulinDownloaded() {
+        return PersistentStore.getLong(LAST_INSULIN_DOWNLOAD_STORE_COUNTER);
+    }
+    public static boolean time2DownloadInsulin() {
+        if (PersistentStore.getLong(LAST_INSULIN_DOWNLOAD_STORE_COUNTER) > JoH.tsl() - Constants.HOUR_IN_MS)
+            return false;
+        else return true;
+    }
+    public static void setLastInsulinDownload() {
+        PersistentStore.setLong(LAST_INSULIN_DOWNLOAD_STORE_COUNTER, JoH.tsl());
+    }
+
 }
