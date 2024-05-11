@@ -64,6 +64,12 @@
                         android:summary="@string/summary_cloud_storage_api_download_from_xdrip"
                         android:title="@string/title_cloud_storage_api_download_from_xdrip" />
                     <ListPreference
+                        android:key="download_insulin_just_when_in_wifi"
+                        android:entries="@array/InsulinDownloadWifiOptions"
+                        android:entryValues="@array/InsulinDownloadWifiOptionsData"
+                        android:summary="Just download insulin database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
+                        android:title="Insulin download only from Wifi"/>
+                    <ListPreference
                         android:defaultValue="false"
                         android:key="download_food_just_when_in_wifi"
                         android:entries="@array/FoodDownloadWifiOptions"
