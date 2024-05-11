@@ -728,13 +728,6 @@
                     android:key="multiple_insulin_use_profilespecific_coloring"
                     android:summary="@string/summary_multiple_insulin_use_profilespecific_coloring"
                     android:title="@string/title_multiple_insulin_use_profilespecific_coloring"/>
-                <ListPreference
-                    android:key="download_insulin_just_when_in_wifi"
-                    android:entries="@array/InsulinDownloadWifiOptions"
-                    android:entryValues="@array/InsulinDownloadWifiOptionsData"
-                    android:summary="Just download insulin database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
-                    android:title="Insulin download only from Wifi"/>
-
             </PreferenceScreen>
 
             <Preference

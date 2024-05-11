@@ -192,12 +192,7 @@
             android:singleLine="true"
             android:summary="@string/summary_nsfollow_url"
             android:title="@string/title_nsfollow_url" />
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:dependency="multiple_insulin_types"
-            android:key="nsfollow_download_insulin"
-            android:summary="@string/summary_nsfollow_download_insulin"
-            android:title="@string/title_nsfollow_download_insulin" />
+
         <PreferenceScreen
             android:key="nsfollow_download_treatments_screen"
             android:title="@string/title_nsfollow_download_treatments">
@@ -212,6 +207,22 @@
                 android:key="cloud_storage_api_skip_download_from_xdrip"
                 android:summary="@string/summary_cloud_storage_api_download_from_xdrip"
                 android:title="@string/title_cloud_storage_api_download_from_xdrip" />
+        </PreferenceScreen>
+        <PreferenceScreen
+            android:key="nsfollow_download_insulin_screen"
+            android:title="@string/title_nsfollow_download_insulin"
+            android:dependency="multiple_insulin_types">
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:key="nsfollow_download_insulin"
+                android:summary="@string/summary_nsfollow_download_insulin"
+                android:title="@string/title_nsfollow_download_insulin" />
+            <ListPreference
+                android:key="download_insulin_just_when_in_wifi"
+                android:entries="@array/InsulinDownloadWifiOptions"
+                android:entryValues="@array/InsulinDownloadWifiOptionsData"
+                android:summary="Just download insulin database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
+                android:title="Insulin download only from Wifi"/>
         </PreferenceScreen>
         <ListPreference
             android:defaultValue="0"
