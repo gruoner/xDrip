@@ -1219,6 +1219,8 @@
     <string name="title_cloud_storage_api_download_treatments_enable">Download treatments</string>
     <string name="summary_cloud_storage_api_download_insulin_enable">try to download insulin profiles from Nightscout</string>
     <string name="title_cloud_storage_api_download_insulin_enable">Download insulin profiles</string>
+    <string name="summary_cloud_storage_api_download_food_enable">try to download food database from Nightscout</string>
+    <string name="title_cloud_storage_api_download_food_enable">Download food database</string>
     <string name="title_cloud_storage_api_download_from_xdrip">Skip items from xDrip</string>
     <string name="summary_cloud_storage_api_download_from_xdrip">Avoid downloading items uploaded by xDrip</string>
     <string name="summary_bluetooth_meter_for_calibrations_auto">Calibrate using new blood glucose readings if the conditions appear right to do so without asking confirmation (experimental)</string>

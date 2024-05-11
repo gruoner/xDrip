@@ -63,6 +63,31 @@
                         android:key="cloud_storage_api_skip_download_from_xdrip"
                         android:summary="@string/summary_cloud_storage_api_download_from_xdrip"
                         android:title="@string/title_cloud_storage_api_download_from_xdrip" />
+                    <ListPreference
+                        android:defaultValue="false"
+                        android:key="download_food_just_when_in_wifi"
+                        android:entries="@array/FoodDownloadWifiOptions"
+                        android:entryValues="@array/FoodDownloadWifiOptionsData"
+                        android:summary="Just download food database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
+                        android:title="Food download only from Wifi"/>
+                    <Preference
+                        android:id="@+id/nightscout_force_food_download"
+                        android:summary="@string/summary_force_food_download"
+                        android:title="@string/title_force_food_download">
+                        <intent
+                            android:action="android.intent.action.MAIN"
+                            android:targetClass="com.eveningoutpost.dexdrip.food.NightscoutForceDownloadActivity"
+                            android:targetPackage="@string/local_target_package" />
+                    </Preference>
+                    <Preference
+                        android:id="@+id/drop_food_db"
+                        android:summary="@string/summary_drop_food_db"
+                        android:title="@string/title_drop_food_db">
+                        <intent
+                            android:action="android.intent.action.MAIN"
+                            android:targetClass="com.eveningoutpost.dexdrip.food.DropFoodDBActivity"
+                            android:targetPackage="@string/local_target_package" />
+                    </Preference>
                 </PreferenceScreen>
                 <CheckBoxPreference
                     android:defaultValue="false"
@@ -76,6 +101,12 @@
                     android:key="cloud_storage_api_download_insulin_enable"
                     android:summary="@string/summary_cloud_storage_api_download_insulin_enable"
                     android:title="@string/title_cloud_storage_api_download_insulin_enable" />
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:dependency="cloud_storage_api_download_enable"
+                    android:key="cloud_storage_api_download_food_enable"
+                    android:summary="@string/summary_cloud_storage_api_download_food_enable"
+                    android:title="@string/title_cloud_storage_api_download_food_enable" />
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:dependency="cloud_storage_api_download_enable"

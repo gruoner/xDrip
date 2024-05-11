@@ -1833,7 +1833,8 @@ public class NightscoutUploader {
     public static boolean foodDownloadEnabled() {
 
         if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
-                Pref.getBooleanDefaultFalse("cloud_storage_api_download_enable"))
+                Pref.getBooleanDefaultFalse("cloud_storage_api_download_enable")&&
+                Pref.getBooleanDefaultFalse("cloud_storage_api_download_food_enable"))
             return true;
         else return false;
     }

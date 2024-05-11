@@ -756,37 +756,11 @@
                         android:targetClass="com.eveningoutpost.dexdrip.food.FoodProfileEditor"
                         android:targetPackage="@string/local_target_package" />
                 </Preference>
-                <ListPreference
-                    android:defaultValue="false"
-                    android:key="download_food_just_when_in_wifi"
-                    android:entries="@array/FoodDownloadWifiOptions"
-                    android:entryValues="@array/FoodDownloadWifiOptionsData"
-                    android:summary="Just download food database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
-                    android:title="Food download only from Wifi"/>
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:key="multiple_carbs_use_for_prediction"
                     android:summary="use extended carbs profiles as predictive model"
                     android:title="Use in prediction"/>
-                <Preference
-                    android:id="@+id/nightscout_force_food_download"
-                    android:summary="@string/summary_force_food_download"
-                    android:title="@string/title_force_food_download">
-                    <intent
-                        android:action="android.intent.action.MAIN"
-                        android:targetClass="com.eveningoutpost.dexdrip.food.NightscoutForceDownloadActivity"
-                        android:targetPackage="@string/local_target_package" />
-                </Preference>
-                <Preference
-                    android:id="@+id/drop_food_db"
-                    android:summary="@string/summary_drop_food_db"
-                    android:title="@string/title_drop_food_db">
-                    <intent
-                        android:action="android.intent.action.MAIN"
-                        android:targetClass="com.eveningoutpost.dexdrip.food.DropFoodDBActivity"
-                        android:targetPackage="@string/local_target_package" />
-                </Preference>
-
             </PreferenceScreen>
 
             <Preference
