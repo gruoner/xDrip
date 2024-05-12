@@ -27,7 +27,6 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
@@ -175,9 +174,9 @@ public class NightscoutFollow {
                 // process data
                 try {
                     if (FoodManager.updateFromNightscout(session.food)) ActiveAndroid.clearCache();   // when at least one profile has been changed ActiveAndroid Cache will be cleared to reload all insulin injections from scratch
-                    NightscoutFollowService.updateFoodDownloaded();
+                    FoodManager.setLastFoodDownload();
                 } catch (Exception e) {
-                    JoH.clearRatelimit("ns-food-download");
+                    JoH.clearRatelimit(FoodManager.NAME4nsfollow_food_downloadRATE);
                     msg("Food: " + e);
                 }
             })
@@ -239,12 +238,12 @@ public class NightscoutFollow {
                     }
                 }
             }
-            if (MultipleCarbs.isEnabled()) {
-                if (MultipleCarbs.isDownloadAllowed() && JoH.ratelimit("ns-food-download", 24*60*60)) {   // load food every day when it's allowed to do so
+            if (foodDownloadEnabled() && MultipleCarbs.isDownloadAllowed()) {
+                if (MultipleCarbs.isDownloadAllowed() && JoH.ratelimit(FoodManager.NAME4nsfollow_food_downloadRATE, 24*60*60)) {   // load food every day when it's allowed to do so
                     try {
                         getService().getFoodProfiles(session.url.getHashedSecret()).enqueue(session.foodCallback);
                     } catch (Exception e) {
-                        JoH.clearRatelimit("ns-food-download");
+                        JoH.clearRatelimit(FoodManager.NAME4nsfollow_food_downloadRATE);
                         UserError.Log.e(TAG, "Exception in food work() " + e);
                         msg("Nightscout follow food error: " + e);
                     }
@@ -299,6 +298,9 @@ public class NightscoutFollow {
 
     public static boolean insulinDownloadEnabled() {
         return Pref.getBooleanDefaultFalse("nsfollow_download_insulin");
+    }
+    public static boolean foodDownloadEnabled() {
+        return MultipleCarbs.isEnabled() && Pref.getBooleanDefaultFalse("nsfollow_download_food");
     }
 
     // TODO make reusable
