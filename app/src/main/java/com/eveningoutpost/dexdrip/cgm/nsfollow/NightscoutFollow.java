@@ -246,7 +246,7 @@ public class NightscoutFollow {
     public static final TypeAdapterFactory UNRELIABLE_INTEGER_FACTORY = TypeAdapters.newFactory(int.class, Integer.class, UNRELIABLE_INTEGER);
 
     public static boolean insulinDownloadEnabled() {
-        return Pref.getBooleanDefaultFalse("nsfollow_download_insulin");
+        return MultipleInsulins.isEnabled() && Pref.getBooleanDefaultFalse("nsfollow_download_insulin");
     }
 
     // TODO make reusable
