@@ -1,6 +1,6 @@
 package com.eveningoutpost.dexdrip.models;
 
-import android.support.v4.util.Pair;
+import android.util.Pair;
 import com.eveningoutpost.dexdrip.food.Food;
 import com.eveningoutpost.dexdrip.food.FoodManager;
 import com.google.gson.JsonArray;

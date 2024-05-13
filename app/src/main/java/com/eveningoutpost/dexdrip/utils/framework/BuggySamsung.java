@@ -20,7 +20,6 @@ import static com.eveningoutpost.dexdrip.models.JoH.msSince;
  * available to developers. Until they fix these bugs we attempt to work-around them...
  */
 
-@RequiredArgsConstructor
 public class BuggySamsung {
 
     // TODO this overlaps with ob1 implementation
@@ -31,6 +30,11 @@ public class BuggySamsung {
     private final String TAG;
     @Getter
     private long max_wakeup_jitter;
+
+    /// gruoner, 05/09/2024: created constructor because of compiler error
+    public BuggySamsung(String t) {
+        TAG = t;
+    }
 
     public long evaluate(final long wakeup_time) {
         if (wakeup_time > 0) {
@@ -69,7 +73,8 @@ public class BuggySamsung {
     public static boolean isSamsung() {
         return Build.MANUFACTURER.toLowerCase().contains("samsung")
                 || Build.MANUFACTURER.toLowerCase().contains("xiaomi")
-                || Build.MANUFACTURER.toLowerCase().contains("oneplus");    // experimental test
+                || Build.MANUFACTURER.toLowerCase().contains("oneplus")    // experimental test
+                || Build.MANUFACTURER.toLowerCase().contains("oppo");      // experimental test
     }
 
 }
