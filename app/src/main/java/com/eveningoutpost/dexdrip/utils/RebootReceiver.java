@@ -3,7 +3,6 @@ package com.eveningoutpost.dexdrip.utils;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-
 import com.eveningoutpost.dexdrip.models.AudioRecorder;
 import com.eveningoutpost.dexdrip.models.UserError;
 

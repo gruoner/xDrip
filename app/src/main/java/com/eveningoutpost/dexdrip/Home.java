@@ -171,6 +171,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.internal.bind.DateTypeAdapter;
 import static com.eveningoutpost.dexdrip.utils.DexCollectionType.DexcomG5;
+import com.eveningoutpost.dexdrip.models.AudioRecorder;
+import com.eveningoutpost.dexdrip.Recorder.ManageRecorder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -662,7 +664,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
 
         currentBgValueText.setText(""); // clear any design prototyping default
-
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
         }

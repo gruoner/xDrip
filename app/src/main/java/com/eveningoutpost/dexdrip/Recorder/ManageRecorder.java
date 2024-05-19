@@ -11,9 +11,6 @@ import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import com.eveningoutpost.dexdrip.ui.dialog.GenericConfirmDialog;
 import com.eveningoutpost.dexdrip.utils.ActivityWithMenu;
-
-import lombok.val;
-
 import static com.eveningoutpost.dexdrip.xdrip.getAppContext;
 import static com.eveningoutpost.dexdrip.xdrip.gs;
 
@@ -40,7 +37,7 @@ public class ManageRecorder extends ActivityWithMenu {
     }
 
     public void addListenerOnButton() {
-        val activity = this;
+        ManageRecorder activity = this;
         if (AudioRecorder.isActive())
             AudioRecorderButton.setOnClickListener(v -> GenericConfirmDialog.show(activity, gs(R.string.are_you_sure), "Do you want to stop this recorder?", () -> {
                 AudioRecorderStop();

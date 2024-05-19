@@ -252,6 +252,10 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/add_calibration" />
         <activity
+            android:name=".Recorder.ManageRecorder"
+            android:configChanges="orientation|screenSize"
+            android:label="Recorder verwalten" />
+        <activity
             android:name=".StartNewSensor"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_start_new_sensor" />

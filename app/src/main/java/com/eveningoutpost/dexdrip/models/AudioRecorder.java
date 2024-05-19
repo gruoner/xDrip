@@ -65,14 +65,14 @@ public class AudioRecorder extends Model {
         } catch (Exception e)
         {
             Log.wtf(TAG, "Failed to create audiorecorder - init failed");
-            UserError.Log.e(TAG, "Got exception in init audiorecorder: " + e);
+            Log.e(TAG, "Got exception in init audiorecorder: " + e);
             r.delete();
         }
         try {
             recorder.prepare();
         } catch (IOException e) {
             Log.wtf(TAG, "Failed to create audiorecorder - prepare failed");
-            UserError.Log.e(TAG, "Got exception in preparing audiorecorder: " + e);
+            Log.e(TAG, "Got exception in preparing audiorecorder: " + e);
             r.delete();
         }
         recorder.start();
