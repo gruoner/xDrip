@@ -723,7 +723,7 @@ public class NightscoutUploader {
                   }
                 }
             }
-            if (MultipleInsulins.isEnabled() && Pref.getBooleanDefaultFalse("nightscout_upload_insulin_profiles") && MultipleInsulins.isNightscoutInsulinAPIavailable(baseURL)) {
+            if (MultipleInsulins.isEnabled() && insulinUploadEnabled() && MultipleInsulins.isNightscoutInsulinAPIavailable(baseURL)) {
                 try {
                     sendInsulin2Nightscout(nightscoutService, secret);
                 } catch (Exception e) {
