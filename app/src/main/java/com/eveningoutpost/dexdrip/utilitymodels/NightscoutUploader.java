@@ -635,7 +635,7 @@ public class NightscoutUploader {
                     if (apiVersion == 1) {
                         String hashedSecret = Hashing.sha1().hashBytes(secret.getBytes(Charsets.UTF_8)).toString();
                         doStatusUpdate(nightscoutService, retrofit.baseUrl().url().toString(), hashedSecret); // update status if needed
-                        doRESTUploadTo(nightscoutService, hashedSecret, glucoseDataSets, meterRecords, calRecords, baseURL);
+                        doRESTUploadTo(nightscoutService, hashedSecret, glucoseDataSets, meterRecords, calRecords, retrofit.baseUrl().url().toString());
                     } else {
                         doLegacyRESTUploadTo(nightscoutService, glucoseDataSets);
                     }
