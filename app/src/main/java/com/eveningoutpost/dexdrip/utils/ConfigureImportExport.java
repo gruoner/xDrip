@@ -3,7 +3,6 @@ package com.eveningoutpost.dexdrip.utils;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.design.widget.TextInputEditText;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
@@ -15,6 +14,7 @@ import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import com.eveningoutpost.dexdrip.xdrip;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.common.base.Strings;
 import com.thegrizzlylabs.sardineandroid.DavResource;
 import com.thegrizzlylabs.sardineandroid.Sardine;
@@ -161,6 +161,9 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
     ==============================================
      */
     public static void dispatchAdditionalExports(String filename, Boolean attachPrefs, Boolean need2extendTimestamp) {
+        if ((!Pref.getBooleanDefaultFalse("importexport2localstorage_enabled")) &&
+                (!Pref.getBooleanDefaultFalse("importexport2webdavstorage_enabled")))
+            return;
         String newFileName = new File(filename).getName();
         if (need2extendTimestamp) {
             final StringBuilder sb = new StringBuilder();
@@ -212,7 +215,8 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
             export2WebDAV(filename, newFileName);
 
         if (toDelete != null)
-            toDelete.delete();
+            toDelete.delete();          // delete the temporary ZIP file
+        new File(filename).delete();    // as we are in a local oder webdav export, delete the exported database file
     }
 
     public static void export2localStorage(String filename, String nameOfFile) {

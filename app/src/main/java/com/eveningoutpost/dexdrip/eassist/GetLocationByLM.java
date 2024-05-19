@@ -10,7 +10,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 
 import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.models.UserError;
@@ -19,10 +18,9 @@ import com.eveningoutpost.dexdrip.xdrip;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-
 import lombok.Getter;
-
 import static com.eveningoutpost.dexdrip.xdrip.gs;
+import androidx.core.content.ContextCompat;
 
 // jamorham
 
