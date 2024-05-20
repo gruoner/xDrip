@@ -106,7 +106,6 @@
             android:label="xDrip Privacy Policy"
             android:exported="true">
             <intent-filter>
-..
                 <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
             </intent-filter>
         </activity>
@@ -132,7 +131,6 @@
         <meta-data
             android:name="firebase_analytics_collection_enabled"
             android:value="false" />
-..
         <meta-data
             android:name="AA_DB_NAME"
             android:value="DexDrip.db" />
@@ -362,6 +360,10 @@
             </intent-filter>
         </service>
         -->
+        <service
+            android:name=".services.RunEveryMinuteService"
+            android:enabled="true"
+            android:exported="true" />
         <service
             android:name=".services.SyncService"
             android:enabled="true"

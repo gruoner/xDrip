@@ -429,6 +429,12 @@ public class UploaderQueue extends Model {
             rateLastFood = JoH.niceTimeScalar(age);
         }
 
+        String ageLastStatusUpload = "n/a";
+        if(NightscoutUploader.lastStatusUploaded() != 0) {
+            long age = JoH.msSince(NightscoutUploader.lastStatusUploaded());
+            ageLastStatusUpload = JoH.niceTimeScalar(age);
+        }
+
         // per circuit
         for (int i = 0, size = circuits_for_stats.size(); i < size; i++) {
             final long bitfield = circuits_for_stats.keyAt(i);
@@ -512,6 +518,11 @@ public class UploaderQueue extends Model {
                         }
                         l.add(new StatusItem("Upload insulin", s));
                     }
+                    if (NightscoutUploader.statusUploadEnabled()) {
+                        l.add(new StatusItem("Last Status Uploaded", ageLastStatusUpload + " ago"));
+                        String s = gs(R.string.yes);
+                        l.add(new StatusItem("Upload device status", s));
+                    } else l.add(new StatusItem("Upload device status", gs(R.string.no)));
 
                     try {
                         final String store_marker = "nightscout-status-poll-" + processedBaseURIs.get(i);

@@ -135,9 +135,9 @@ public class TreatmentsTest extends RobolectricTestWithConfig {
         // TODO this might suffer from json sort ordering - check if that is the issue if it fails
         assertThat(lastTreatment.getInsulinInjections()).isNotNull();
         assertThat(lastTreatment.getInsulinInjections().size()).isEqualTo(2);
-        assertThat(lastTreatment.getInsulinInjections().get(0).getInsulin()).isEqualTo(insulins.get(0).getName());
+        assertThat(lastTreatment.getInsulinInjections().get(0).getProfile()).isEqualTo(insulins.get(0).getName());
         assertThat(lastTreatment.getInsulinInjections().get(0).getUnits()).isEqualTo(1.2d);
-        assertThat(lastTreatment.getInsulinInjections().get(1).getInsulin()).isEqualTo(insulins.get(1).getName());
+        assertThat(lastTreatment.getInsulinInjections().get(1).getProfile()).isEqualTo(insulins.get(1).getName());
         assertThat(lastTreatment.getInsulinInjections().get(1).getUnits()).isEqualTo(2.3d);
 
     }

@@ -164,6 +164,11 @@
                         android:key="nightscout_upload_insulin_profiles"
                         android:summary="@string/summary_nightscout_upload_insulin_profiles"
                         android:title="@string/title_nightscout_upload_insulin_profiles" />
+                    <CheckBoxPreference
+                        android:defaultValue="false"
+                        android:key="nightscout_upload_status"
+                        android:summary="@string/summary_nightscout_upload_status"
+                        android:title="@string/title_nightscout_upload_status" />
                     <Preference
                         android:key="back_fill_data_activity_intent_key"
                         android:summary="@string/summary_tap_to_send_historical_data"

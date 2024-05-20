@@ -1211,6 +1211,8 @@
     <string name="title_nightscout_device_append_source_info">Quell-Info an Gerätename anhängen</string>
     <string name="summary_nightscout_upload_insulin_profiles">Wenn der Nightscout Server die Uploads von Insulin Profilen erlaubt, können hier die Profile und die Multi-Insulin Konfiguration hochgeladen werden.</string>
     <string name="title_nightscout_upload_insulin_profiles">Insulin Profile auf Nightscout hochladen</string>
+    <string name="summary_nightscout_upload_status">Lade den Gerätestatus auf Nightscout (normalerweise jede Minute)</string>
+    <string name="title_nightscout_upload_status">Synchronisiere den Gerätestatus</string>
     <string name="summary_tap_to_send_historical_data">Klicken um historische Daten an Nightscout zu senden</string>
     <string name="title_back_fill_data">Back-fill Daten</string>
     <string name="summary_tidepool_upload_screen">Daten zum Tidepool-Dienst hochladen</string>

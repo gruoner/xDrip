@@ -116,6 +116,7 @@ public class NightscoutUploader {
         private static final String LAST_SUCCESS_FOOD_DOWNLOAD = "NS-Last-Food-Download-Modified";
         private static final String ETAG = "ETAG";
         static final String LAST_INSULIN_UPLOAD_STORE_COUNTER = "nightscout-rest-insulin-synced-time";
+        static final String LAST_STATUS_UPLOAD_STORE_COUNTER = "nightscout-rest-status-synced-time";
 
         private static int failurecount = 0;
 
@@ -802,11 +803,6 @@ public class NightscoutUploader {
                 final Response<ResponseBody> r = nightscoutService.upload(secret, body).execute();
                 if (!r.isSuccessful()) throw new UploaderException(r.message(), r.code());
                 checkGzipSupport(r);
-                try {
-                    postDeviceStatus(nightscoutService, secret);
-                } catch (Exception e) {
-                    Log.e(TAG, "Ignoring devicestatus post exception: " + e);
-                }
             }
 
             try {
@@ -846,6 +842,12 @@ public class NightscoutUploader {
                     }
                 }
             }
+            if (statusUploadEnabled())
+                try {
+                    postDeviceStatus(nightscoutService, secret);
+                } catch (Exception e) {
+                    Log.e(TAG, "Ignoring devicestatus post exception: " + e);
+                }
         }
 
     private static synchronized void handleRestFailure(String msg) {
@@ -1419,6 +1421,7 @@ public class NightscoutUploader {
                 // } else {
                 //     UserError.Log.d(TAG, "Battery level is same as previous - not uploading: " + battery_level);
                 checkGzipSupport(r);
+                setLastStatusUpload();
             }
         }
     }
@@ -1827,6 +1830,14 @@ public class NightscoutUploader {
         else return false;
     }
 
+    public static boolean statusUploadEnabled() {
+
+        if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
+                Pref.getBooleanDefaultFalse("nightscout_upload_status"))
+            return true;
+        else return false;
+    }
+
     public static boolean insulinDownloadEnabled() {
 
         if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
@@ -1863,5 +1874,68 @@ public class NightscoutUploader {
     }
     static void setLastInsulinUpload() {
         PersistentStore.setLong(LAST_INSULIN_UPLOAD_STORE_COUNTER, JoH.tsl());
+    }
+
+    static long lastStatusUploaded() {
+        return PersistentStore.getLong(LAST_STATUS_UPLOAD_STORE_COUNTER);
+    }
+    static boolean time2UploadStatus() {
+        if (PersistentStore.getLong(LAST_STATUS_UPLOAD_STORE_COUNTER) > JoH.tsl() - Constants.MINUTE_IN_MS * 0.8)
+            return false;
+        else return true;
+    }
+    static void setLastStatusUpload() {
+        PersistentStore.setLong(LAST_STATUS_UPLOAD_STORE_COUNTER, JoH.tsl());
+    }
+
+    public void doStatusUpload() {
+        String baseURLSettings = prefs.getString("cloud_storage_api_base", "");
+        ArrayList<String> baseURIs = new ArrayList<String>();
+
+        try {
+            for (String baseURLSetting : baseURLSettings.split(" ")) {
+                String baseURL = baseURLSetting.trim();
+                if (baseURL.isEmpty()) continue;
+                baseURIs.add(baseURL + (baseURL.endsWith("/") ? "" : "/"));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Unable to process API Base URL: "+e);
+            return;
+        }
+        boolean any_successes = false;
+        for (String baseURI : baseURIs) {
+            try {
+                baseURI = TryResolveName(baseURI);
+                int apiVersion = 0;
+                URI uri = new URI(baseURI);
+                if ((uri.getHost().startsWith("192.168.")) && prefs.getBoolean("skip_lan_uploads_when_no_lan", true) && (!JoH.isLANConnected()))
+                {
+                    Log.d(TAG,"Skipping Nighscout upload to: "+uri.getHost()+" due to no LAN connection");
+                    continue;
+                }
+                if (uri.getPath().endsWith("/v1/")) apiVersion = 1;
+                String baseURL;
+                String secret = uri.getUserInfo();
+                if ((secret == null || secret.isEmpty()) && apiVersion == 0) {
+                    baseURL = baseURI;
+                } else if ((secret == null || secret.isEmpty())) {
+                    throw new Exception("Starting with API v1, a pass phase is required");
+                } else if (apiVersion > 0) {
+                    baseURL = baseURI.replaceFirst("//[^@]+@", "//");
+                } else {
+                    throw new Exception("Unexpected baseURI: "+baseURI);
+                }
+
+                final Retrofit retrofit = new Retrofit.Builder().baseUrl(baseURL).client(client).build();
+                final NightscoutService nightscoutService = retrofit.create(NightscoutService.class);
+
+                if (apiVersion == 1) {
+                    String hashedSecret = Hashing.sha1().hashBytes(secret.getBytes(Charsets.UTF_8)).toString();
+                    postDeviceStatus(nightscoutService, hashedSecret);
+                }
+            } catch (Exception e) {
+                String msg = "Unable to do device status API Upload: " + e.getMessage();
+            }
+        }
     }
 }
