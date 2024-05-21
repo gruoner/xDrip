@@ -26,8 +26,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import com.google.gson.internal.bind.DateTypeAdapter;
 
-import lombok.val;
-
 /**
  * Created by Emma Black on 1/14/15.
  */
@@ -464,10 +462,10 @@ public class AlertType extends Model {
     }
 
     public static AlertType getMostExtremeAlert(boolean highAlerts) {
-        val alerts = getAll(highAlerts);
+        List<AlertType> alerts = getAll(highAlerts);
         if (alerts == null) return null;
-        val filtered = new ArrayList<AlertType>();
-        for (val alert : alerts) {
+        List<AlertType> filtered = new ArrayList<AlertType>();
+        for (AlertType alert : alerts) {
             if (alert.active && alert.in_time_frame()) {    // remove alerts which are not live now
                 filtered.add(alert);
             }
