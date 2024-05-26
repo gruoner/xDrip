@@ -13,6 +13,7 @@ import com.activeandroid.util.SQLiteUtils;
 import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.models.UserError.Log;
 import com.eveningoutpost.dexdrip.utilitymodels.Constants;
+import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
@@ -137,6 +138,13 @@ public class AudioRecorder extends Model {
             return true;
         }
     }
+    public static boolean isRunning() {
+        if (currentAudioRecorder().getRecorder() == null) {
+            stopAudioRecorder();
+            return false;
+        }
+        else return true;
+    }
 
     public static AudioRecorder getByUuid(String xDrip_audiorecorder_uuid) {
         if(xDrip_audiorecorder_uuid == null) {
@@ -161,6 +169,8 @@ public class AudioRecorder extends Model {
         r.audio_file = audio_file;
         r.save();
     }
+
+    public MediaRecorder getRecorder() { return recorder; }
 
     public String toJSON() {
         JSONObject jsonObject = new JSONObject();
@@ -213,5 +223,17 @@ public class AudioRecorder extends Model {
         patched = true;
     }
 
+    public static long calcMillisTillRestart()
+    {
+        if (!isActive()) return 0;
+        long periode = 15*Constants.MINUTE_IN_MS;
+        switch (Pref.getInt("refresh_recording_periode", 0))
+        {
+            case 1: periode = 30*Constants.MINUTE_IN_MS;
+            case 2: periode = 60*Constants.MINUTE_IN_MS;
+            case 3: periode = 120*Constants.MINUTE_IN_MS;
+        }
+        return periode - (JoH.tsl() - currentAudioRecorder().started_at);
+    }
 }
 

@@ -637,6 +637,9 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
         }
+
+        if (Pref.getBooleanDefaultFalse("audio_recorder_started") && !AudioRecorder.isRunning())
+            ManageRecorder.AudioRecorderStart();
     }
 
     private boolean firstRunDialogs(final boolean checkedeula) {

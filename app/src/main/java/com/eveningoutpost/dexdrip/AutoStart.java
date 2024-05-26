@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.eveningoutpost.dexdrip.Recorder.ManageRecorder;
 import com.eveningoutpost.dexdrip.models.AudioRecorder;
 import com.eveningoutpost.dexdrip.models.UserError;
 import com.eveningoutpost.dexdrip.services.PlusSyncService;
@@ -30,8 +31,8 @@ public class AutoStart extends BroadcastReceiver {
             //
         }
 
-        if (Pref.getBooleanDefaultFalse("audio_recorder_started") && !AudioRecorder.isActive())
-            AudioRecorder.create(getAppContext());
+        if (Pref.getBooleanDefaultFalse("audio_recorder_started") && !AudioRecorder.isRunning())
+            ManageRecorder.AudioRecorderStart();
 
         try {
             CollectionServiceStarter.restartCollectionServiceBackground();

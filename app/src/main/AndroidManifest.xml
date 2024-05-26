@@ -364,6 +364,10 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+        <service
+            android:name=".services.RefreshRecordingService"
+            android:enabled="true"
+            android:exported="true" />
 
         <!-- below fixes regression bugs with google play services where it crashes if play is not installed on a device -->
         <receiver android:name="com.google.android.gms.measurement.AppMeasurementReceiver" android:enabled="true" android:exported="false" tools:node="remove"/>
