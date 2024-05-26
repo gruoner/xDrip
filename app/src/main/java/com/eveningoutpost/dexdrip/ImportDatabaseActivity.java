@@ -12,9 +12,9 @@ import android.database.sqlite.SQLiteException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -405,8 +405,8 @@ public class ImportDatabaseActivity extends ListActivityWithMenu {
             });
 
             String export = DatabaseUtil.saveSql(xdrip.getAppContext(), "b4import");
-            ConfigureImportExport.dispatchAdditionalExports(export, true, false);
-
+            /// gruoner: 15.5.'24 - keine Ahnung wieso das seit Jahren auskommentiert ist
+//            ConfigureImportExport.dispatchAdditionalExports(export, true, false);
 
             if (export == null) {
                 statusDialog.dismiss();

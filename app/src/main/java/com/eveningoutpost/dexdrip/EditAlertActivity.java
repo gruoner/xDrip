@@ -17,9 +17,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.text.InputType;
 import android.text.format.DateFormat;
 import android.text.method.DigitsKeyListener;
@@ -57,8 +57,6 @@ import java.util.List;
 
 import static com.eveningoutpost.dexdrip.Home.startWatchUpdaterService;
 import static com.eveningoutpost.dexdrip.xdrip.gs;
-
-import lombok.val;
 
 public class EditAlertActivity extends ActivityWithMenu {
     //public static String menu_name = "Edit Alert";
@@ -326,7 +324,7 @@ public class EditAlertActivity extends ActivityWithMenu {
             audioPath = getExtra(savedInstanceState, "audioPath" ,alertType.mp3_file);
             alertMp3File.setText(shortPath(audioPath));
 
-            status = "editing " + (above ? "high" : "low") + " alert";
+            status = getString(R.string.editing)+" " + (above ? getString(R.string.high) : getString(R.string.low)) + " "+getString(R.string.alert);
             startHour = AlertType.time2Hours(alertType.start_time_minutes);
             startMinute = AlertType.time2Minutes(alertType.start_time_minutes);
             endHour = AlertType.time2Hours(alertType.end_time_minutes);
@@ -764,7 +762,8 @@ public class EditAlertActivity extends ActivityWithMenu {
             } else {
                 if (requestCode == REQUEST_CODE_CHOOSE_FILE) {
                     try {
-                        val selectedAudioUri = data.getData();
+                        /// gruoner 05/09/2024: migrated val to correct type
+                        Uri selectedAudioUri = data.getData();
                         getContentResolver().takePersistableUriPermission(selectedAudioUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
                         // Todo this code is very flacky. Probably need a much better understanding of how the different programs
@@ -788,7 +787,8 @@ public class EditAlertActivity extends ActivityWithMenu {
     }
 
     private static String getDisplayNameFromURI(final Uri contentUri) {
-        val title = JoH.getFieldFromURI(MediaStore.Audio.Media.TITLE, contentUri);
+        /// gruoner 05/09/2024: migrated val to correct type
+        String title = JoH.getFieldFromURI(MediaStore.Audio.Media.TITLE, contentUri);
         if (title == null || contentUri.toString().endsWith(title)) {
             return JoH.getFieldFromURI(MediaStore.Audio.Media.DISPLAY_NAME, contentUri);
         }
@@ -834,14 +834,16 @@ public class EditAlertActivity extends ActivityWithMenu {
             return "xDrip Default";
         }
         if (path.startsWith("content:")) {
-            val result = getDisplayNameFromURI(Uri.parse(path));
+            /// gruoner 05/09/2024: migrated val to correct type
+            String result = getDisplayNameFromURI(Uri.parse(path));
             if (result != null) return result;
         }
         // This may not actually be used anymore
         if (isPathRingtone(xdrip.getAppContext(), path)) {
-            val ringtone = RingtoneManager.getRingtone(xdrip.getAppContext(), Uri.parse(path));
+            /// gruoner 05/09/2024: migrated val to correct type
+            Ringtone ringtone = RingtoneManager.getRingtone(xdrip.getAppContext(), Uri.parse(path));
             // Just verified that the ringtone exists... not checking for null
-            val result = ringtone.getTitle(xdrip.getAppContext());
+            String result = ringtone.getTitle(xdrip.getAppContext());
             Log.d(TAG,"Ringtone title: "+result);
             return result;
         }

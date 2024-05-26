@@ -47,12 +47,54 @@
                     android:key="cloud_storage_api_base"
                     android:title="@string/pref_title_api_url" />
 
-                <SwitchPreference
-                    android:defaultValue="true"
-                    android:dependency="cloud_storage_api_enable"
-                    android:key="cloud_storage_api_download_enable"
-                    android:summary="@string/summary_cloud_storage_api_download_enable"
-                    android:title="@string/title_cloud_storage_api_download_enable" />
+                <PreferenceScreen
+                    android:key="download_treatments_screen"
+                    android:title="@string/title_cloud_storage_api_download_enable"
+                    android:dependency="cloud_storage_api_enable">
+                    <SwitchPreference
+                        android:defaultValue="true"
+                        android:dependency="cloud_storage_api_enable"
+                        android:key="cloud_storage_api_download_enable"
+                        android:summary="@string/summary_cloud_storage_api_download_enable"
+                        android:title="@string/title_cloud_storage_api_download_enable" />
+                    <SwitchPreference
+                        android:defaultValue="true"
+                        android:dependency="cloud_storage_api_download_enable"
+                        android:key="cloud_storage_api_skip_download_from_xdrip"
+                        android:summary="@string/summary_cloud_storage_api_download_from_xdrip"
+                        android:title="@string/title_cloud_storage_api_download_from_xdrip" />
+                    <ListPreference
+                        android:key="download_insulin_just_when_in_wifi"
+                        android:entries="@array/InsulinDownloadWifiOptions"
+                        android:entryValues="@array/InsulinDownloadWifiOptionsData"
+                        android:summary="Just download insulin database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
+                        android:title="Insulin download only from Wifi"/>
+                    <ListPreference
+                        android:defaultValue="false"
+                        android:key="download_food_just_when_in_wifi"
+                        android:entries="@array/FoodDownloadWifiOptions"
+                        android:entryValues="@array/FoodDownloadWifiOptionsData"
+                        android:summary="Just download food database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
+                        android:title="Food download only from Wifi"/>
+                    <Preference
+                        android:id="@+id/nightscout_force_food_download"
+                        android:summary="@string/summary_force_food_download"
+                        android:title="@string/title_force_food_download">
+                        <intent
+                            android:action="android.intent.action.MAIN"
+                            android:targetClass="com.eveningoutpost.dexdrip.food.NightscoutForceDownloadActivity"
+                            android:targetPackage="@string/local_target_package" />
+                    </Preference>
+                    <Preference
+                        android:id="@+id/drop_food_db"
+                        android:summary="@string/summary_drop_food_db"
+                        android:title="@string/title_drop_food_db">
+                        <intent
+                            android:action="android.intent.action.MAIN"
+                            android:targetClass="com.eveningoutpost.dexdrip.food.DropFoodDBActivity"
+                            android:targetPackage="@string/local_target_package" />
+                    </Preference>
+                </PreferenceScreen>
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:dependency="cloud_storage_api_download_enable"
@@ -65,6 +107,12 @@
                     android:key="cloud_storage_api_download_insulin_enable"
                     android:summary="@string/summary_cloud_storage_api_download_insulin_enable"
                     android:title="@string/title_cloud_storage_api_download_insulin_enable" />
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:dependency="cloud_storage_api_download_enable"
+                    android:key="cloud_storage_api_download_food_enable"
+                    android:summary="@string/summary_cloud_storage_api_download_food_enable"
+                    android:title="@string/title_cloud_storage_api_download_food_enable" />
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:dependency="cloud_storage_api_download_enable"
@@ -116,6 +164,11 @@
                         android:key="nightscout_upload_insulin_profiles"
                         android:summary="@string/summary_nightscout_upload_insulin_profiles"
                         android:title="@string/title_nightscout_upload_insulin_profiles" />
+                    <CheckBoxPreference
+                        android:defaultValue="false"
+                        android:key="nightscout_upload_status"
+                        android:summary="@string/summary_nightscout_upload_status"
+                        android:title="@string/title_nightscout_upload_status" />
                     <Preference
                         android:key="back_fill_data_activity_intent_key"
                         android:summary="@string/summary_tap_to_send_historical_data"
@@ -325,10 +378,9 @@
                     android:title="Don't upload treatments" />
                 <CheckBoxPreference
                     android:defaultValue="false"
-                    android:dependency="engineering_mode"
                     android:key="tidepool_new_auth"
-                    android:summary="Test using 2023 auth method. Only for developers"
-                    android:title="Debug Option" />
+                    android:summary="2023 openid authentication method."
+                    android:title="Use new Auth" />
 
             </PreferenceScreen>
 

@@ -522,14 +522,43 @@
                 android:key="plus_show_reminders"
                 android:summary="@string/show_reminder_features"
                 android:title="@string/enable_reminder_features" />
-            <Preference
-                android:key="show_accessibility_settings"
-                android:summary="@string/summary_show_accessibility_settings"
-                android:title="@string/title_show_accessibility_settings">
-                <intent
-                    android:action="android.settings.ACCESSIBILITY_SETTINGS"
-                    />
-            </Preference>
+            <PreferenceScreen
+                android:key="xdrip_plus_accessibility"
+                android:title="@string/title_xdrip_plus_accessibility">
+                <Preference
+                    android:key="show_accessibility_settings"
+                    android:summary="@string/summary_show_accessibility_settings"
+                    android:title="@string/title_show_accessibility_settings">
+                    <intent
+                        android:action="android.settings.ACCESSIBILITY_SETTINGS"
+                        />
+                </Preference>
+                <CheckBoxPreference
+                    android:defaultValue="true"
+                    android:key="aod_use_top"
+                    android:summary="@string/summary_aod_use_top"
+                    android:title="@string/title_aod_use_top" />
+                <CheckBoxPreference
+                    android:defaultValue="true"
+                    android:key="aod_use_top_center"
+                    android:summary="@string/summary_aod_use_top_center"
+                    android:title="@string/title_aod_use_top_center" />
+                <CheckBoxPreference
+                    android:defaultValue="true"
+                    android:key="aod_use_center"
+                    android:summary="@string/summary_aod_use_center"
+                    android:title="@string/title_aod_use_center" />
+                <CheckBoxPreference
+                    android:defaultValue="true"
+                    android:key="aod_use_top_center_bottom"
+                    android:summary="@string/summary_aod_use_center_bottom"
+                    android:title="@string/title_aod_use_center_bottom" />
+                <CheckBoxPreference
+                    android:defaultValue="true"
+                    android:key="aod_use_bottom"
+                    android:summary="@string/summary_aod_use_bottom"
+                    android:title="@string/title_aod_use_bottom" />
+            </PreferenceScreen>
             <PreferenceScreen
                 android:key="xdrip_plus_number_wall"
                 android:title="@string/title_xdrip_plus_number_wall">
@@ -699,13 +728,6 @@
                     android:key="multiple_insulin_use_profilespecific_coloring"
                     android:summary="@string/summary_multiple_insulin_use_profilespecific_coloring"
                     android:title="@string/title_multiple_insulin_use_profilespecific_coloring"/>
-                <ListPreference
-                    android:key="download_insulin_just_when_in_wifi"
-                    android:entries="@array/InsulinDownloadWifiOptions"
-                    android:entryValues="@array/InsulinDownloadWifiOptionsData"
-                    android:summary="Just download insulin database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
-                    android:title="Insulin download only from Wifi"/>
-
             </PreferenceScreen>
 
             <PreferenceScreen
@@ -727,37 +749,11 @@
                         android:targetClass="com.eveningoutpost.dexdrip.food.FoodProfileEditor"
                         android:targetPackage="@string/local_target_package" />
                 </Preference>
-                <ListPreference
-                    android:defaultValue="false"
-                    android:key="download_food_just_when_in_wifi"
-                    android:entries="@array/FoodDownloadWifiOptions"
-                    android:entryValues="@array/FoodDownloadWifiOptionsData"
-                    android:summary="Just download food database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
-                    android:title="Food download only from Wifi"/>
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:key="multiple_carbs_use_for_prediction"
                     android:summary="use extended carbs profiles as predictive model"
                     android:title="Use in prediction"/>
-                <Preference
-                    android:id="@+id/nightscout_force_food_download"
-                    android:summary="@string/summary_force_food_download"
-                    android:title="@string/title_force_food_download">
-                    <intent
-                        android:action="android.intent.action.MAIN"
-                        android:targetClass="com.eveningoutpost.dexdrip.food.NightscoutForceDownloadActivity"
-                        android:targetPackage="@string/local_target_package" />
-                </Preference>
-                <Preference
-                    android:id="@+id/drop_food_db"
-                    android:summary="@string/summary_drop_food_db"
-                    android:title="@string/title_drop_food_db">
-                    <intent
-                        android:action="android.intent.action.MAIN"
-                        android:targetClass="com.eveningoutpost.dexdrip.food.DropFoodDBActivity"
-                        android:targetPackage="@string/local_target_package" />
-                </Preference>
-
             </PreferenceScreen>
 
             <Preference
@@ -1157,7 +1153,7 @@
         <PreferenceScreen
             android:icon="@drawable/ic_mode_edit_grey_600_48dp"
             android:key="pens_screen"
-            android:title="Insulin Pens">
+            android:title="@string/insulin_pens">
             <PreferenceScreen
                 android:icon="@drawable/ic_mode_edit_grey_600_48dp"
                 android:key="opennov_screen"
