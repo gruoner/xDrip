@@ -670,6 +670,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
 
         RunEveryMinuteService.startService();
+        if (Pref.getBooleanDefaultFalse("audio_recorder_started") && !AudioRecorder.isRunning())
+            ManageRecorder.AudioRecorderStart();
     }
 
     private boolean firstRunDialogs(final boolean checkedeula) {

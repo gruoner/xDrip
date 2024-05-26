@@ -1,7 +1,6 @@
 package com.eveningoutpost.dexdrip.services;
 
 import static com.eveningoutpost.dexdrip.utilitymodels.Constants.EVERYMINUTE_RETRY_ID;
-import static com.eveningoutpost.dexdrip.utilitymodels.Constants.SYNC_QUEUE_RETRY_ID;
 
 import android.app.IntentService;
 import android.app.PendingIntent;
@@ -11,8 +10,6 @@ import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.models.UserError.Log;
 import com.eveningoutpost.dexdrip.utilitymodels.Constants;
 import com.eveningoutpost.dexdrip.utilitymodels.DevicestatusUploaderTask;
-import com.eveningoutpost.dexdrip.utilitymodels.Pref;
-import com.eveningoutpost.dexdrip.utilitymodels.UploaderTask;
 import com.eveningoutpost.dexdrip.xdrip;
 
 public class RunEveryMinuteService extends IntentService {
