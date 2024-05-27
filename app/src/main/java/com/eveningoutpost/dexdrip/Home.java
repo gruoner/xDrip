@@ -1993,6 +1993,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             NightscoutUploader.launchDownloadRest();
             Pendiq.immortality(); // Experimental testing phase
         });
+
+        RunEveryMinuteService.startService();
     }
 
     private void checkWifiSleepPolicy() {

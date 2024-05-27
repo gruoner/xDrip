@@ -10,6 +10,7 @@ import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.models.UserError.Log;
 import com.eveningoutpost.dexdrip.utilitymodels.Constants;
 import com.eveningoutpost.dexdrip.utilitymodels.DevicestatusUploaderTask;
+import com.eveningoutpost.dexdrip.utilitymodels.NightscoutUploader;
 import com.eveningoutpost.dexdrip.xdrip;
 
 public class RunEveryMinuteService extends IntentService {
@@ -21,6 +22,7 @@ public class RunEveryMinuteService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        if (!need2run()) return;        // if we do not need to run, skip
         Log.d(TAG, "Running Run-Every-Minute SERVICE");
         final PendingIntent serviceIntent = PendingIntent.getService(xdrip.getAppContext(), EVERYMINUTE_RETRY_ID, new Intent(xdrip.getAppContext(), RunEveryMinuteService.class), PendingIntent.FLAG_UPDATE_CURRENT);
         JoH.wakeUpIntent(xdrip.getAppContext(), Constants.MINUTE_IN_MS, serviceIntent);
@@ -28,7 +30,8 @@ public class RunEveryMinuteService extends IntentService {
     }
 
     private void doIt() {
-        doDevicestatusUpload();
+        if (NightscoutUploader.statusUploadEnabled())       // no need to run when status upload isn't enabled
+            doDevicestatusUpload();
     }
 
     private void doDevicestatusUpload() {
@@ -40,5 +43,10 @@ public class RunEveryMinuteService extends IntentService {
         Log.d("RunEveryMinuteService", "starting RunEveryMinuteService");
         if (PendingIntent.getService(xdrip.getAppContext(), EVERYMINUTE_RETRY_ID, new Intent(xdrip.getAppContext(), RunEveryMinuteService.class), PendingIntent.FLAG_NO_CREATE) == null)
             xdrip.getAppContext().startService(new Intent(xdrip.getAppContext(), RunEveryMinuteService.class));
+    }
+
+    private boolean need2run() {
+        if (NightscoutUploader.statusUploadEnabled()) return true;
+        return false;
     }
 }
