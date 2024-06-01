@@ -750,7 +750,7 @@ public class NightscoutUploader {
                     if (apiVersion == 1) {
                         String hashedSecret = Hashing.sha1().hashBytes(secret.getBytes(Charsets.UTF_8)).toString();
                         doStatusUpdate(nightscoutService, retrofit.baseUrl().url().toString(), hashedSecret); // update status if needed
-                        doRESTUploadTo(nightscoutService, hashedSecret, glucoseDataSets, meterRecords, calRecords, baseURL);
+                        doRESTUploadTo(nightscoutService, hashedSecret, glucoseDataSets, meterRecords, calRecords, retrofit.baseUrl().url().toString());
                     } else {
                         doLegacyRESTUploadTo(nightscoutService, glucoseDataSets);
                     }
@@ -833,7 +833,7 @@ public class NightscoutUploader {
                   }
                 }
             }
-            if (MultipleInsulins.isEnabled() && Pref.getBooleanDefaultFalse("nightscout_upload_insulin_profiles") && MultipleInsulins.isNightscoutInsulinAPIavailable(baseURL)) {
+            if (MultipleInsulins.isEnabled() && insulinUploadEnabled() && MultipleInsulins.isNightscoutInsulinAPIavailable(baseURL)) {
                 try {
                     sendInsulin2Nightscout(nightscoutService, secret);
                 } catch (Exception e) {
