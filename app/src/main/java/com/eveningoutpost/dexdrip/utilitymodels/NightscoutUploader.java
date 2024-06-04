@@ -117,7 +117,7 @@ public class NightscoutUploader {
         private static final String ETAG = "ETAG";
         static final String LAST_INSULIN_UPLOAD_STORE_COUNTER = "nightscout-rest-insulin-synced-time";
         static final String LAST_STATUS_UPLOAD_STORE_COUNTER = "nightscout-rest-status-synced-time";
-
+        static final String LAST_UPLOADED_STATUS_STORE_VALUE = "nightscout-rest-status-synced-value";
         private static int failurecount = 0;
 
         public static final int FAIL_NOTIFICATION_PERIOD = 24 * 60 * 60; // Failed upload notification will be shown if there is no upload for 24 hours.
@@ -842,12 +842,11 @@ public class NightscoutUploader {
                     }
                 }
             }
-            if (statusUploadEnabled())
-                try {
-                    postDeviceStatus(nightscoutService, secret);
-                } catch (Exception e) {
-                    Log.e(TAG, "Ignoring devicestatus post exception: " + e);
-                }
+            try {
+                postDeviceStatus(nightscoutService, secret);
+            } catch (Exception e) {
+                Log.e(TAG, "Ignoring devicestatus post exception: " + e);
+            }
         }
 
     private static synchronized void handleRestFailure(String msg) {
@@ -1383,7 +1382,7 @@ public class NightscoutUploader {
                 // UserError.Log.d(TAG, "Uploading battery detail: " + battery_level);
                 // json.put("uploaderBattery", battery_level); // old style
 
-                final JSONArray array = new JSONArray();
+//                final JSONArray array = new JSONArray();
                 final JSONObject json = new JSONObject();
                 final JSONObject uploader = batteryType.getUploaderJson(mContext);
 
@@ -1399,7 +1398,7 @@ public class NightscoutUploader {
                     json.put("gps", GetLocationByLM.getBestLocation());
                     json.put("url", GetLocationByLM.getMapUrl());
                 }
-                array.put(json);
+//                array.put(json);
 
                 // example
                 //{
@@ -1411,17 +1410,22 @@ public class NightscoutUploader {
                 //}
                 //}
 
-                final RequestBody body = RequestBody.create(MediaType.parse("application/json"), json.toString());
-                Response<ResponseBody> r;
-                if (apiSecret != null) {
-                    r = nightscoutService.uploadDeviceStatus(apiSecret, body).execute();
-                } else
-                    r = nightscoutService.uploadDeviceStatus(body).execute();
-                if (!r.isSuccessful()) throw new UploaderException(r.message(), r.code());
-                // } else {
-                //     UserError.Log.d(TAG, "Battery level is same as previous - not uploading: " + battery_level);
-                checkGzipSupport(r);
-                setLastStatusUpload();
+                if (json.toString().equalsIgnoreCase(lastUploadedStatus()) && (JoH.tsl() - lastStatusUploaded() < Constants.MINUTE_IN_MS * 4.8)) // same status and not more than 4.8 minutes ago
+                    UserError.Log.d(TAG, "no need to upload device status because it's the same as last upload");
+                else {
+                    final RequestBody body = RequestBody.create(MediaType.parse("application/json"), json.toString());
+                    Response<ResponseBody> r;
+                    if (apiSecret != null) {
+                        r = nightscoutService.uploadDeviceStatus(apiSecret, body).execute();
+                    } else
+                        r = nightscoutService.uploadDeviceStatus(body).execute();
+                    if (!r.isSuccessful()) throw new UploaderException(r.message(), r.code());
+                    // } else {
+                    //     UserError.Log.d(TAG, "Battery level is same as previous - not uploading: " + battery_level);
+                    checkGzipSupport(r);
+                    setLastStatusUpload();
+                    setLastUploadedStatus(json.toString());
+                }
             }
         }
     }
@@ -1886,6 +1890,12 @@ public class NightscoutUploader {
     }
     static void setLastStatusUpload() {
         PersistentStore.setLong(LAST_STATUS_UPLOAD_STORE_COUNTER, JoH.tsl());
+    }
+    static String lastUploadedStatus() {
+        return PersistentStore.getString(LAST_UPLOADED_STATUS_STORE_VALUE, "");
+    }
+    static void setLastUploadedStatus(String json) {
+        PersistentStore.setString(LAST_UPLOADED_STATUS_STORE_VALUE, json);
     }
 
     public void doStatusUpload() {
