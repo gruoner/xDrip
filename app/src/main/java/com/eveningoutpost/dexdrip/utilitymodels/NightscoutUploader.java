@@ -59,6 +59,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import okhttp3.CipherSuite;
 import okhttp3.Handshake;
@@ -130,6 +131,8 @@ public class NightscoutUploader {
         private Boolean enableMongoUpload;
         private SharedPreferences prefs;
         private OkHttpClient client;
+
+        private static Semaphore deviceStatusUpload= new Semaphore(1);
 
         public interface NightscoutService {
             @POST("entries")
@@ -772,11 +775,13 @@ public class NightscoutUploader {
                 if (!r.isSuccessful()) throw new UploaderException(r.message(), r.code());
 
             }
+            deviceStatusUpload.acquire();
             try {
                 postDeviceStatus(nightscoutService, null);
             } catch (Exception e) {
                 Log.e(TAG, "Ignoring legacy devicestatus post exception: " + e);
             }
+            deviceStatusUpload.release();
         }
 
     private void doRESTUploadTo(NightscoutService nightscoutService, String secret, List<BgReading> glucoseDataSets, List<BloodTest> meterRecords, List<Calibration> calRecords, String baseURL) throws Exception {
@@ -842,11 +847,13 @@ public class NightscoutUploader {
                     }
                 }
             }
+            deviceStatusUpload.acquire();
             try {
                 postDeviceStatus(nightscoutService, secret);
             } catch (Exception e) {
                 Log.e(TAG, "Ignoring devicestatus post exception: " + e);
             }
+            deviceStatusUpload.release();
         }
 
     private static synchronized void handleRestFailure(String msg) {
@@ -1394,6 +1401,7 @@ public class NightscoutUploader {
                 json.put("uploader", uploader);
                 if (Pref.getBooleanDefaultFalse("nightscout_device_append_location_info"))
                 {
+                    UserError.Log.d(TAG, "appending location to device status");
                     GetLocationByLM.getLocation();
                     json.put("gps", GetLocationByLM.getBestLocation());
                     json.put("url", GetLocationByLM.getMapUrl());
@@ -1422,9 +1430,9 @@ public class NightscoutUploader {
                     if (!r.isSuccessful()) throw new UploaderException(r.message(), r.code());
                     // } else {
                     //     UserError.Log.d(TAG, "Battery level is same as previous - not uploading: " + battery_level);
+                    setLastUploadedStatus(json.toString());
                     checkGzipSupport(r);
                     setLastStatusUpload();
-                    setLastUploadedStatus(json.toString());
                 }
             }
         }
@@ -1898,7 +1906,8 @@ public class NightscoutUploader {
         PersistentStore.setString(LAST_UPLOADED_STATUS_STORE_VALUE, json);
     }
 
-    public void doStatusUpload() {
+    public void doStatusUpload() throws InterruptedException {
+        deviceStatusUpload.acquire();
         String baseURLSettings = prefs.getString("cloud_storage_api_base", "");
         ArrayList<String> baseURIs = new ArrayList<String>();
 
@@ -1912,7 +1921,6 @@ public class NightscoutUploader {
             Log.e(TAG, "Unable to process API Base URL: "+e);
             return;
         }
-        boolean any_successes = false;
         for (String baseURI : baseURIs) {
             try {
                 baseURI = TryResolveName(baseURI);
@@ -1947,5 +1955,6 @@ public class NightscoutUploader {
                 String msg = "Unable to do device status API Upload: " + e.getMessage();
             }
         }
+        deviceStatusUpload.release();
     }
 }

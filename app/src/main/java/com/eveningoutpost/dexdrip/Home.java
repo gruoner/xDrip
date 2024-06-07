@@ -504,8 +504,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             if ((ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) &&
                     (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED))
             {
+                UserError.Log.d(TAG, "requesting permission for location");
                 ActivityCompat.requestPermissions(this, new String[] {android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, GetLocationByLM.MY_PERMISSIONS_REQUEST_GPS);
-            }
+            }  else
+                UserError.Log.d(TAG, "permission for location already granted");
             GetLocationByLM.prepareForLocation();
         }
 
