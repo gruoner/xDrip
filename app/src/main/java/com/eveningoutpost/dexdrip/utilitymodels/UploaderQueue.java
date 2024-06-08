@@ -514,7 +514,7 @@ public class UploaderQueue extends Model {
                         l.add(new StatusItem("Last Insulin Uploaded", ageLastInsulinUpload + " ago"));
                         String s = gs(R.string.yes);
                         if (!MultipleInsulins.isNightscoutInsulinAPIavailable(processedBaseURIs.get(i))) {
-                            s = "generally " + s + " but currently " + gs(R.string.no);
+                            s = "generally " + s + " but currently " + gs(R.string.not_available);
                         }
                         l.add(new StatusItem("Upload insulin", s));
                     }
@@ -559,7 +559,10 @@ public class UploaderQueue extends Model {
                         if(NightscoutUploader.insulinDownloadEnabled() && MultipleInsulins.isEnabled()) {
                             l.add(new StatusItem("Latest Insulin Download", ageLastInsulinDownload + " ago (Rate: " + rateLastInsulin + " ago)"));
                             String s = gs(R.string.yes);
-                            if (!MultipleInsulins.isDownloadAllowed(processedBaseURIs.get(i))) {
+                            if (!MultipleInsulins.isNightscoutInsulinAPIavailable(processedBaseURIs.get(i))) {
+                                s = "generally " + s + " but currently " + gs(R.string.not_available);
+                            } else
+                            if (!MultipleInsulins.isDownloadAllowed()) {
                                 s = "generally " + s + " but currently " + gs(R.string.no);
                             }
                             l.add(new StatusItem("Download insulin", s));

@@ -8,7 +8,6 @@
     <uses-sdk tools:overrideLibrary="androidx.health.connect.client, info.nightscout.sdk" />
     <!-- To receive data from HAPP. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS" />
     <uses-permission android:name="com.eveningoutpost.dexdrip.permissions.RECEIVE_EXTERNAL_STATUSLINE" /> <!-- To receive data from Aidex -->
     <uses-permission android:name="com.microtechmd.cgms.aidex.permissions.RECEIVE_BG_ESTIMATE" />
@@ -267,10 +266,6 @@
             android:name=".NewSensorLocation"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_new_sensor_location" />
-        <activity
-            android:name=".Recorder.ManageRecorder"
-            android:configChanges="orientation|screenSize"
-            android:label="Recorder verwalten" />
         <activity
             android:name=".StopSensor"
             android:configChanges="orientation|screenSize"

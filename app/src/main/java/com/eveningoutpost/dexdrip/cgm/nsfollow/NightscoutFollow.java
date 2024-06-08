@@ -227,7 +227,7 @@ public class NightscoutFollow {
                     }
                 }
             }
-            if (insulinDownloadEnabled() && MultipleInsulins.isDownloadAllowed(urlString)) {
+            if (insulinDownloadEnabled() && MultipleInsulins.isDownloadAllowed() && MultipleInsulins.isNightscoutInsulinAPIavailable(urlString)) {
                 if (JoH.ratelimit(InsulinManager.NAME4nsfollow_insulin_downloadRATE, 60*60)) {    // load insulin every hour
                     try {
                         getService().getInsulinProfiles(session.url.getHashedSecret()).enqueue(session.insulinCallback);
@@ -239,7 +239,7 @@ public class NightscoutFollow {
                 }
             }
             if (foodDownloadEnabled() && MultipleCarbs.isDownloadAllowed()) {
-                if (MultipleCarbs.isDownloadAllowed() && JoH.ratelimit(FoodManager.NAME4nsfollow_food_downloadRATE, 24*60*60)) {   // load food every day when it's allowed to do so
+                if (JoH.ratelimit(FoodManager.NAME4nsfollow_food_downloadRATE, 24*60*60)) {   // load food every day
                     try {
                         getService().getFoodProfiles(session.url.getHashedSecret()).enqueue(session.foodCallback);
                     } catch (Exception e) {

@@ -245,8 +245,11 @@ public class NightscoutFollowService extends ForegroundService {
         statuses.add(new StatusItem());
         statuses.add(new StatusItem("Buggy handset", JoH.buggy_samsung ? gs(R.string.yes) : gs(R.string.no)));
         statuses.add(new StatusItem("Download treatments", NightscoutFollow.treatmentDownloadEnabled() ? gs(R.string.yes) : gs(R.string.no)));
-        String s = NightscoutFollow.insulinDownloadEnabled() ? gs(R.string.yes) : gs(R.string.no);
-        if (NightscoutFollow.insulinDownloadEnabled() && !MultipleInsulins.isDownloadAllowed(NightscoutFollow.getUrl())) {
+        String s = (NightscoutFollow.insulinDownloadEnabled() && MultipleInsulins.isEnabled()) ? gs(R.string.yes) : gs(R.string.no);
+        if (!MultipleInsulins.isNightscoutInsulinAPIavailable(NightscoutFollow.getUrl())) {
+            s = "generally " + s + " but currently " + gs(R.string.not_available);
+        } else
+        if (!MultipleInsulins.isDownloadAllowed()) {
             s = "generally " + s + " but currently " + gs(R.string.no);
         }
         statuses.add(new StatusItem("Download insulin", s));
