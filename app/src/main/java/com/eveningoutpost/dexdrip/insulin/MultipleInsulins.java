@@ -42,9 +42,9 @@ public class MultipleInsulins {
         if (DexCollectionType.getDexCollectionType() == NSFollow) return true;
         return false;
     }
-    public static boolean isDownloadAllowed(String url)
+    public static boolean isDownloadAllowed()
     {
-        if ((isDownloadableByFollower() || isDownloadableByUploader()) && isNightscoutInsulinAPIavailable(url))
+        if ((isDownloadableByFollower() || isDownloadableByUploader()))
         {
             String p = Pref.getStringDefaultBlank("download_insulin_just_when_in_wifi");
             if (Strings.isNullOrEmpty(p))
@@ -61,8 +61,6 @@ public class MultipleInsulins {
                     else return true;
                 case 2:
                     return HomeWifi.isSet() && HomeWifi.isConnected();
-                case 3:
-                    return false;
                 case 99:    // case when not parsable Pref
                     return false;
             }

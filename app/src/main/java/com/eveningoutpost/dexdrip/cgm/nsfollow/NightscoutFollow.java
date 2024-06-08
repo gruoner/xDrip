@@ -187,7 +187,7 @@ public class NightscoutFollow {
                     }
                 }
             }
-            if (insulinDownloadEnabled() && MultipleInsulins.isDownloadAllowed(urlString)) {
+            if (insulinDownloadEnabled() && MultipleInsulins.isDownloadAllowed() && MultipleInsulins.isNightscoutInsulinAPIavailable(urlString)) {
                 if (JoH.ratelimit(InsulinManager.NAME4nsfollow_insulin_downloadRATE, 60*60)) {    // load insulin every hour
                     try {
                         getService().getInsulinProfiles(session.url.getHashedSecret()).enqueue(session.insulinCallback);
