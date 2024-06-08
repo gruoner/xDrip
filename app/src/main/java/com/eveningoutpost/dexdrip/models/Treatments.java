@@ -54,12 +54,9 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import lombok.val;
-
 import static com.eveningoutpost.dexdrip.models.JoH.msSince;
 import static com.eveningoutpost.dexdrip.utilitymodels.Constants.HOUR_IN_MS;
 import static com.eveningoutpost.dexdrip.utilitymodels.Constants.MINUTE_IN_MS;
-import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import static java.lang.StrictMath.abs;
 import static com.eveningoutpost.dexdrip.models.JoH.emptyString;
 
@@ -237,7 +234,7 @@ public class Treatments extends Model {
     // take a simple insulin value and produce a list assuming it is bolus insulin - for legacy conversion
     static private List<InsulinInjection> convertLegacyDoseToBolusInjectionList(final double insulinSum) {
         final ArrayList<InsulinInjection> injections = new ArrayList<>();
-        val profile = InsulinManager.getBolusProfile();
+        Insulin profile = InsulinManager.getBolusProfile();
         if (profile != null) {
             injections.add(new InsulinInjection(profile, insulinSum));
         } else {
@@ -445,7 +442,7 @@ public class Treatments extends Model {
 
     static void createForTest(long timestamp, double insulin) {
         fixUpTable();
-        val treatment = new Treatments();
+        Treatments treatment = new Treatments();
         treatment.notes = "test";
         treatment.timestamp = timestamp;
         treatment.created_at = DateUtil.toISOString(timestamp);
@@ -509,7 +506,7 @@ public class Treatments extends Model {
         // Create treatment entry in the database if the sensor was started by another
         // device (e.g. receiver) and not xDrip. If the sensor was started by
         // xDrip, then there will be a Sensor Start treatment already in the db.
-        val lastSensorStart = Treatments.lastEventTypeFromXdrip(Treatments.SENSOR_START_EVENT_TYPE);
+        Treatments lastSensorStart = Treatments.lastEventTypeFromXdrip(Treatments.SENSOR_START_EVENT_TYPE);
 
         // If there isn't an existing sensor start in the xDrip db, or the most recently tracked
         // sensor start was more than 15 minutes ago, then we assume the sensor was actually
