@@ -315,7 +315,7 @@ public class NightscoutUploader {
                 if (treatmensDownloadEnabled())
                     if (doRESTtreatmentDownload(prefs))
                         substatus = true;
-                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && JoH.ratelimit(InsulinManager.NAME4nsupload_insulin_downloadRATE, 60*60))    // load insulin every hour
+                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit(InsulinManager.NAME4nsupload_insulin_downloadRATE, 60*60))    // load insulin every hour
                     if (doRESTinsulinDownload(prefs))
                         substatus = true;
                 if (foodDownloadEnabled() && MultipleCarbs.isEnabled() && MultipleCarbs.isDownloadAllowed() && (JoH.ratelimit(FoodManager.NAME4nsupload_food_downloadRATE, 24*60*60)))    // load FOOD every day
