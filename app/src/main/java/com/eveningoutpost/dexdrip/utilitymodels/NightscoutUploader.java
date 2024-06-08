@@ -285,7 +285,7 @@ public class NightscoutUploader {
                     if (treatmensDownloadEnabled())
                         if (doRESTtreatmentDownload(prefs))
                             refresh = true;
-                    if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && JoH.ratelimit(InsulinManager.NAME4nsupload_insulin_downloadRATE, 60*60))    // load insulin every hour
+                    if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit(InsulinManager.NAME4nsupload_insulin_downloadRATE, 60*60))    // load insulin every hour
                         if (doRESTinsulinDownload(prefs))
                             refresh = true;
                     if (foodDownloadEnabled() && MultipleCarbs.isEnabled() && MultipleCarbs.isDownloadAllowed() && JoH.ratelimit(FoodManager.NAME4nsupload_food_downloadRATE, 24*60*60))    // load FOOD every day when allowed to do so
@@ -320,7 +320,7 @@ public class NightscoutUploader {
                 if (treatmensDownloadEnabled())
                     if (doRESTtreatmentDownload(prefs))
                         substatus = true;
-                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && JoH.ratelimit(InsulinManager.NAME4nsupload_insulin_downloadRATE, 60*60))    // load insulin every hour
+                if (insulinDownloadEnabled() && MultipleInsulins.isEnabled() && MultipleInsulins.isDownloadAllowed() && JoH.ratelimit(InsulinManager.NAME4nsupload_insulin_downloadRATE, 60*60))    // load insulin every hour
                     if (doRESTinsulinDownload(prefs))
                         substatus = true;
                 if (foodDownloadEnabled() && MultipleCarbs.isEnabled() && MultipleCarbs.isDownloadAllowed() && (JoH.ratelimit(FoodManager.NAME4nsupload_food_downloadRATE, 24*60*60)))    // load FOOD every day
@@ -543,7 +543,7 @@ public class NightscoutUploader {
                     Log.e(TAG, "Nightscout version: " + getNightscoutVersion(checkurl) + " on " + checkurl + " is not compatible with the Rest-API download feature!");
                     continue;
                 }
-                if (!MultipleInsulins.isDownloadAllowed(checkurl)) {
+                if (!MultipleInsulins.isNightscoutInsulinAPIavailable(checkurl)) {
                     Log.d(TAG, "multiInsulin download not allowed on " + checkurl);
                     continue;
                 }
