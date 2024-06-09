@@ -2,7 +2,7 @@ package com.eveningoutpost.dexdrip.eassist;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
-import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.lang.Math.sqrt;
 
 import android.annotation.SuppressLint;
@@ -110,7 +110,7 @@ public class GetLocationByLM {
             else {
                 activeProviderPresent = true;
                 UserError.Log.d(TAG, "Got GPS location " + location2String(location));
-                if ((lastGPSLocation != null) && (distanceTo(location, lastGPSLocation) < max(lastGPSLocation.getAccuracy(), location.getAccuracy())))
+                if ((lastGPSLocation != null) && (distanceTo(location, lastGPSLocation) < min(lastGPSLocation.getAccuracy(), location.getAccuracy())))
                     UserError.Log.d(TAG, "GPS location is within accuracy of last location (" + location2String(lastGPSLocation) + ") | " + distanceTo(location, lastGPSLocation) + "m -- no update!! ");
                 else {
                     UserError.Log.d(TAG, "Got GPS location update!! " + location2String(location));
@@ -126,7 +126,7 @@ public class GetLocationByLM {
             else {
                 activeProviderPresent = true;
                 UserError.Log.d(TAG, "Got network location " + location2String(location));
-                if ((lastNetworkLocation != null) && (distanceTo(location, lastNetworkLocation) < max(lastNetworkLocation.getAccuracy(), location.getAccuracy())))
+                if ((lastNetworkLocation != null) && (distanceTo(location, lastNetworkLocation) < min(lastNetworkLocation.getAccuracy(), location.getAccuracy())))
                     UserError.Log.d(TAG, "network location is within accuracy of last location (" + location2String(lastNetworkLocation) + ") | " + distanceTo(location, lastNetworkLocation) + "m -- no update!! ");
                 else {
                     UserError.Log.d(TAG, "Got network location update!! " + location2String(location));
@@ -141,7 +141,7 @@ public class GetLocationByLM {
                 UserError.Log.d(TAG, "passive location is null!!");
             else {
                 UserError.Log.d(TAG, "Got passive location " + location2String(location));
-                if ((lastPassiveLocation != null) && (distanceTo(location, lastPassiveLocation) < max(lastPassiveLocation.getAccuracy(), location.getAccuracy())))
+                if ((lastPassiveLocation != null) && (distanceTo(location, lastPassiveLocation) < min(lastPassiveLocation.getAccuracy(), location.getAccuracy())))
                     UserError.Log.d(TAG, "passive location is within accuracy of last location (" + location2String(lastPassiveLocation) + ") | " + distanceTo(location, lastPassiveLocation) + "m -- no update!! ");
                 else {
                     UserError.Log.d(TAG, "Got passive location update!! " + location2String(location));
@@ -157,7 +157,7 @@ public class GetLocationByLM {
         @Override
         public void onLocationChanged(Location location) {
             UserError.Log.d(TAG, "Got GPS location update!! " + location2String(location));
-            if ((lastGPSLocation != null) && (distanceTo(location, lastGPSLocation) < max(lastGPSLocation.getAccuracy(), location.getAccuracy())))
+            if ((lastGPSLocation != null) && (distanceTo(location, lastGPSLocation) < min(lastGPSLocation.getAccuracy(), location.getAccuracy())))
                 UserError.Log.d(TAG, "GPS location is within accuracy of last location (" + location2String(lastGPSLocation) + ") | " + distanceTo(location, lastGPSLocation) + "m -- no update!! ");
             else {
                 lastGPSLocation = location;
@@ -175,7 +175,7 @@ public class GetLocationByLM {
         @Override
         public void onLocationChanged(Location location) {
             UserError.Log.d(TAG, "Got Network location update!! " + location2String(location));
-            if ((lastNetworkLocation != null) && (distanceTo(location, lastNetworkLocation) < max(lastNetworkLocation.getAccuracy(), location.getAccuracy())))
+            if ((lastNetworkLocation != null) && (distanceTo(location, lastNetworkLocation) < min(lastNetworkLocation.getAccuracy(), location.getAccuracy())))
                 UserError.Log.d(TAG, "Network location is within accuracy of last location (" + location2String(lastNetworkLocation) + ") | " + distanceTo(location, lastNetworkLocation) + "m -- no update!! ");
             else {
                 lastNetworkLocation = location;
@@ -193,7 +193,7 @@ public class GetLocationByLM {
         @Override
         public void onLocationChanged(Location location) {
             UserError.Log.d(TAG, "Got Passive location update!! " + location2String(location));
-            if ((lastPassiveLocation != null) && (distanceTo(location, lastPassiveLocation) < max(lastPassiveLocation.getAccuracy(), location.getAccuracy())))
+            if ((lastPassiveLocation != null) && (distanceTo(location, lastPassiveLocation) < min(lastPassiveLocation.getAccuracy(), location.getAccuracy())))
                 UserError.Log.d(TAG, "Passive location is within accuracy of last location (" + location2String(lastPassiveLocation) + ") | " + distanceTo(location, lastPassiveLocation) + "m -- no update!! ");
             else {
                 lastPassiveLocation = location;
