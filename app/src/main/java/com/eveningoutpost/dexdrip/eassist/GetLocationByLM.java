@@ -1,28 +1,21 @@
 package com.eveningoutpost.dexdrip.eassist;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.cos;
 import static java.lang.Math.max;
+import static java.lang.Math.sqrt;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-
-import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.models.UserError;
 import com.eveningoutpost.dexdrip.xdrip;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
-
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 // jamorham
@@ -68,18 +61,18 @@ public class GetLocationByLM {
             UserError.Log.wtf(TAG, "No permission to obtain location");
             return;
         }
+        boolean activeProviderPresent = false;
         UserError.Log.d(TAG, "Requesting live location updates");
         if (locationManager.isProviderEnabled(locationManager.GPS_PROVIDER)) {
-            locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 60 * 1000, 1,
-                    GPSlocationListener);
+            locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 60 * 1000, 1, GPSlocationListener);
+            activeProviderPresent = true;
         }
         if (locationManager.isProviderEnabled(locationManager.NETWORK_PROVIDER)) {
-            locationManager.requestLocationUpdates(locationManager.NETWORK_PROVIDER, 60 * 1000, 1,
-                    NetworkLocationListener);
+            locationManager.requestLocationUpdates(locationManager.NETWORK_PROVIDER, 60 * 1000, 1, NetworkLocationListener);
+            activeProviderPresent = true;
         }
-        if (locationManager.isProviderEnabled(locationManager.PASSIVE_PROVIDER)) {
-            locationManager.requestLocationUpdates(locationManager.PASSIVE_PROVIDER, 60 * 1000, 1,
-                    PassiveLocationListener);
+        if (locationManager.isProviderEnabled(locationManager.PASSIVE_PROVIDER) && !activeProviderPresent) {
+            locationManager.requestLocationUpdates(locationManager.PASSIVE_PROVIDER, 60 * 1000, 1, PassiveLocationListener);
         }
     }
 
@@ -109,14 +102,16 @@ public class GetLocationByLM {
             return;
         }
 
+        boolean activeProviderPresent = false;
         if (locationManager.isProviderEnabled(locationManager.GPS_PROVIDER)) {
             @SuppressLint("MissingPermission") final Location location = locationManager.getLastKnownLocation(locationManager.GPS_PROVIDER);
             if (location == null)
                 UserError.Log.d(TAG, "GPS location is null!!");
             else {
+                activeProviderPresent = true;
                 UserError.Log.d(TAG, "Got GPS location " + location2String(location));
-                if ((lastGPSLocation != null) && (location.distanceTo(lastGPSLocation) < max(lastGPSLocation.getAccuracy(), location.getAccuracy())))
-                    UserError.Log.d(TAG, "GPS location is within accuracy of last location (" + location2String(lastGPSLocation) + ") | " + location.distanceTo(lastGPSLocation) + "m -- no update!! ");
+                if ((lastGPSLocation != null) && (distanceTo(location, lastGPSLocation) < max(lastGPSLocation.getAccuracy(), location.getAccuracy())))
+                    UserError.Log.d(TAG, "GPS location is within accuracy of last location (" + location2String(lastGPSLocation) + ") | " + distanceTo(location, lastGPSLocation) + "m -- no update!! ");
                 else {
                     UserError.Log.d(TAG, "Got GPS location update!! " + location2String(location));
                     lastGPSLocation = location;
@@ -129,9 +124,10 @@ public class GetLocationByLM {
             if (location == null)
                 UserError.Log.d(TAG, "network location is null!!");
             else {
+                activeProviderPresent = true;
                 UserError.Log.d(TAG, "Got network location " + location2String(location));
-                if ((lastNetworkLocation != null) && (location.distanceTo(lastNetworkLocation) < max(lastNetworkLocation.getAccuracy(), location.getAccuracy())))
-                    UserError.Log.d(TAG, "network location is within accuracy of last location (" + location2String(lastNetworkLocation) + ") | " + location.distanceTo(lastNetworkLocation) + "m -- no update!! ");
+                if ((lastNetworkLocation != null) && (distanceTo(location, lastNetworkLocation) < max(lastNetworkLocation.getAccuracy(), location.getAccuracy())))
+                    UserError.Log.d(TAG, "network location is within accuracy of last location (" + location2String(lastNetworkLocation) + ") | " + distanceTo(location, lastNetworkLocation) + "m -- no update!! ");
                 else {
                     UserError.Log.d(TAG, "Got network location update!! " + location2String(location));
                     lastNetworkLocation = location;
@@ -139,14 +135,14 @@ public class GetLocationByLM {
                 }
             }
         }
-        if (locationManager.isProviderEnabled(locationManager.PASSIVE_PROVIDER)) {
+        if (locationManager.isProviderEnabled(locationManager.PASSIVE_PROVIDER) && !activeProviderPresent) {
             @SuppressLint("MissingPermission") final Location location = locationManager.getLastKnownLocation(locationManager.PASSIVE_PROVIDER);
             if (location == null)
                 UserError.Log.d(TAG, "passive location is null!!");
             else {
                 UserError.Log.d(TAG, "Got passive location " + location2String(location));
-                if ((lastPassiveLocation != null) && (location.distanceTo(lastPassiveLocation) < max(lastPassiveLocation.getAccuracy(), location.getAccuracy())))
-                    UserError.Log.d(TAG, "passive location is within accuracy of last location (" + location2String(lastPassiveLocation) + ") | " + location.distanceTo(lastPassiveLocation) + "m -- no update!! ");
+                if ((lastPassiveLocation != null) && (distanceTo(location, lastPassiveLocation) < max(lastPassiveLocation.getAccuracy(), location.getAccuracy())))
+                    UserError.Log.d(TAG, "passive location is within accuracy of last location (" + location2String(lastPassiveLocation) + ") | " + distanceTo(location, lastPassiveLocation) + "m -- no update!! ");
                 else {
                     UserError.Log.d(TAG, "Got passive location update!! " + location2String(location));
                     lastPassiveLocation = location;
@@ -161,8 +157,8 @@ public class GetLocationByLM {
         @Override
         public void onLocationChanged(Location location) {
             UserError.Log.d(TAG, "Got GPS location update!! " + location2String(location));
-            if ((lastGPSLocation != null) && (location.distanceTo(lastGPSLocation) < max(lastGPSLocation.getAccuracy(), location.getAccuracy())))
-                UserError.Log.d(TAG, "GPS location is within accuracy of last location (" + location2String(lastGPSLocation) + ") | " + location.distanceTo(lastGPSLocation) + "m -- no update!! ");
+            if ((lastGPSLocation != null) && (distanceTo(location, lastGPSLocation) < max(lastGPSLocation.getAccuracy(), location.getAccuracy())))
+                UserError.Log.d(TAG, "GPS location is within accuracy of last location (" + location2String(lastGPSLocation) + ") | " + distanceTo(location, lastGPSLocation) + "m -- no update!! ");
             else {
                 lastGPSLocation = location;
                 GPSAddressUpdated = JoH.tsl();
@@ -179,8 +175,8 @@ public class GetLocationByLM {
         @Override
         public void onLocationChanged(Location location) {
             UserError.Log.d(TAG, "Got Network location update!! " + location2String(location));
-            if ((lastNetworkLocation != null) && (location.distanceTo(lastNetworkLocation) < max(lastNetworkLocation.getAccuracy(), location.getAccuracy())))
-                UserError.Log.d(TAG, "Network location is within accuracy of last location (" + location2String(lastNetworkLocation) + ") | " + location.distanceTo(lastNetworkLocation) + "m -- no update!! ");
+            if ((lastNetworkLocation != null) && (distanceTo(location, lastNetworkLocation) < max(lastNetworkLocation.getAccuracy(), location.getAccuracy())))
+                UserError.Log.d(TAG, "Network location is within accuracy of last location (" + location2String(lastNetworkLocation) + ") | " + distanceTo(location, lastNetworkLocation) + "m -- no update!! ");
             else {
                 lastNetworkLocation = location;
                 GPSAddressUpdated = JoH.tsl();
@@ -197,8 +193,8 @@ public class GetLocationByLM {
         @Override
         public void onLocationChanged(Location location) {
             UserError.Log.d(TAG, "Got Passive location update!! " + location2String(location));
-            if ((lastPassiveLocation != null) && (location.distanceTo(lastPassiveLocation) < max(lastPassiveLocation.getAccuracy(), location.getAccuracy())))
-                UserError.Log.d(TAG, "Passive location is within accuracy of last location (" + location2String(lastPassiveLocation) + ") | " + location.distanceTo(lastPassiveLocation) + "m -- no update!! ");
+            if ((lastPassiveLocation != null) && (distanceTo(location, lastPassiveLocation) < max(lastPassiveLocation.getAccuracy(), location.getAccuracy())))
+                UserError.Log.d(TAG, "Passive location is within accuracy of last location (" + location2String(lastPassiveLocation) + ") | " + distanceTo(location, lastPassiveLocation) + "m -- no update!! ");
             else {
                 lastPassiveLocation = location;
                 GPSAddressUpdated = JoH.tsl();
@@ -214,5 +210,13 @@ public class GetLocationByLM {
 
     private static String location2String(Location l) {
         return l.getLatitude() + "," + l.getLongitude() + (l.hasAccuracy() ? " (+/- " + JoH.qs(l.getAccuracy(), 0) + "m)" : "");
+    }
+
+    private static double distanceTo(Location l1, Location l2) {
+        double dLat = l1.getLatitude() - l2.getLatitude();
+        double dLon = l1.getLongitude() - l2.getLongitude();
+        double dx = 111.3 * cos(PI*l1.getLatitude()/180) * dLon;
+        double dy = 111.3 * dLat;
+        return sqrt(dx*dx + dy*dy) * 1000;  // we need it in meter
     }
 }

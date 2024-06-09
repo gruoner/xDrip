@@ -1360,6 +1360,10 @@ public class NightscoutUploader {
      * Uploads the device status (containing battery details) to Nightscout for
      */
     private void postDeviceStatus(NightscoutService nightscoutService, String apiSecret) throws Exception {
+        if (JoH.tsl() - lastStatusUploaded() < Constants.MINUTE_IN_MS * 0.8) {
+            UserError.Log.d(TAG, "last device status upload is just " + new Long((JoH.tsl() - lastStatusUploaded())/1000).toString() + " sec away");
+            return;
+        }
         // TODO optimize based on changes avoiding stale marker issues
 
         final List<NightscoutBatteryDevice> batteries = new ArrayList<>();
