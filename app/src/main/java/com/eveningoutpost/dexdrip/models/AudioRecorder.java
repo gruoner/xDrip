@@ -139,7 +139,7 @@ public class AudioRecorder extends Model {
         }
     }
     public static boolean isRunning() {
-        if (currentAudioRecorder().getRecorder() == null) {
+        if (currentAudioRecorder() == null) {
             stopAudioRecorder();
             return false;
         }
