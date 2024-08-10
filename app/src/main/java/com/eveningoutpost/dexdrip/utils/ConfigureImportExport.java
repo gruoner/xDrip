@@ -299,7 +299,7 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
 
     public static ArrayList<File> findAllWebDAVBackups() {
         String server = Pref.getStringDefaultBlank("importexport2webdavstorage_server");
-        String path = Pref.getStringDefaultBlank("importexport2webdavstorage_path");
+        String path = Pref.getStringDefaultBlank("importexport2webdavstorage_path") + "/";
         String user = Pref.getStringDefaultBlank("importexport2webdavstorage_user");
         String password = Pref.getStringDefaultBlank("importexport2webdavstorage_password");
         String url = "http";
@@ -309,9 +309,9 @@ public class ConfigureImportExport extends BaseAppCompatActivity {
         try {
             Sardine sardine = new OkHttpSardine();
             sardine.setCredentials(user, password);
-            List<DavResource> d = sardine.list(url + "://" + server + path + "/", 1, false);
+            List<DavResource> d = sardine.list(url + "://" + server + path, 1, false);
             for (DavResource r: d)
-                if (r.getContentType().toLowerCase().equals("application/octet-stream"))
+                if (r.getContentType().toLowerCase().equals("application/octet-stream") && !r.toString().toUpperCase().equals(path.toUpperCase()))
                     ret.add(new File(r.toString()));
         } catch (Exception e) {
             Log.d(TAG, e.getLocalizedMessage());
