@@ -242,6 +242,14 @@
             android:summary="Your account and follower app are from the USA"
             android:title="US Servers" />
 
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="follower_chime"
+            android:summary="@string/notify_data_arrives_master"
+            android:switchTextOff="@string/short_off_text_for_switches"
+            android:switchTextOn="@string/short_on_text_for_switches"
+            android:title="@string/follower_chime_new" />
+
         <ListPreference
             android:defaultValue="gb"
             android:entries="@array/carelinkCountryEntries"
@@ -389,11 +397,6 @@
                     android:key="ob1_avoid_scanning"
                     android:summary="@string/summary_ob1_avoid_scanning"
                     android:title="@string/title_ob1_avoid_scanning" />
-                <CheckBoxPreference
-                    android:defaultValue="false"
-                    android:key="using_g6"
-                    android:summary="@string/summary_using_g6"
-                    android:title="@string/title_using_g6" />
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:key="ob1_g5_allow_resetbond"

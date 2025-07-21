@@ -8,6 +8,7 @@ import android.util.Base64;
 
 import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.MegaStatus;
+import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.models.BgReading;
 import com.eveningoutpost.dexdrip.models.BloodTest;
 import com.eveningoutpost.dexdrip.models.Calibration;
@@ -47,6 +48,7 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -463,7 +465,14 @@ public class NightscoutUploader {
             Log.e(TAG, "Unable to process API Base URL: " + e);
             return false;
         }
+        // Starting a loop run; resetting local failure and success flags
         boolean any_successes = false;
+        boolean any_failures = false;
+        final long THIS_QUEUE = UploaderQueue.NIGHTSCOUT_RESTAPI;
+        List<UploaderQueue> tups = Collections.emptyList();
+        if (Pref.getBooleanDefaultFalse("send_treatments_to_nightscout")) {
+            tups = UploaderQueue.getPendingbyType(Treatments.class.getSimpleName(), THIS_QUEUE);
+        }
         for (String baseURI : baseURIs) {
             try {
                 baseURI = TryResolveName(baseURI);
@@ -492,20 +501,38 @@ public class NightscoutUploader {
                 if (apiVersion == 1) {
                     String hashedSecret = Hashing.sha1().hashBytes(secret.getBytes(Charsets.UTF_8)).toString();
                     doStatusUpdate(nightscoutService, retrofit.baseUrl().url().toString(), hashedSecret); // update status if needed
-                    doRESTUploadTo(nightscoutService, hashedSecret, glucoseDataSets, meterRecords, calRecords);
+                    doRESTUploadTo(nightscoutService, hashedSecret, glucoseDataSets, meterRecords, calRecords, tups, THIS_QUEUE);
                 } else {
                     doLegacyRESTUploadTo(nightscoutService, glucoseDataSets);
                 }
-                any_successes = true;
+                any_successes = true; // There has been a success
                 last_success_time = JoH.tsl();
                 last_exception_count = 0;
                 last_exception_log_count = 0;
             } catch (Exception e) {
                 String msg = "Unable to do REST API Upload: " + e.getMessage() + " marking record: " + (any_successes ? "succeeded" : "failed");
+                any_failures = true; // There has been a failure
                 handleRestFailure(msg);
             }
         }
+        if (any_successes && any_failures) { // Only if there has been success as well as failure (inconsistent upload)
+            if (!PersistentStore.getBoolean(TAG + "_inconsistentMultiSteUpload")) { // If there had been no inconsistent uploads yet, which makes this the first
+                PersistentStore.setLong(TAG + "_firstInconsistentMultiSiteUploadTime", JoH.tsl()); // Record this time as the time of the first inconsistent upload
+            }
+            PersistentStore.setBoolean(TAG + "_inconsistentMultiSteUpload", true); // There has been inconsistent upload and we have recorded the time.  Let's set the flag.
+        }
         return any_successes;
+    }
+
+    public static void notifyInconsistentMultiSiteUpload() {
+        long firstInconsistentMultiSiteUploadTime = PersistentStore.getLong(TAG + "_firstInconsistentMultiSiteUploadTime"); // Updating the local representation of the last inconsistent upload time
+        if (PersistentStore.getBoolean(TAG + "_inconsistentMultiSteUpload")) { // If there has been a failure to upload and the queue has been cleared
+            if (Pref.getBooleanDefaultFalse("warn_nightscout_multi_site_upload_failure")) { // Issue notification only if enabled
+                JoH.showNotification(xdrip.gs(R.string.title_nightscout_upload_failure_backfill_required), null, null, Constants.NIGHTSCOUT_ERROR_NOTIFICATION_ID, null, false, false, null, null, xdrip.gs(R.string.nightscout_upload_failure_backfill_required, JoH.dateTimeText(firstInconsistentMultiSiteUploadTime)), true);
+            }
+            UserError.Log.uel(TAG, "Inconsistent Multi-site Nightscout upload - Backfill recommended - First failure: " + JoH.dateTimeText(firstInconsistentMultiSiteUploadTime));
+            PersistentStore.setBoolean(TAG + "_inconsistentMultiSteUpload", false); // We have notified.  Clearing the flag
+        }
     }
 
     private void doLegacyRESTUploadTo(NightscoutService nightscoutService, List<BgReading> glucoseDataSets) throws Exception {
@@ -521,7 +548,7 @@ public class NightscoutUploader {
         }
     }
 
-    private void doRESTUploadTo(NightscoutService nightscoutService, String secret, List<BgReading> glucoseDataSets, List<BloodTest> meterRecords, List<Calibration> calRecords) throws Exception {
+    private void doRESTUploadTo(NightscoutService nightscoutService, String secret, List<BgReading> glucoseDataSets, List<BloodTest> meterRecords, List<Calibration> calRecords, List<UploaderQueue> tups, long THIS_QUEUE) throws Exception {
         final JSONArray array = new JSONArray();
 
         for (BgReading record : glucoseDataSets) {
@@ -553,8 +580,8 @@ public class NightscoutUploader {
         }
 
         try {
-            if (Pref.getBooleanDefaultFalse("send_treatments_to_nightscout")) {
-                postTreatments(nightscoutService, secret);
+            if (!tups.isEmpty()) {
+                postTreatments(nightscoutService, secret, tups, THIS_QUEUE);
             } else {
                 Log.d(TAG, "Skipping treatment upload due to preference disabled");
             }
@@ -601,6 +628,7 @@ public class NightscoutUploader {
                                         + " times. With message: " + last_exception + " " + ((last_success_time > 0) ? "Last succeeded: " + JoH.dateTimeText(last_success_time) : ""),
 
                                 MegaStatus.getStatusPendingIntent("Uploaders"), Constants.NIGHTSCOUT_ERROR_NOTIFICATION_ID, NotificationChannels.NIGHTSCOUT_UPLOADER_CHANNEL, false, false, null, null, msg);
+                        UserError.Log.uel(TAG, "REST-API upload to Nightscout has failed");
                     } else {
                         Log.e(TAG, "Cannot alert for nightscout failures as preference setting is disabled");
                     }
@@ -758,10 +786,8 @@ public class NightscoutUploader {
         array.put(record);
     }
 
-    private void postTreatments(NightscoutService nightscoutService, String apiSecret) throws Exception {
+    private void postTreatments(NightscoutService nightscoutService, String apiSecret, List<UploaderQueue> tups, long THIS_QUEUE) throws Exception {
         Log.d(TAG, "Processing treatments for RESTAPI");
-        final long THIS_QUEUE = UploaderQueue.NIGHTSCOUT_RESTAPI;
-        final List<UploaderQueue> tups = UploaderQueue.getPendingbyType(Treatments.class.getSimpleName(), THIS_QUEUE);
         if (tups != null) {
             JSONArray insert_array = new JSONArray();
             JSONArray upsert_array = new JSONArray();
