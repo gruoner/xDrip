@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.eveningoutpost.dexdrip.utilitymodels.PersistentStore;
 import com.eveningoutpost.dexdrip.utilitymodels.Pref;
+import com.eveningoutpost.dexdrip.food.MultipleCarbs;
 import com.eveningoutpost.dexdrip.insulin.Insulin;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
@@ -283,6 +284,13 @@ public class PhoneKeypadInputActivity extends BaseActivity {
                 updateTab();
             }
         });
+        if (MultipleCarbs.isAvailable()) {
+            carbstabbutton.setEnabled(false);
+            carbstabbutton.setVisibility(View.INVISIBLE);
+        } else {
+            carbstabbutton.setEnabled(true);
+            carbstabbutton.setVisibility(View.VISIBLE);
+        }
         timetabbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

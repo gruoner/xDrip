@@ -15,6 +15,8 @@ import com.eveningoutpost.dexdrip.evaluators.MissedReadingsEstimator;
 import com.eveningoutpost.dexdrip.utils.framework.RetrofitService;
 import java.util.List;
 
+import com.eveningoutpost.dexdrip.food.FoodManager;
+import com.eveningoutpost.dexdrip.food.MultipleCarbs;
 import com.eveningoutpost.dexdrip.insulin.InsulinManager;
 import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
 import okhttp3.ResponseBody;
@@ -53,7 +55,28 @@ public class NightscoutFollow {
         public String color;
     }
 
-
+    public static class NightscoutFoodStructure {
+        public String _id;
+        public String type;
+        public String name;
+        public List<NightscoutFoodStructure> foods;
+        public String carbs;
+        public String fat;
+        public String protein;
+        public String energy;
+        public String gi;
+        public String unit;
+        public String category;
+        public String subcategory;
+        public String portion;
+        public String portions;
+        public String hideafteruse;
+        public String hidden;
+        public String xdripCategories;
+        public String position;
+        public String defaultPortion;
+        public String portionIncrement;
+    }
     public interface Nightscout {
         @Headers({
                 "User-Agent: xDrip+ " + BuildConfig.VERSION_NAME,
@@ -67,6 +90,9 @@ public class NightscoutFollow {
 
         @GET("/api/v1/insulin")
         Call<List<NightscoutInsulinStructure>> getInsulinProfiles(@Header("api-secret") String secret);
+
+        @GET("/api/v1/food")
+        Call<List<NightscoutFoodStructure>> getFoodProfiles(@Header("api-secret") String secret);
 
         @GET("/api/v1/status.json")
         Call<ResponseBody> getStatus(@Header("api-secret") String secret);
@@ -127,7 +153,21 @@ public class NightscoutFollow {
             })
                     .setOnFailure(() -> msg(session.insulinCallback.getStatus()));
 
-        // set up processing callback for treatments
+        if (MultipleCarbs.isEnabled())
+            // set up processing callback for treatments
+            session.foodCallback = new NightscoutCallback<List<NightscoutFoodStructure>>("NS food download", session, () -> {
+                // process data
+                try {
+                    if (FoodManager.updateFromNightscout(session.food)) ActiveAndroid.clearCache();   // when at least one profile has been changed ActiveAndroid Cache will be cleared to reload all insulin injections from scratch
+                    FoodManager.setLastFoodDownload();
+                } catch (Exception e) {
+                    JoH.clearRatelimit(FoodManager.NAME4nsfollow_food_downloadRATE);
+                    msg("Food: " + e);
+                }
+            })
+                    .setOnFailure(() -> msg(session.foodCallback.getStatus()));
+
+        // set up processing callback for status
         session.statusCallback = new NightscoutCallback<ResponseBody>("NS status download", session, () -> {
             // process data
             try {
@@ -183,6 +223,17 @@ public class NightscoutFollow {
                     }
                 }
             }
+            if (foodDownloadEnabled() && MultipleCarbs.isDownloadAllowed()) {
+                if (JoH.ratelimit(FoodManager.NAME4nsfollow_food_downloadRATE, 24*60*60)) {   // load food every day
+                    try {
+                        getService().getFoodProfiles(session.url.getHashedSecret()).enqueue(session.foodCallback);
+                    } catch (Exception e) {
+                        JoH.clearRatelimit(FoodManager.NAME4nsfollow_food_downloadRATE);
+                        UserError.Log.e(TAG, "Exception in food work() " + e);
+                        msg("Nightscout follow food error: " + e);
+                    }
+                }
+            }
         } else {
             msg("Please define Nightscout follow URL");
         }
@@ -198,6 +249,9 @@ public class NightscoutFollow {
 
     public static boolean insulinDownloadEnabled() {
         return MultipleInsulins.isEnabled() && Pref.getBooleanDefaultFalse("nsfollow_download_insulin");
+    }
+    public static boolean foodDownloadEnabled() {
+        return MultipleCarbs.isEnabled() && Pref.getBooleanDefaultFalse("nsfollow_download_food");
     }
 
     public static void resetInstance() {

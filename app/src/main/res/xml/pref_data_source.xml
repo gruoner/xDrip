@@ -228,6 +228,22 @@
                 android:summary="Just download insulin database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
                 android:title="Insulin download only from Wifi"/>
         </PreferenceScreen>
+        <PreferenceScreen
+            android:key="nsfollow_download_food_screen"
+            android:title="@string/title_nsfollow_download_food"
+            android:dependency="multiple_carbs_types">
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:key="nsfollow_download_food"
+                android:summary="@string/summary_nsfollow_download_food"
+                android:title="@string/title_nsfollow_download_food" />
+            <ListPreference
+                android:key="download_food_just_when_in_wifi"
+                android:entries="@array/FoodDownloadWifiOptions"
+                android:entryValues="@array/FoodDownloadWifiOptionsData"
+                android:summary="Just download food database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
+                android:title="Food download only from Wifi"/>
+        </PreferenceScreen>
         <ListPreference
             android:defaultValue="0"
             android:key="nsfollow_lag"

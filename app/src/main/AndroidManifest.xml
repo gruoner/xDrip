@@ -138,7 +138,7 @@
             android:value="42" />
         <meta-data
             android:name="AA_MODELS"
-            android:value="com.eveningoutpost.dexdrip.models.ActiveBgAlert,com.eveningoutpost.dexdrip.models.ActiveBluetoothDevice,com.eveningoutpost.dexdrip.models.AlertType,com.eveningoutpost.dexdrip.models.BgReading,com.eveningoutpost.dexdrip.models.BgReadingArchive,com.eveningoutpost.dexdrip.models.BgReading,com.eveningoutpost.dexdrip.models.Calibration,com.eveningoutpost.dexdrip.models.Calibration,com.eveningoutpost.dexdrip.models.CalibrationRequest,com.eveningoutpost.dexdrip.models.Sensor,com.eveningoutpost.dexdrip.models.TransmitterData,com.eveningoutpost.dexdrip.models.Treatments,com.eveningoutpost.dexdrip.models.UserError,com.eveningoutpost.dexdrip.models.UserNotification,com.eveningoutpost.dexdrip.sharemodels.models,com.eveningoutpost.dexdrip.utilitymodels.BgSendQueue,com.eveningoutpost.dexdrip.utilitymodels.CalibrationSendQueue,com.eveningoutpost.dexdrip.utilitymodels.SensorSendQueue,com.eveningoutpost.dexdrip.models.HeartRate,com.eveningoutpost.dexdrip.models.StepCounter,com.eveningoutpost.dexdrip.utilitymodels.UploaderQueue,com.eveningoutpost.dexdrip.models.BloodTest,com.eveningoutpost.dexdrip.models.Accuracy,com.eveningoutpost.dexdrip.models.Reminder,com.eveningoutpost.dexdrip.models.LibreData,com.eveningoutpost.dexdrip.models.LibreBlock,com.eveningoutpost.dexdrip.models.APStatus,com.eveningoutpost.dexdrip.models.Prediction,com.eveningoutpost.dexdrip.models.DesertSync,com.eveningoutpost.dexdrip.models.PenData,com.eveningoutpost.dexdrip.models.Libre2RawValue,com.eveningoutpost.dexdrip.models.Libre2Sensor,com.eveningoutpost.dexdrip.models.InsulinProfile" />
+            android:value="com.eveningoutpost.dexdrip.models.ActiveBgAlert,com.eveningoutpost.dexdrip.models.ActiveBluetoothDevice,com.eveningoutpost.dexdrip.models.AlertType,com.eveningoutpost.dexdrip.models.BgReading,com.eveningoutpost.dexdrip.models.BgReadingArchive,com.eveningoutpost.dexdrip.models.BgReading,com.eveningoutpost.dexdrip.models.Calibration,com.eveningoutpost.dexdrip.models.Calibration,com.eveningoutpost.dexdrip.models.CalibrationRequest,com.eveningoutpost.dexdrip.models.Sensor,com.eveningoutpost.dexdrip.models.TransmitterData,com.eveningoutpost.dexdrip.models.Treatments,com.eveningoutpost.dexdrip.models.UserError,com.eveningoutpost.dexdrip.models.UserNotification,com.eveningoutpost.dexdrip.sharemodels.models,com.eveningoutpost.dexdrip.utilitymodels.BgSendQueue,com.eveningoutpost.dexdrip.utilitymodels.CalibrationSendQueue,com.eveningoutpost.dexdrip.utilitymodels.SensorSendQueue,com.eveningoutpost.dexdrip.models.HeartRate,com.eveningoutpost.dexdrip.models.StepCounter,com.eveningoutpost.dexdrip.utilitymodels.UploaderQueue,com.eveningoutpost.dexdrip.models.BloodTest,com.eveningoutpost.dexdrip.models.Accuracy,com.eveningoutpost.dexdrip.models.Reminder,com.eveningoutpost.dexdrip.models.LibreData,com.eveningoutpost.dexdrip.models.LibreBlock,com.eveningoutpost.dexdrip.models.APStatus,com.eveningoutpost.dexdrip.models.Prediction,com.eveningoutpost.dexdrip.models.DesertSync,com.eveningoutpost.dexdrip.models.PenData,com.eveningoutpost.dexdrip.models.Libre2RawValue,com.eveningoutpost.dexdrip.models.Libre2Sensor,com.eveningoutpost.dexdrip.models.InsulinProfile,com.eveningoutpost.dexdrip.models.FoodProfile" />
 
         <provider
             android:name="com.activeandroid.content.ContentProvider"
@@ -274,6 +274,10 @@
             android:name=".PhoneKeypadInputActivity"
             android:label="Keypad Input"
             android:theme="@style/PopUpKeypad" />
+        <activity
+            android:name=".FoodInputActivity"
+            android:label="Food Intake"
+            android:theme="@android:style/Theme.Holo" />
         <activity
             android:name=".NoteSearch"
             android:configChanges="orientation|screenSize"
@@ -771,7 +775,12 @@
         <activity
             android:name=".insulin.InsulinProfileEditor"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_profile_editor"
+            android:label="@string/title_activity_insulinprofile_editor"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".food.FoodProfileEditor"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_foodprofile_editor"
             android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".languageeditor.LanguageEditor"
@@ -802,7 +811,16 @@
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
-
+        <activity
+            android:name=".food.NightscoutForceDownloadActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".food.DropFoodDBActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustPan" />
         <uses-library
             android:name="com.sec.android.app.multiwindow"
             android:required="false" />
