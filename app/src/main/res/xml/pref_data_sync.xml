@@ -81,7 +81,25 @@
                         android:switchTextOff="@string/short_off_text_for_switches"
                         android:switchTextOn="@string/short_on_text_for_switches"
                         android:title="@string/title_cloud_storage_api_download_from_xdrip" />
+                    <ListPreference
+                        android:key="download_insulin_just_when_in_wifi"
+                        android:entries="@array/InsulinDownloadWifiOptions"
+                        android:entryValues="@array/InsulinDownloadWifiOptionsData"
+                        android:summary="Just download insulin database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
+                        android:title="Insulin download only from Wifi"/>
                 </PreferenceScreen>
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:dependency="cloud_storage_api_download_enable"
+                    android:key="cloud_storage_api_download_treatments_enable"
+                    android:summary="@string/summary_cloud_storage_api_download_treatments_enable"
+                    android:title="@string/title_cloud_storage_api_download_treatments_enable" />
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:dependency="cloud_storage_api_download_enable"
+                    android:key="cloud_storage_api_download_insulin_enable"
+                    android:summary="@string/summary_cloud_storage_api_download_insulin_enable"
+                    android:title="@string/title_cloud_storage_api_download_insulin_enable" />
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:dependency="cloud_storage_api_download_enable"
@@ -127,6 +145,12 @@
                         android:key="warn_nightscout_multi_site_upload_failure"
                         android:summary="@string/summary_warn_nightscout_multi_site_upload_failure"
                         android:title="@string/title_warn_nightscout_multi_site_upload_failure" />
+                    <CheckBoxPreference
+                        android:defaultValue="false"
+                        android:dependency="multiple_insulin_types"
+                        android:key="nightscout_upload_insulin_profiles"
+                        android:summary="@string/summary_nightscout_upload_insulin_profiles"
+                        android:title="@string/title_nightscout_upload_insulin_profiles" />
                     <Preference
                         android:key="back_fill_data_activity_intent_key"
                         android:summary="@string/summary_tap_to_send_historical_data"

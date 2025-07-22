@@ -731,6 +731,11 @@
                     android:key="multiple_insulin_use_basal_activity"
                     android:summary="@string/summary_multiple_insulin_use_basal_activity"
                     android:title="@string/title_multiple_insulin_use_basal_activity"/>
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:key="multiple_insulin_use_profilespecific_coloring"
+                    android:summary="@string/summary_multiple_insulin_use_profilespecific_coloring"
+                    android:title="@string/title_multiple_insulin_use_profilespecific_coloring"/>
             </PreferenceScreen>
 
             <Preference

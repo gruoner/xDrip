@@ -429,6 +429,7 @@ public class PhoneKeypadInputActivity extends BaseActivity {
 
         final int offColor = Color.DKGRAY;
         final int onColor = Color.RED;
+        int textColor = Color.WHITE;
 
         insulintabbutton.setBackgroundColor(offColor);
         carbstabbutton.setBackgroundColor(offColor);
@@ -454,6 +455,8 @@ public class PhoneKeypadInputActivity extends BaseActivity {
                     multiButton1.setText(insulinProfile1.getName());
                     multiButton1.setEnabled(true);
                     multiButton1.setVisibility(View.VISIBLE);
+                    if (MultipleInsulins.useProfilespecificColoring())
+                        multiButton1.setTextColor(insulinProfile1.getColor());
                 } else
                     multiButton1.setText("");
                 if (insulinProfile2 != null)
@@ -461,6 +464,8 @@ public class PhoneKeypadInputActivity extends BaseActivity {
                     multiButton2.setText(insulinProfile2.getName());
                     multiButton2.setEnabled(true);
                     multiButton2.setVisibility(View.VISIBLE);
+                    if (MultipleInsulins.useProfilespecificColoring())
+                        multiButton2.setTextColor(insulinProfile2.getColor());
                 } else
                     multiButton2.setText("");
                 if (insulinProfile3 != null)
@@ -468,6 +473,8 @@ public class PhoneKeypadInputActivity extends BaseActivity {
                     multiButton3.setText(insulinProfile3.getName());
                     multiButton3.setEnabled(true);
                     multiButton3.setVisibility(View.VISIBLE);
+                    if (MultipleInsulins.useProfilespecificColoring())
+                        multiButton3.setTextColor(insulinProfile3.getColor());
                 } else
                     multiButton3.setText("");
                 String multibutton = "";
@@ -477,6 +484,7 @@ public class PhoneKeypadInputActivity extends BaseActivity {
                     case "1":
                         multiButton1.setBackgroundColor(onColor);
                         insulinprofile = insulinProfile1.getName();
+                        textColor = insulinProfile1.getColor();
                         break;
                     case "2":
                         multiButton2.setBackgroundColor(onColor);
@@ -484,8 +492,10 @@ public class PhoneKeypadInputActivity extends BaseActivity {
                         {
                             currenttab = "insulin-1";
                             updateTab();
-                        } else
+                        } else {
                             insulinprofile = insulinProfile2.getName();
+                            textColor = insulinProfile2.getColor();
+                        }
                         break;
                     case "3":
                         multiButton3.setBackgroundColor(onColor);
@@ -493,8 +503,10 @@ public class PhoneKeypadInputActivity extends BaseActivity {
                         {
                             currenttab = "insulin-2";
                             updateTab();
-                        } else
+                        } else {
                             insulinprofile = insulinProfile3.getName();
+                            textColor = insulinProfile3.getColor();
+                        }
                         break;
                 }
                 append = " " +  getString(R.string.units) + (multipleInsulins ? (" " + insulinprofile) : "");
@@ -514,6 +526,8 @@ public class PhoneKeypadInputActivity extends BaseActivity {
         }
         String value = getValue(currenttab);
         mDialTextView.setText(value + append);
+        if (MultipleInsulins.useProfilespecificColoring())
+            mDialTextView.setTextColor(textColor);
         // show green tick
         boolean showSubmitButton;
 

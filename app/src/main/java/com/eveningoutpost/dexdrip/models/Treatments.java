@@ -53,12 +53,9 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import lombok.val;
-
 import static com.eveningoutpost.dexdrip.models.JoH.msSince;
 import static com.eveningoutpost.dexdrip.utilitymodels.Constants.HOUR_IN_MS;
 import static com.eveningoutpost.dexdrip.utilitymodels.Constants.MINUTE_IN_MS;
-import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import static java.lang.StrictMath.abs;
 import static com.eveningoutpost.dexdrip.models.JoH.emptyString;
 
@@ -120,7 +117,7 @@ public class Treatments extends Model {
         boolean foundBasal = false;
         final List<InsulinInjection> injections = getInsulinInjections();
         for (InsulinInjection injection : injections) {
-            Log.d(TAG,"isBasalOnly: "+injection.isBasal()+" "+injection.getInsulin());
+            Log.d(TAG,"isBasalOnly: "+injection.isBasal()+" "+injection.getProfile().getName());
             if (!injection.isBasal()) {
                 return false;
             } else {
@@ -190,7 +187,7 @@ public class Treatments extends Model {
     // take a simple insulin value and produce a list assuming it is bolus insulin - for legacy conversion
     static private List<InsulinInjection> convertLegacyDoseToBolusInjectionList(final double insulinSum) {
         final ArrayList<InsulinInjection> injections = new ArrayList<>();
-        val profile = InsulinManager.getBolusProfile();
+        Insulin profile = InsulinManager.getBolusProfile();
         if (profile != null) {
             injections.add(new InsulinInjection(profile, insulinSum));
         } else {
@@ -222,6 +219,15 @@ public class Treatments extends Model {
         }
     }
 
+    private double getMaxEffect()
+    {
+        double ret = 0;
+        for (InsulinInjection i: insulinInjections)
+            if (ret < i.getProfile().getMaxEffect())
+                ret = i.getProfile().getMaxEffect();
+        return ret;
+    }
+
     public Treatments()
     {
         eventType = DEFAULT_EVENT_TYPE;
@@ -236,11 +242,13 @@ public class Treatments extends Model {
 
     public static synchronized Treatments create(final double carbs, final double insulinSum, final long timestamp, final String suggested_uuid) {
 
-        if (MultipleInsulins.isEnabled()) {
+// changed by gruoner 11/09/19 - as we have defined a default bolus profile (currently novorapid as curve is the save as the "old" prediction logic before "multiple insulins")
+// we will store an injection list in the treatment holding just this on injection with the default bolus - the rest is still the same
+//        if (MultipleInsulins.isEnabled()) {
             return create(carbs, insulinSum, convertLegacyDoseToBolusInjectionList(insulinSum), timestamp, suggested_uuid);
-        } else {
-            return create(carbs, insulinSum, null, timestamp, suggested_uuid);
-        }
+//        } else {
+//            return create(carbs, insulinSum, null, timestamp, suggested_uuid);
+//        }
 
     }
 
@@ -372,7 +380,7 @@ public class Treatments extends Model {
 
     static void createForTest(long timestamp, double insulin) {
         fixUpTable();
-        val treatment = new Treatments();
+        Treatments treatment = new Treatments();
         treatment.notes = "test";
         treatment.timestamp = timestamp;
         treatment.created_at = DateUtil.toISOString(timestamp);
@@ -436,7 +444,7 @@ public class Treatments extends Model {
         // Create treatment entry in the database if the sensor was started by another
         // device (e.g. receiver) and not xDrip. If the sensor was started by
         // xDrip, then there will be a Sensor Start treatment already in the db.
-        val lastSensorStart = Treatments.lastEventTypeFromXdrip(Treatments.SENSOR_START_EVENT_TYPE);
+        Treatments lastSensorStart = Treatments.lastEventTypeFromXdrip(Treatments.SENSOR_START_EVENT_TYPE);
 
         // If there isn't an existing sensor start in the xDrip db, or the most recently tracked
         // sensor start was more than 15 minutes ago, then we assume the sensor was actually
@@ -990,7 +998,7 @@ public class Treatments extends Model {
         // number param currently ignored
 
         // 10 hours max look or from insulin manager if enabled
-        final double dontLookThisFar = MultipleInsulins.isEnabled() ? MINUTE_IN_MS * InsulinManager.getMaxEffect(true) : 10 * HOUR_IN_MS;
+        final double dontLookThisFar = multipleInsulins ? MINUTE_IN_MS * InsulinManager.getMaxEffect(true) : 10 * HOUR_IN_MS;
 // look back the longest effect period of all enabled insulin profiles (startTime is always 24h behind NOW)
         List<Treatments> theTreatments = latestForGraph(2000, startTime - dontLookThisFar);
         Log.d(TAG,"TREATMENT LIST: "+theTreatments.size()+" "+JoH.dateTimeText((long)(startTime - dontLookThisFar)));
@@ -1018,12 +1026,14 @@ public class Treatments extends Model {
         // First process all IoB calculations
         for (Treatments thisTreatment : theTreatments) {
             // early optimisation exclusion
-
             mytime = (long) ((thisTreatment.timestamp / stepms) * stepms); // effects of treatment occur only after it is given / fit to slot time
             tendtime = mytime + 36 * HOUR_IN_MS;     // 36 hours max look (24h history plus 12h forecast)
             if (tendtime > startTime + 30 * HOUR_IN_MS)
                 tendtime = startTime + 30 * HOUR_IN_MS;   // dont look more than 6h in future // TODO review time limit
             if (thisTreatment.insulin > 0) {
+                /// gruoner 12/04/19: sometimes insulinInjections is NULL because it is loaded from DB - so loading it from insulinJSON
+                if ((thisTreatment.insulinInjections == null) && !(thisTreatment.insulinJSON == null))
+                    thisTreatment.setInsulinJSON(thisTreatment.insulinJSON);
                 // lay down insulin on board
                 do {
 

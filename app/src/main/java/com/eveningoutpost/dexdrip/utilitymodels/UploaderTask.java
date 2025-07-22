@@ -154,7 +154,9 @@ public class UploaderTask extends AsyncTask<String, Void, Void> {
                 if ((bgReadings.size() > 0) || (calibrations.size() > 0) || (bloodtests.size() > 0)
                         || (treatmentsAdd.size() > 0 || treatmentsDel.size() > 0) || (transmittersData.size() > 0) ||
                         (libreBlock.size() > 0)
-                        || (UploaderQueue.getPendingbyType(Treatments.class.getSimpleName(), THIS_QUEUE, 1).size() > 0)) {
+                        || (UploaderQueue.getPendingbyType(Treatments.class.getSimpleName(), THIS_QUEUE, 1).size() > 0)
+                        || (NightscoutUploader.time2UploadInsulin() && Pref.getBooleanDefaultFalse("nightscout_upload_insulin_profiles")))
+                {
 
                     Log.d(TAG, UploaderQueue.getCircuitName(THIS_QUEUE) + " Processing: " + bgReadings.size() + " BgReadings and " + calibrations.size() + " Calibrations " + bloodtests.size() + " bloodtests " + treatmentsAdd.size() + " treatmentsAdd " + treatmentsDel.size() + " treatmentsDel");
                     boolean uploadStatus = false;

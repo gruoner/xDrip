@@ -1223,8 +1223,12 @@
     <string name="upload_even_when_using_mobile_data">Upload even when using mobile data</string>
     <string name="daily_backup_even_mobile">Daily backup even on mobile data</string>
     <string name="use_mobile_data">Use mobile data</string>
-    <string name="summary_cloud_storage_api_download_enable">Also try to download treatments from Nightscout</string>
-    <string name="title_cloud_storage_api_download_enable">Download treatments</string>
+    <string name="summary_cloud_storage_api_download_enable">Also try to download data from Nightscout</string>
+    <string name="title_cloud_storage_api_download_enable">Download data</string>
+    <string name="summary_cloud_storage_api_download_treatments_enable">try to download treatments from Nightscout</string>
+    <string name="title_cloud_storage_api_download_treatments_enable">Download treatments</string>
+    <string name="summary_cloud_storage_api_download_insulin_enable">try to download insulin profiles from Nightscout</string>
+    <string name="title_cloud_storage_api_download_insulin_enable">Download insulin profiles</string>
     <string name="title_cloud_storage_api_download_from_xdrip">Skip items from xDrip</string>
     <string name="nightscout_upload_failure_backfill_required">Uploads have not succeeded for all sites.  Backfill is recommended.  First failure: %1$s</string>
     <string name="title_nightscout_upload_failure_backfill_required">Inconsistent Multi-Site Nightscout Upload</string>
@@ -1244,6 +1248,8 @@
     <string name="title_warn_nightscout_multi_site_upload_failure">Alert on multi-site upload failure</string>
     <string name="summary_nightscout_device_append_source_info">For Dex, sends collector type (e.g. OB1) and reading backfill status (for native) to Nightscout.</string>
     <string name="title_nightscout_device_append_source_info">Append source info to device name</string>
+    <string name="summary_nightscout_upload_insulin_profiles">If Nightscout Server is supporting uploads of insulin profiles, here one can upload profiles and Multi-Insulin configuration.</string>
+    <string name="title_nightscout_upload_insulin_profiles">Upload insulin profiles to nightscout</string>
     <string name="summary_tap_to_send_historical_data">Tap to send historical data to Nightscout</string>
     <string name="title_back_fill_data">Back-fill data</string>
     <string name="summary_tidepool_upload_screen">Upload data to the Tidepool service</string>
@@ -1367,6 +1373,8 @@
     <string name="title_medtrum_a_hex">Medtrum Debug</string>
     <string name="summary_nsfollow_url">Web address for following</string>
     <string name="title_nsfollow_url">Nightscout Follow URL</string>
+    <string name="summary_nsfollow_download_insulin">Also download insulin profiles from Nightscout as follower</string>
+    <string name="title_nsfollow_download_insulin">Download Insulin Profiles</string>
     <string name="summary_nsfollow_download_treatments">Also download treatments from Nightscout as follower</string>
     <string name="title_nsfollow_download_treatments">Download Treatments</string>
     <string name="title_nsfollow_lag">Nightscout Follow delay</string>
@@ -1732,6 +1740,8 @@
     <string name="title_multiple_insulin_types">Multiple Insulin Types</string>
     <string name="summary_multiple_insulin_use_basal_activity">Plot Basal activity on graph and incorporate in predictive model</string>
     <string name="title_multiple_insulin_use_basal_activity">Use Basal Activity</string>
+    <string name="summary_multiple_insulin_use_profilespecific_coloring">Every insulin profile has his own color. Do you want to use it when registering an injection?</string>
+    <string name="title_multiple_insulin_use_profilespecific_coloring">Use profilespecific coloring</string>
     <string name="title_xdrip_plus_snooze_broadcast">Local Broadcast</string>
     <string name="summary_broadcast_snooze">Send snoozes to other apps on this handset</string>
     <string name="title_broadcast_snooze">Local Broadcast</string>
@@ -1969,4 +1979,5 @@
     <string name="sensor_will_expire_in">Sensor will expire in %1$s</string>
     <string name="xdrip_update">xDrip+ Update</string>
     <string name="a_new_version_on_channel_1_s_is_available">A new version on channel %1$s is available</string>
+    <string name="not_available">not available</string>
 </resources>

@@ -1386,7 +1386,8 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             }
 
 
-            final Preference nsFollowDownload = findPreference("nsfollow_download_treatments_screen");
+            final Preference nsFollowDownloadInsulin = findPreference("nsfollow_download_insulin");
+            final Preference nsFollowDownloadTreatment = findPreference("nsfollow_download_treatments_screen");
             final Preference nsFollowUrl = findPreference("nsfollow_url");
             final Preference nsFollowLag = findPreference("nsfollow_lag"); // Show the Nightscout follow wake delay setting only when NS follow is the data source
             bindPreferenceSummaryToValue(findPreference("nsfollow_lag")); // Show the selected value as summary
@@ -1858,7 +1859,8 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             if (collectionType != DexCollectionType.NSFollow) {
                 try {
                     collectionCategory.removePreference(nsFollowUrl);
-                    collectionCategory.removePreference(nsFollowDownload);
+                    collectionCategory.removePreference(nsFollowDownloadInsulin);
+                    collectionCategory.removePreference(nsFollowDownloadTreatment);
                     collectionCategory.removePreference(nsFollowLag);
                 } catch (Exception e) {
                     //
@@ -2586,7 +2588,8 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
 
                     if (collectionType == DexCollectionType.NSFollow) {
                         collectionCategory.addPreference(nsFollowUrl);
-                        collectionCategory.addPreference(nsFollowDownload);
+                        collectionCategory.addPreference(nsFollowDownloadInsulin);
+                        collectionCategory.addPreference(nsFollowDownloadTreatment);
                         collectionCategory.addPreference(nsFollowLag);
                     }
 

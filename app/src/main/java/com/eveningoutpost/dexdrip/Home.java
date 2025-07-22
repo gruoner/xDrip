@@ -296,7 +296,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     double thisInsulinSumNumber = 0;
     double[] thisinsulinnumber = new double[MAX_INSULIN_PROFILES];
     Insulin[] thisinsulinprofile = new Insulin[MAX_INSULIN_PROFILES];
-    ArrayList<Insulin> insulins = null;
     double thistimeoffset = 0;
     String thisword = "";
     String thisuuid = "";
@@ -470,8 +469,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         if (searchWords == null) {
             initializeSearchWords("");
         }
-        if (insulins == null)   // TODO only when using multiples?
-            insulins = InsulinManager.getDefaultInstance();
+        if (MultipleInsulins.isEnabled())   // alway load all Insulin profiles because even in single mode we store injections with the default bolus
+            InsulinManager.getDefaultInstance();
 
         this.btnSpeak = (ImageButton) findViewById(R.id.btnTreatment);
         btnSpeak.setOnClickListener(v -> promptTextInput());
@@ -1605,6 +1604,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                             if (thisnumber > 0) {
                                 thisinsulinnumber[number] = thisnumber;
                                 textInsulinDose[number].setText(thisNumberStr + " " + insulin.getName());
+                                if (MultipleInsulins.useProfilespecificColoring())
+                                    textInsulinDose[number].setTextColor(insulin.getColor());
                                 Log.d(TAG, insulin.getName() + " dose: " + thisNumberStr);
                                 insulinset[number] = true;
                                 btnInsulinDose[number].setVisibility(View.VISIBLE);
