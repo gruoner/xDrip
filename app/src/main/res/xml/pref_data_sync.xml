@@ -73,6 +73,24 @@
                         android:switchTextOff="@string/short_off_text_for_switches"
                         android:switchTextOn="@string/short_on_text_for_switches"
                         android:title="@string/title_cloud_storage_api_download_enable" />
+                    <CheckBoxPreference
+                        android:defaultValue="false"
+                        android:dependency="cloud_storage_api_download_enable"
+                        android:key="cloud_storage_api_download_treatments_enable"
+                        android:summary="@string/summary_cloud_storage_api_download_treatments_enable"
+                        android:title="@string/title_cloud_storage_api_download_treatments_enable" />
+                    <CheckBoxPreference
+                        android:defaultValue="false"
+                        android:dependency="cloud_storage_api_download_enable"
+                        android:key="cloud_storage_api_download_insulin_enable"
+                        android:summary="@string/summary_cloud_storage_api_download_insulin_enable"
+                        android:title="@string/title_cloud_storage_api_download_insulin_enable" />
+                    <CheckBoxPreference
+                        android:defaultValue="false"
+                        android:dependency="cloud_storage_api_download_enable"
+                        android:key="bluetooth_meter_for_calibrations_auto"
+                        android:summary="@string/summary_bluetooth_meter_for_calibrations_auto"
+                        android:title="@string/title_bluetooth_meter_for_calibrations_auto" />
                     <SwitchPreference
                         android:defaultValue="true"
                         android:dependency="cloud_storage_api_download_enable"
@@ -88,24 +106,6 @@
                         android:summary="Just download insulin database when connected to Wifi (don't forget to set HomeWifi via Reminders)"
                         android:title="Insulin download only from Wifi"/>
                 </PreferenceScreen>
-                <CheckBoxPreference
-                    android:defaultValue="false"
-                    android:dependency="cloud_storage_api_download_enable"
-                    android:key="cloud_storage_api_download_treatments_enable"
-                    android:summary="@string/summary_cloud_storage_api_download_treatments_enable"
-                    android:title="@string/title_cloud_storage_api_download_treatments_enable" />
-                <CheckBoxPreference
-                    android:defaultValue="false"
-                    android:dependency="cloud_storage_api_download_enable"
-                    android:key="cloud_storage_api_download_insulin_enable"
-                    android:summary="@string/summary_cloud_storage_api_download_insulin_enable"
-                    android:title="@string/title_cloud_storage_api_download_insulin_enable" />
-                <CheckBoxPreference
-                    android:defaultValue="false"
-                    android:dependency="cloud_storage_api_download_enable"
-                    android:key="bluetooth_meter_for_calibrations_auto"
-                    android:summary="@string/summary_bluetooth_meter_for_calibrations_auto"
-                    android:title="@string/title_bluetooth_meter_for_calibrations_auto" />
                 <PreferenceScreen
                     android:key="rest_api_extra_options"
                     android:summary=""
