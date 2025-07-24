@@ -3,6 +3,7 @@ package com.eveningoutpost.dexdrip;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.text.SpannableString;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
 import android.util.Log;

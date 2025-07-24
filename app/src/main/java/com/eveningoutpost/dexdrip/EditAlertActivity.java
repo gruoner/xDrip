@@ -84,6 +84,14 @@ public class EditAlertActivity extends ActivityWithMenu {
     private LinearLayout timeInstructions;
     private TextView viewTimeStart;
     private TextView viewTimeEnd;
+    private CheckBox checkboxDaysMonday;
+    private CheckBox checkboxDaysTuesday;
+    private CheckBox checkboxDaysWednesday;
+    private CheckBox checkboxDaysThursday;
+    private CheckBox checkboxDaysFriday;
+    private CheckBox checkboxDaysSaturday;
+    private CheckBox checkboxDaysSunday;
+
     private TextView timeInstructionsStart;
     private TextView timeInstructionsEnd;
 
@@ -136,6 +144,37 @@ public class EditAlertActivity extends ActivityWithMenu {
         super.onResume();
     }
 
+    private void setDaysChecked(int days)
+    {
+        if ((days & AlertType.MONDAY) > 0) checkboxDaysMonday.setChecked(true);
+        else checkboxDaysMonday.setChecked(false);
+        if ((days & AlertType.TUESDAY) > 0) checkboxDaysTuesday.setChecked(true);
+        else checkboxDaysTuesday.setChecked(false);
+        if ((days & AlertType.WEDNESDAY) > 0) checkboxDaysWednesday.setChecked(true);
+        else checkboxDaysWednesday.setChecked(false);
+        if ((days & AlertType.THURSDAY) > 0) checkboxDaysThursday.setChecked(true);
+        else checkboxDaysThursday.setChecked(false);
+        if ((days & AlertType.FRIDAY) > 0) checkboxDaysFriday.setChecked(true);
+        else checkboxDaysFriday.setChecked(false);
+        if ((days & AlertType.SATURDAY) > 0) checkboxDaysSaturday.setChecked(true);
+        else checkboxDaysSaturday.setChecked(false);
+        if ((days & AlertType.SUNDAY) > 0) checkboxDaysSunday.setChecked(true);
+        else checkboxDaysSunday.setChecked(false);
+    }
+
+    private byte daysCheckboxes2Value()
+    {
+        int ret = 0;
+        if (checkboxDaysMonday.isChecked()) ret = ret + AlertType.MONDAY;
+        if (checkboxDaysTuesday.isChecked()) ret = ret + AlertType.TUESDAY;
+        if (checkboxDaysWednesday.isChecked()) ret = ret + AlertType.WEDNESDAY;
+        if (checkboxDaysThursday.isChecked()) ret = ret + AlertType.THURSDAY;
+        if (checkboxDaysFriday.isChecked()) ret = ret + AlertType.FRIDAY;
+        if (checkboxDaysSaturday.isChecked()) ret = ret + AlertType.SATURDAY;
+        if (checkboxDaysSunday.isChecked()) ret = ret + AlertType.SUNDAY;
+        return (byte)ret;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         xdrip.checkForcedEnglish(xdrip.getAppContext());
@@ -168,6 +207,13 @@ public class EditAlertActivity extends ActivityWithMenu {
 
         viewTimeStart = (TextView) findViewById(R.id.view_alert_time_start);
         viewTimeEnd = (TextView) findViewById(R.id.view_alert_time_end);
+        checkboxDaysMonday = (CheckBox) findViewById(R.id.check_alert_days_mon);
+        checkboxDaysTuesday = (CheckBox) findViewById(R.id.check_alert_days_tue);
+        checkboxDaysWednesday = (CheckBox) findViewById(R.id.check_alert_days_wed);
+        checkboxDaysThursday = (CheckBox) findViewById(R.id.check_alert_days_thu);
+        checkboxDaysFriday = (CheckBox) findViewById(R.id.check_alert_days_fri);
+        checkboxDaysSaturday = (CheckBox) findViewById(R.id.check_alert_days_sat);
+        checkboxDaysSunday = (CheckBox) findViewById(R.id.check_alert_days_sun);
         editSnooze = (EditText) findViewById(R.id.edit_snooze);
         reraise = (EditText) findViewById(R.id.reraise);
 
@@ -196,6 +242,13 @@ public class EditAlertActivity extends ActivityWithMenu {
 
             viewTimeStart.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
             viewTimeEnd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+            checkboxDaysMonday.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+            checkboxDaysTuesday.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+            checkboxDaysWednesday.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+            checkboxDaysThursday.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+            checkboxDaysFriday.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+            checkboxDaysSaturday.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+            checkboxDaysSunday.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
             editSnooze.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
             reraise.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
             viewAlertOverrideText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
@@ -243,6 +296,7 @@ public class EditAlertActivity extends ActivityWithMenu {
             startMinute = 0;
             endHour = 23;
             endMinute = 59;
+            setDaysChecked(AlertType.ALL_DAYS);
             alertReraise = 1;
         } else {
             // We are editing an alert
@@ -276,6 +330,7 @@ public class EditAlertActivity extends ActivityWithMenu {
             startMinute = AlertType.time2Minutes(alertType.start_time_minutes);
             endHour = AlertType.time2Hours(alertType.end_time_minutes);
             endMinute = AlertType.time2Minutes(alertType.end_time_minutes);
+            setDaysChecked(alertType.days_of_week);
             alertReraise = alertType.minutes_between;
 
             if(uuid.equals(AlertType.LOW_ALERT_55)) {
@@ -298,8 +353,6 @@ public class EditAlertActivity extends ActivityWithMenu {
         enableAllDayControls();
         setDisabledView();
         showHideSilentModeWarning();
-
-
     }
     
     @Override
@@ -383,7 +436,7 @@ public class EditAlertActivity extends ActivityWithMenu {
         layoutSilentModeWarning.setVisibility(checkboxOverrideSilent.isChecked() ? View.GONE : View.VISIBLE);
     }
 
-    private boolean verifyThreshold(double threshold, boolean allDay, int startTime, int endTime) {
+    private boolean verifyThreshold(double threshold, byte days, boolean allDay, int startTime, int endTime) {
         List<AlertType> lowAlerts = AlertType.getAll(false);
         List<AlertType> highAlerts = AlertType.getAll(true);
 
@@ -393,7 +446,7 @@ public class EditAlertActivity extends ActivityWithMenu {
         }
         // We want to make sure that for each threashold there is only one alert. Otherwise, which file should we play.
         for (AlertType lowAlert : lowAlerts) {
-            if(lowAlert.threshold == threshold  && overlapping(lowAlert, allDay, startTime, endTime) && lowAlert.active) {
+            if(lowAlert.threshold == threshold  && overlapping(lowAlert, days, allDay, startTime, endTime) && lowAlert.active) {
                 if(uuid == null || ! uuid.equals(lowAlert.uuid)){ //new alert or not myself
                     Toast.makeText(getApplicationContext(),
                             "Each alert should have it's own threshold. Please choose another threshold.",Toast.LENGTH_LONG).show();
@@ -402,7 +455,7 @@ public class EditAlertActivity extends ActivityWithMenu {
             }
         }
         for (AlertType highAlert : highAlerts) {
-            if(highAlert.threshold == threshold  && overlapping(highAlert, allDay, startTime, endTime) && highAlert.active) {
+            if(highAlert.threshold == threshold  && overlapping(highAlert, days, allDay, startTime, endTime) && highAlert.active) {
                 if(uuid == null || ! uuid.equals(highAlert.uuid)){ //new alert or not myself
                     Toast.makeText(getApplicationContext(),
                             "Each alert should have it's own threshold. Please choose another threshold.",Toast.LENGTH_LONG).show();
@@ -414,7 +467,7 @@ public class EditAlertActivity extends ActivityWithMenu {
         // high alerts have to be higher than all low alerts...
         if(above) {
             for (AlertType lowAlert : lowAlerts) {
-                if(threshold < lowAlert.threshold  && overlapping(lowAlert, allDay, startTime, endTime) && lowAlert.active) {
+                if(threshold < lowAlert.threshold  && overlapping(lowAlert, days, allDay, startTime, endTime) && lowAlert.active) {
                     Toast.makeText(getApplicationContext(),
                             "High alert threshold has to be higher than all low alerts. Please choose another threshold.",Toast.LENGTH_LONG).show();
                     return false;
@@ -423,7 +476,7 @@ public class EditAlertActivity extends ActivityWithMenu {
         } else {
             // low alert has to be lower than all high alerts
             for (AlertType highAlert : highAlerts) {
-                if(threshold > highAlert.threshold  && overlapping(highAlert, allDay, startTime, endTime) && highAlert.active) {
+                if(threshold > highAlert.threshold  && overlapping(highAlert, days, allDay, startTime, endTime) && highAlert.active) {
                     Toast.makeText(getApplicationContext(),
                             "Low alert threshold has to be lower than all high alerts. Please choose another threshold.",Toast.LENGTH_LONG).show();
                     return false;
@@ -436,7 +489,10 @@ public class EditAlertActivity extends ActivityWithMenu {
 
     // determines if an alertType is 'at' has a temporal overlap with a new alert with parameters
     // allday, startTime, entTime
-    private boolean overlapping(AlertType at, boolean allday, int startTime, int endTime){
+    private boolean overlapping(AlertType at, byte days, boolean allday, int startTime, int endTime) {
+
+        if ((at.days_of_week & days) == 0)  // if at-days does not overlap with check-days, they can't overlap
+            return false;
         //shortcut: if one is all day, they must overlap
         if(at.all_day || allday) {
             return true;
@@ -493,7 +549,6 @@ public class EditAlertActivity extends ActivityWithMenu {
     }
 
     public void addListenerOnButtons() {
-      
         buttonSave.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Check that values are ok.
@@ -537,8 +592,10 @@ public class EditAlertActivity extends ActivityWithMenu {
                     Toast.makeText(getApplicationContext(), "start time and end time of alert can not be equal",Toast.LENGTH_LONG).show();
                     return;
                 }
+
+                byte days = daysCheckboxes2Value();
                 boolean disabled = checkboxDisabled.isChecked();
-                if(!disabled && !verifyThreshold(threshold, allDay, timeStart, timeEnd)) {
+                if(!disabled && !verifyThreshold(threshold, days, allDay, timeStart, timeEnd)) {
                     return;
                 }
                 boolean vibrate = checkboxVibrate.isChecked();
@@ -548,9 +605,9 @@ public class EditAlertActivity extends ActivityWithMenu {
 
                 String mp3_file = audioPath;
                 if (uuid != null) {
-                    AlertType.update_alert(uuid, alertText.getText().toString(), above, threshold, allDay, alertReraise, mp3_file, timeStart, timeEnd, overrideSilentMode, forceSpeaker, defaultSnooze, vibrate, !disabled);
+                    AlertType.update_alert(uuid, alertText.getText().toString(), above, threshold, allDay, alertReraise, mp3_file, timeStart, timeEnd, days, overrideSilentMode, forceSpeaker, defaultSnooze, vibrate, !disabled);
                 }  else {
-                    AlertType.add_alert(null, alertText.getText().toString(), above, threshold, allDay, alertReraise, mp3_file, timeStart, timeEnd, overrideSilentMode, forceSpeaker, defaultSnooze, vibrate, !disabled);
+                    AlertType.add_alert(null, alertText.getText().toString(), above, threshold, allDay, alertReraise, mp3_file, timeStart, timeEnd, days, overrideSilentMode, forceSpeaker, defaultSnooze, vibrate, !disabled);
                 }
 
                 startWatchUpdaterService(mContext, WatchUpdaterService.ACTION_SYNC_ALERTTYPE, TAG);
@@ -559,7 +616,6 @@ public class EditAlertActivity extends ActivityWithMenu {
                 BlueJayEntry.startWithRefreshIfEnabled();
                 finish();
             }
-
         });
 
         buttonRemove.setOnClickListener(new View.OnClickListener() {
@@ -584,7 +640,6 @@ public class EditAlertActivity extends ActivityWithMenu {
             public void onClick(View v) {
                 testAlert();
             }
-
         });
 
         buttonalertMp3.setOnClickListener(new View.OnClickListener() {
@@ -641,7 +696,6 @@ public class EditAlertActivity extends ActivityWithMenu {
         //Register Liseners to modify start and end time
 
         View.OnClickListener startTimeListener = new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 TimePickerDialog mTimePicker = new TimePickerDialog(mContext, AlertDialog.THEME_HOLO_DARK, new TimePickerDialog.OnTimeSetListener() {
@@ -659,7 +713,6 @@ public class EditAlertActivity extends ActivityWithMenu {
         } ;
 
         View.OnClickListener endTimeListener = new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 TimePickerDialog mTimePicker = new TimePickerDialog(mContext, AlertDialog.THEME_HOLO_DARK, new TimePickerDialog.OnTimeSetListener() {
@@ -848,8 +901,6 @@ public class EditAlertActivity extends ActivityWithMenu {
     }
 
     public void setPreSnoozeSpinner() {
-
-
         buttonPreSnooze.setOnClickListener(new View.OnClickListener() {
             @Override
             //public boolean onTouch(View mView, MotionEvent mMotionEvent) {
@@ -881,7 +932,6 @@ public class EditAlertActivity extends ActivityWithMenu {
                 });
                 d.show();
             }});
-
     }
 
     private boolean checkPermissions() {
@@ -933,7 +983,8 @@ public class EditAlertActivity extends ActivityWithMenu {
             Toast.makeText(getApplicationContext(), "start time and end time of alert can not be equal",Toast.LENGTH_LONG).show();
             return;
         }
-        if(!verifyThreshold(threshold, allDay, timeStart, timeEnd)) {
+        byte days = daysCheckboxes2Value();
+        if(!verifyThreshold(threshold, days, allDay, timeStart, timeEnd)) {
             return;
         }
         boolean vibrate = checkboxVibrate.isChecked();
@@ -951,7 +1002,7 @@ public class EditAlertActivity extends ActivityWithMenu {
                 JoH.static_toast_long("Volume Profile is set to silent!");
             }
 
-            AlertType.testAlert(alertText.getText().toString(), above, threshold, allDay, 1, mp3_file, timeStart, timeEnd, overrideSilentMode, forceSpeaker, defaultSnooze, vibrate, mContext);
+            AlertType.testAlert(alertText.getText().toString(), above, threshold, allDay, 1, mp3_file, timeStart, timeEnd, days, overrideSilentMode, forceSpeaker, defaultSnooze, vibrate, mContext);
         } catch (NullPointerException e) {
             JoH.static_toast_long("Snooze value is not a number - cannot test");
         }
