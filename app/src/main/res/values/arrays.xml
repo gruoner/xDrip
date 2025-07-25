@@ -565,4 +565,11 @@
         <item>120</item>
         <item>180</item>
     </string-array>
+    <string-array name="RefreshRecordingPeriodeArray">
+        <item>15min</item>
+        <item>30min</item>
+        <item>1h</item>
+        <item>2h</item>
+    </string-array>
+
 </resources>

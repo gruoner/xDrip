@@ -1,9 +1,13 @@
 package com.eveningoutpost.dexdrip;
 
+import static com.eveningoutpost.dexdrip.xdrip.getAppContext;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.eveningoutpost.dexdrip.Recorder.ManageRecorder;
+import com.eveningoutpost.dexdrip.models.AudioRecorder;
 import com.eveningoutpost.dexdrip.models.UserError;
 import com.eveningoutpost.dexdrip.services.PlusSyncService;
 import com.eveningoutpost.dexdrip.utilitymodels.CollectionServiceStarter;
@@ -27,6 +31,8 @@ public class AutoStart extends BroadcastReceiver {
             //
         }
 
+        if (Pref.getBooleanDefaultFalse("audio_recorder_started") && !AudioRecorder.isRunning())
+            ManageRecorder.AudioRecorderStart();
 
         try {
             CollectionServiceStarter.restartCollectionServiceBackground();
@@ -48,7 +54,7 @@ public class AutoStart extends BroadcastReceiver {
                 Inevitable.task("show_home_on_boot", 5000, new Runnable() {
                     @Override
                     public void run() {
-                        Home.startHomeWithExtra(xdrip.getAppContext(), "auto-start", "start");
+                        Home.startHomeWithExtra(getAppContext(), "auto-start", "start");
                     }
                 });
             }

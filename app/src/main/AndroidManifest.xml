@@ -7,6 +7,7 @@
 
     <uses-sdk tools:overrideLibrary="androidx.health.connect.client, info.nightscout.sdk" />
     <!-- To receive data from HAPP. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS" />
     <uses-permission android:name="com.eveningoutpost.dexdrip.permissions.RECEIVE_EXTERNAL_STATUSLINE" /> <!-- To receive data from Aidex -->
     <uses-permission android:name="com.microtechmd.cgms.aidex.permissions.RECEIVE_BG_ESTIMATE" />
@@ -138,7 +139,7 @@
             android:value="42" />
         <meta-data
             android:name="AA_MODELS"
-            android:value="com.eveningoutpost.dexdrip.models.ActiveBgAlert,com.eveningoutpost.dexdrip.models.ActiveBluetoothDevice,com.eveningoutpost.dexdrip.models.AlertType,com.eveningoutpost.dexdrip.models.BgReading,com.eveningoutpost.dexdrip.models.BgReadingArchive,com.eveningoutpost.dexdrip.models.BgReading,com.eveningoutpost.dexdrip.models.Calibration,com.eveningoutpost.dexdrip.models.Calibration,com.eveningoutpost.dexdrip.models.CalibrationRequest,com.eveningoutpost.dexdrip.models.Sensor,com.eveningoutpost.dexdrip.models.TransmitterData,com.eveningoutpost.dexdrip.models.Treatments,com.eveningoutpost.dexdrip.models.UserError,com.eveningoutpost.dexdrip.models.UserNotification,com.eveningoutpost.dexdrip.sharemodels.models,com.eveningoutpost.dexdrip.utilitymodels.BgSendQueue,com.eveningoutpost.dexdrip.utilitymodels.CalibrationSendQueue,com.eveningoutpost.dexdrip.utilitymodels.SensorSendQueue,com.eveningoutpost.dexdrip.models.HeartRate,com.eveningoutpost.dexdrip.models.StepCounter,com.eveningoutpost.dexdrip.utilitymodels.UploaderQueue,com.eveningoutpost.dexdrip.models.BloodTest,com.eveningoutpost.dexdrip.models.Accuracy,com.eveningoutpost.dexdrip.models.Reminder,com.eveningoutpost.dexdrip.models.LibreData,com.eveningoutpost.dexdrip.models.LibreBlock,com.eveningoutpost.dexdrip.models.APStatus,com.eveningoutpost.dexdrip.models.Prediction,com.eveningoutpost.dexdrip.models.DesertSync,com.eveningoutpost.dexdrip.models.PenData,com.eveningoutpost.dexdrip.models.Libre2RawValue,com.eveningoutpost.dexdrip.models.Libre2Sensor,com.eveningoutpost.dexdrip.models.InsulinProfile,com.eveningoutpost.dexdrip.models.FoodProfile" />
+            android:value="com.eveningoutpost.dexdrip.models.ActiveBgAlert,com.eveningoutpost.dexdrip.models.ActiveBluetoothDevice,com.eveningoutpost.dexdrip.models.AlertType,com.eveningoutpost.dexdrip.models.BgReading,com.eveningoutpost.dexdrip.models.BgReadingArchive,com.eveningoutpost.dexdrip.models.BgReading,com.eveningoutpost.dexdrip.models.Calibration,com.eveningoutpost.dexdrip.models.Calibration,com.eveningoutpost.dexdrip.models.CalibrationRequest,com.eveningoutpost.dexdrip.models.Sensor,com.eveningoutpost.dexdrip.models.TransmitterData,com.eveningoutpost.dexdrip.models.Treatments,com.eveningoutpost.dexdrip.models.UserError,com.eveningoutpost.dexdrip.models.UserNotification,com.eveningoutpost.dexdrip.sharemodels.models,com.eveningoutpost.dexdrip.utilitymodels.BgSendQueue,com.eveningoutpost.dexdrip.utilitymodels.CalibrationSendQueue,com.eveningoutpost.dexdrip.utilitymodels.SensorSendQueue,com.eveningoutpost.dexdrip.models.HeartRate,com.eveningoutpost.dexdrip.models.StepCounter,com.eveningoutpost.dexdrip.utilitymodels.UploaderQueue,com.eveningoutpost.dexdrip.models.BloodTest,com.eveningoutpost.dexdrip.models.Accuracy,com.eveningoutpost.dexdrip.models.Reminder,com.eveningoutpost.dexdrip.models.LibreData,com.eveningoutpost.dexdrip.models.LibreBlock,com.eveningoutpost.dexdrip.models.APStatus,com.eveningoutpost.dexdrip.models.Prediction,com.eveningoutpost.dexdrip.models.DesertSync,com.eveningoutpost.dexdrip.models.PenData,com.eveningoutpost.dexdrip.models.Libre2RawValue,com.eveningoutpost.dexdrip.models.Libre2Sensor,com.eveningoutpost.dexdrip.models.InsulinProfile,com.eveningoutpost.dexdrip.models.FoodProfile.eveningoutpost.dexdrip.models.AudioRecorder" />
 
         <provider
             android:name="com.activeandroid.content.ContentProvider"
@@ -255,6 +256,10 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/add_calibration" />
         <activity
+            android:name=".Recorder.ManageRecorder"
+            android:configChanges="orientation|screenSize"
+            android:label="Recorder verwalten" />
+        <activity
             android:name=".StartNewSensor"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_start_new_sensor" />
@@ -283,6 +288,12 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/note_search" />
 
+        <receiver android:name=".utils.RebootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_SHUTDOWN" />
+                <action android:name="android.intent.action.REBOOT" />
+            </intent-filter>
+        </receiver>
         <receiver android:name=".AutoStart">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -367,6 +378,10 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+        <service
+            android:name=".services.RefreshRecordingService"
+            android:enabled="true"
+            android:exported="true" />
 
         <!-- below fixes regression bugs with google play services where it crashes if play is not installed on a device -->
         <receiver android:name="com.google.android.gms.measurement.AppMeasurementReceiver" android:enabled="true" android:exported="false" tools:node="remove"/>
