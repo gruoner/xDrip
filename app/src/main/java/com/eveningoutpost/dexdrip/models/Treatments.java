@@ -18,6 +18,7 @@ import com.activeandroid.query.Select;
 import com.activeandroid.util.SQLiteUtils;
 import com.eveningoutpost.dexdrip.GcmActivity;
 import com.eveningoutpost.dexdrip.Home;
+import com.eveningoutpost.dexdrip.g5model.DexSessionKeeper;
 import com.eveningoutpost.dexdrip.models.UserError.Log;
 import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.services.SyncService;
@@ -454,6 +455,15 @@ public class Treatments extends Model {
             Treatments.sensorStart(null, "Started by transmitter");
         } else {
             UserError.Log.i(TAG, "Not creating treatment for Sensor Start because one was created too recently: " + JoH.msSince(lastSensorStart.timestamp) + "ms ago");
+        }
+    }
+
+    public static void sensorUpdateStartTimeIfNeeded() {
+        val lastSensorStart = Treatments.lastEventTypeFromXdrip(Treatments.SENSOR_START_EVENT_TYPE);
+        long localStartedAt = lastSensorStart.timestamp; // When the xDrip local session started
+        long dexStartedAt = DexSessionKeeper.getStart(); // When the current session on the transmitter started
+        if (dexStartedAt > 0 && !(dexStartedAt - localStartedAt < MINUTE_IN_MS * 5)) { // If the start time of the local session is more than 5 minutes older than the one on the transmitter
+            Treatments.sensorStart(dexStartedAt, "Start time updated");
         }
     }
 
