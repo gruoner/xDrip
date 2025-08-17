@@ -178,6 +178,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
@@ -2078,12 +2079,12 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
         // inject our gesture handler if it hasn't already been done
         try {
-            val gestureDetector =  ChartTouchHandler.class.getDeclaredField("gestureDetector");
+            Field gestureDetector =  ChartTouchHandler.class.getDeclaredField("gestureDetector");
             gestureDetector.setAccessible(true);
-            val chartTouchHandler = chart.getTouchHandler();
-            val previewChartTouchHandler = previewChart.getTouchHandler();
-            val activeDetector = (GestureDetector) gestureDetector.get(chartTouchHandler);
-            val previewActiveDetector = (GestureDetector) gestureDetector.get(previewChartTouchHandler);
+            ChartTouchHandler chartTouchHandler = chart.getTouchHandler();
+            ChartTouchHandler previewChartTouchHandler = previewChart.getTouchHandler();
+            GestureDetector activeDetector = (GestureDetector) gestureDetector.get(chartTouchHandler);
+            GestureDetector previewActiveDetector = (GestureDetector) gestureDetector.get(previewChartTouchHandler);
             if (!(activeDetector instanceof InterceptingGestureHandler)) {
                 gestureDetector.set(chartTouchHandler, new InterceptingGestureHandler(this, activeDetector));
             } else {
@@ -3287,6 +3288,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         return super.onCreateOptionsMenu(menu);
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onNewIntent(Intent intent) {
         Bundle bundle = intent.getExtras();
@@ -3908,6 +3910,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,

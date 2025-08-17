@@ -1280,7 +1280,7 @@ public class BgGraphBuilder {
                 } else if (unitized(bgReading.calculated_value) >= highMark) {
                     highValues.add(new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(bgReading.calculated_value)));
                 } else if (unitized(bgReading.calculated_value) >= lowMark) {
-                    val ppx = new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(bgReading.calculated_value));
+                    HPointValue ppx = new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(bgReading.calculated_value));
                     inRangeValues.add(ppx);
                 } else if (bgReading.calculated_value >= 40) {
                     lowValues.add(new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(bgReading.calculated_value)));
@@ -1795,7 +1795,7 @@ public class BgGraphBuilder {
                                         df.setMaximumFractionDigits(2);
                                         df.setMinimumIntegerDigits(1);
                                         //  iv.setLabel("IoB: " + df.format(iob.iob));
-                                        val iobformatted = df.format(iob.iob);
+                                        String iobformatted = df.format(iob.iob);
                                         keyStore.putS("last_iob", iobformatted);
                                         keyStore.putL("last_iob_timestamp", JoH.tsl());
                                         Home.updateStatusLine("iob", iobformatted);
@@ -2126,7 +2126,7 @@ public class BgGraphBuilder {
 
     public void showUnSmoothedValues(final List<BgReading> readings) {
         pluginValues.clear();
-        for (val bgReading : readings) {
+        for (BgReading bgReading : readings) {
             pluginValues.add(new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(bgReading.calculated_value)));
         }
     }
