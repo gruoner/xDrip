@@ -1189,6 +1189,10 @@
     <string name="title_warn_nightscout_failures">Alarm bei Fehlern</string>
     <string name="summary_nightscout_device_append_source_info">Für G5, sendet Sammlertyp (z.B. OB1) und lese Nachfüll-Status (native) an Nightscout.</string>
     <string name="title_nightscout_device_append_source_info">Quell-Info an Gerätename anhängen</string>
+    <string name="summary_nightscout_device_append_location_info">auch GPS Position senden</string>
+    <string name="title_nightscout_device_append_location_info">füge die GPS Position an den Device-Status an</string>
+    <string name="summary_nightscout_upload_status">Lade den Gerätestatus auf Nightscout (normalerweise jede Minute)</string>
+    <string name="title_nightscout_upload_status">Synchronisiere den Gerätestatus</string>
     <string name="summary_tap_to_send_historical_data">Klicken um historische Daten an Nightscout zu senden</string>
     <string name="title_back_fill_data">Back-fill Daten</string>
     <string name="summary_tidepool_upload_screen">Daten zum Tidepool-Dienst hochladen</string>

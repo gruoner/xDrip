@@ -10,6 +10,7 @@
         android:layout_margin="0dp"
         android:adjustViewBounds="true"
         android:contentDescription="Blood Glucose Graph"
+        android:textSize="18sp"
         android:scaleType="fitEnd" />
 
     <TextView

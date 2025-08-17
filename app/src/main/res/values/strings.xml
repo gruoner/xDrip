@@ -1247,6 +1247,10 @@
     <string name="title_warn_nightscout_multi_site_upload_failure">Alert on multi-site upload failure</string>
     <string name="summary_nightscout_device_append_source_info">For Dex, sends collector type (e.g. OB1) and reading backfill status (for native) to Nightscout.</string>
     <string name="title_nightscout_device_append_source_info">Append source info to device name</string>
+    <string name="summary_nightscout_device_append_location_info">send also location information to Nightscout.</string>
+    <string name="title_nightscout_device_append_location_info">add location info to device name</string>
+    <string name="summary_nightscout_upload_status">sync device state to nightscout (every minute)</string>
+    <string name="title_nightscout_upload_status">Sync device state to nightscout</string>
     <string name="summary_tap_to_send_historical_data">Tap to send historical data to Nightscout</string>
     <string name="title_back_fill_data">Back-fill data</string>
     <string name="summary_tidepool_upload_screen">Upload data to the Tidepool service</string>

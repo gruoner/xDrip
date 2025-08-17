@@ -9,6 +9,7 @@ import android.util.Base64;
 import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.MegaStatus;
 import com.eveningoutpost.dexdrip.R;
+import com.eveningoutpost.dexdrip.eassist.GetLocationByLM;
 import com.eveningoutpost.dexdrip.models.BgReading;
 import com.eveningoutpost.dexdrip.models.BloodTest;
 import com.eveningoutpost.dexdrip.models.Calibration;
@@ -53,6 +54,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.CipherSuite;
@@ -109,7 +111,9 @@ public class NightscoutUploader {
 
     private static final String LAST_SUCCESS_TREATMENT_DOWNLOAD = "NS-Last-Treatment-Download-Modified";
     private static final String ETAG = "ETAG";
-
+    static final String LAST_INSULIN_UPLOAD_STORE_COUNTER = "nightscout-rest-insulin-synced-time";
+    static final String LAST_STATUS_UPLOAD_STORE_COUNTER = "nightscout-rest-status-synced-time";
+    static final String LAST_UPLOADED_STATUS_STORE_VALUE = "nightscout-rest-status-synced-value";
 
     private static int failurecount = 0;
 
@@ -123,6 +127,7 @@ public class NightscoutUploader {
     private Boolean enableMongoUpload;
     private SharedPreferences prefs;
     private OkHttpClient client;
+    private static Semaphore deviceStatusUpload= new Semaphore(1);
 
     public interface NightscoutService {
         @POST("entries")
@@ -541,11 +546,13 @@ public class NightscoutUploader {
             if (!r.isSuccessful()) throw new UploaderException(r.message(), r.code());
 
         }
+        deviceStatusUpload.acquire();
         try {
             postDeviceStatus(nightscoutService, null);
         } catch (Exception e) {
             Log.e(TAG, "Ignoring legacy devicestatus post exception: " + e);
         }
+        deviceStatusUpload.release();
     }
 
     private void doRESTUploadTo(NightscoutService nightscoutService, String secret, List<BgReading> glucoseDataSets, List<BloodTest> meterRecords, List<Calibration> calRecords, List<UploaderQueue> tups, long THIS_QUEUE) throws Exception {
@@ -572,11 +579,6 @@ public class NightscoutUploader {
             final Response<ResponseBody> r = nightscoutService.upload(secret, body).execute();
             if (!r.isSuccessful()) throw new UploaderException(r.message(), r.code());
             checkGzipSupport(r);
-            try {
-                postDeviceStatus(nightscoutService, secret);
-            } catch (Exception e) {
-                Log.e(TAG, "Ignoring devicestatus post exception: " + e);
-            }
         }
 
         try {
@@ -607,7 +609,13 @@ public class NightscoutUploader {
                 }
             }
         }
-
+        deviceStatusUpload.acquire();
+        try {
+            postDeviceStatus(nightscoutService, secret);
+        } catch (Exception e) {
+            Log.e(TAG, "Ignoring devicestatus post exception: " + e);
+        }
+        deviceStatusUpload.release();
     }
 
     private static synchronized void handleRestFailure(String msg) {
@@ -1111,6 +1119,10 @@ public class NightscoutUploader {
      * Uploads the device status (containing battery details) to Nightscout for
      */
     private void postDeviceStatus(NightscoutService nightscoutService, String apiSecret) throws Exception {
+        if (JoH.tsl() - lastStatusUploaded() < Constants.MINUTE_IN_MS * 0.8) {
+            UserError.Log.d(TAG, "last device status upload is just " + new Long((JoH.tsl() - lastStatusUploaded())/1000).toString() + " sec away");
+            return;
+        }
         // TODO optimize based on changes avoiding stale marker issues
 
         final List<NightscoutBatteryDevice> batteries = new ArrayList<>();
@@ -1140,7 +1152,7 @@ public class NightscoutUploader {
                 // UserError.Log.d(TAG, "Uploading battery detail: " + battery_level);
                 // json.put("uploaderBattery", battery_level); // old style
 
-                final JSONArray array = new JSONArray();
+//                final JSONArray array = new JSONArray();
                 final JSONObject json = new JSONObject();
                 final JSONObject uploader = batteryType.getUploaderJson(mContext);
 
@@ -1151,7 +1163,14 @@ public class NightscoutUploader {
                 json.put("device", batteryType.getDeviceName());
                 json.put("uploader", uploader);
 
-                array.put(json);
+                if (Pref.getBooleanDefaultFalse("nightscout_device_append_location_info"))
+                {
+                    UserError.Log.d(TAG, "appending location to device status");
+                    GetLocationByLM.getLocation();
+                    json.put("gps", GetLocationByLM.getBestLocation());
+                    json.put("url", GetLocationByLM.getMapUrl());
+                }
+//                array.put(json);
 
                 // example
                 //{
@@ -1163,16 +1182,22 @@ public class NightscoutUploader {
                 //}
                 //}
 
-                final RequestBody body = RequestBody.create(MediaType.parse("application/json"), json.toString());
-                Response<ResponseBody> r;
-                if (apiSecret != null) {
-                    r = nightscoutService.uploadDeviceStatus(apiSecret, body).execute();
-                } else
-                    r = nightscoutService.uploadDeviceStatus(body).execute();
-                if (!r.isSuccessful()) throw new UploaderException(r.message(), r.code());
-                // } else {
-                //     UserError.Log.d(TAG, "Battery level is same as previous - not uploading: " + battery_level);
-                checkGzipSupport(r);
+                if (json.toString().equalsIgnoreCase(lastUploadedStatus()) && (JoH.tsl() - lastStatusUploaded() < Constants.MINUTE_IN_MS * 4.8)) // same status and not more than 4.8 minutes ago
+                    UserError.Log.d(TAG, "no need to upload device status because it's the same as last upload");
+                else {
+                    final RequestBody body = RequestBody.create(MediaType.parse("application/json"), json.toString());
+                    Response<ResponseBody> r;
+                    if (apiSecret != null) {
+                        r = nightscoutService.uploadDeviceStatus(apiSecret, body).execute();
+                    } else
+                        r = nightscoutService.uploadDeviceStatus(body).execute();
+                    if (!r.isSuccessful()) throw new UploaderException(r.message(), r.code());
+                    // } else {
+                    //     UserError.Log.d(TAG, "Battery level is same as previous - not uploading: " + battery_level);
+                    setLastUploadedStatus(json.toString());
+                    checkGzipSupport(r);
+                    setLastStatusUpload();
+                }
             }
         }
     }
@@ -1461,5 +1486,82 @@ public class NightscoutUploader {
                 }
             };
         }
+    }
+
+    public static boolean statusUploadEnabled() {
+        if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
+                Pref.getBooleanDefaultFalse("nightscout_upload_status"))
+            return true;
+        else return false;
+    }
+
+    static long lastStatusUploaded() {
+        return PersistentStore.getLong(LAST_STATUS_UPLOAD_STORE_COUNTER);
+    }
+    static boolean time2UploadStatus() {
+        if (PersistentStore.getLong(LAST_STATUS_UPLOAD_STORE_COUNTER) > JoH.tsl() - Constants.MINUTE_IN_MS * 0.8)
+            return false;
+        else return true;
+    }
+    static void setLastStatusUpload() {
+        PersistentStore.setLong(LAST_STATUS_UPLOAD_STORE_COUNTER, JoH.tsl());
+    }
+    static String lastUploadedStatus() {
+        return PersistentStore.getString(LAST_UPLOADED_STATUS_STORE_VALUE, "");
+    }
+    static void setLastUploadedStatus(String json) {
+        PersistentStore.setString(LAST_UPLOADED_STATUS_STORE_VALUE, json);
+    }
+
+    public void doStatusUpload() throws InterruptedException {
+        deviceStatusUpload.acquire();
+        String baseURLSettings = prefs.getString("cloud_storage_api_base", "");
+        ArrayList<String> baseURIs = new ArrayList<String>();
+
+        try {
+            for (String baseURLSetting : baseURLSettings.split(" ")) {
+                String baseURL = baseURLSetting.trim();
+                if (baseURL.isEmpty()) continue;
+                baseURIs.add(baseURL + (baseURL.endsWith("/") ? "" : "/"));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Unable to process API Base URL: "+e);
+            return;
+        }
+        for (String baseURI : baseURIs) {
+            try {
+                baseURI = TryResolveName(baseURI);
+                int apiVersion = 0;
+                URI uri = new URI(baseURI);
+                if ((uri.getHost().startsWith("192.168.")) && prefs.getBoolean("skip_lan_uploads_when_no_lan", true) && (!JoH.isLANConnected()))
+                {
+                    Log.d(TAG,"Skipping Nighscout upload to: "+uri.getHost()+" due to no LAN connection");
+                    continue;
+                }
+                if (uri.getPath().endsWith("/v1/")) apiVersion = 1;
+                String baseURL;
+                String secret = uri.getUserInfo();
+                if ((secret == null || secret.isEmpty()) && apiVersion == 0) {
+                    baseURL = baseURI;
+                } else if ((secret == null || secret.isEmpty())) {
+                    throw new Exception("Starting with API v1, a pass phase is required");
+                } else if (apiVersion > 0) {
+                    baseURL = baseURI.replaceFirst("//[^@]+@", "//");
+                } else {
+                    throw new Exception("Unexpected baseURI: "+baseURI);
+                }
+
+                final Retrofit retrofit = new Retrofit.Builder().baseUrl(baseURL).client(client).build();
+                final NightscoutService nightscoutService = retrofit.create(NightscoutService.class);
+
+                if (apiVersion == 1) {
+                    String hashedSecret = Hashing.sha1().hashBytes(secret.getBytes(Charsets.UTF_8)).toString();
+                    postDeviceStatus(nightscoutService, hashedSecret);
+                }
+            } catch (Exception e) {
+                String msg = "Unable to do device status API Upload: " + e.getMessage();
+            }
+        }
+        deviceStatusUpload.release();
     }
 }
