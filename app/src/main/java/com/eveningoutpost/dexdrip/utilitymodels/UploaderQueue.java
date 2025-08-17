@@ -396,6 +396,7 @@ public class UploaderQueue extends Model {
     public static List<StatusItem> megaStatus() {
         final List<StatusItem> l = new ArrayList<>();
 
+        // Status for Statusupload
         String ageLastStatusUpload = "n/a";
         if(NightscoutUploader.lastStatusUploaded() != 0) {
             long age = JoH.msSince(NightscoutUploader.lastStatusUploaded());

@@ -1119,7 +1119,7 @@ public class NightscoutUploader {
      * Uploads the device status (containing battery details) to Nightscout for
      */
     private void postDeviceStatus(NightscoutService nightscoutService, String apiSecret) throws Exception {
-        if (JoH.tsl() - lastStatusUploaded() < Constants.MINUTE_IN_MS * 0.8) {
+        if (!time2UploadStatus()) {
             UserError.Log.d(TAG, "last device status upload is just " + new Long((JoH.tsl() - lastStatusUploaded())/1000).toString() + " sec away");
             return;
         }
@@ -1499,7 +1499,7 @@ public class NightscoutUploader {
         return PersistentStore.getLong(LAST_STATUS_UPLOAD_STORE_COUNTER);
     }
     static boolean time2UploadStatus() {
-        if (PersistentStore.getLong(LAST_STATUS_UPLOAD_STORE_COUNTER) > JoH.tsl() - Constants.MINUTE_IN_MS * 0.8)
+        if (JoH.tsl() - PersistentStore.getLong(LAST_STATUS_UPLOAD_STORE_COUNTER) < Constants.MINUTE_IN_MS * 0.8)
             return false;
         else return true;
     }
