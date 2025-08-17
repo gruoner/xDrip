@@ -172,6 +172,16 @@
                         android:summary="@string/summary_nightscout_device_append_source_info"
                         android:title="@string/title_nightscout_device_append_source_info" />
                     <CheckBoxPreference
+                        android:defaultValue="false"
+                        android:key="nightscout_device_append_location_info"
+                        android:summary="@string/summary_nightscout_device_append_location_info"
+                        android:title="@string/title_nightscout_device_append_location_info" />
+                    <CheckBoxPreference
+                        android:defaultValue="false"
+                        android:key="nightscout_upload_status"
+                        android:summary="@string/summary_nightscout_upload_status"
+                        android:title="@string/title_nightscout_upload_status" />
+                    <CheckBoxPreference
                         android:defaultValue="true"
                         android:key="warn_nightscout_multi_site_upload_failure"
                         android:summary="@string/summary_warn_nightscout_multi_site_upload_failure"

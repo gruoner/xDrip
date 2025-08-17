@@ -363,6 +363,10 @@
         </service>
         -->
         <service
+            android:name=".services.RunEveryMinuteService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
             android:name=".services.SyncService"
             android:enabled="true"
             android:exported="true" />

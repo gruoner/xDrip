@@ -24,9 +24,7 @@ import com.eveningoutpost.dexdrip.models.LibreBlock;
 import com.eveningoutpost.dexdrip.models.TransmitterData;
 import com.eveningoutpost.dexdrip.models.Treatments;
 import com.eveningoutpost.dexdrip.models.UserError;
-import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.food.MultipleCarbs;
-import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
 import com.eveningoutpost.dexdrip.tidepool.TidepoolEntry;
 import com.eveningoutpost.dexdrip.tidepool.TidepoolStatus;
 import com.eveningoutpost.dexdrip.tidepool.TidepoolUploader;
@@ -200,15 +198,15 @@ public class UploaderQueue extends Model {
     }
 
     public static void newTransmitterDataEntry(String action, Model obj) {
-    	if(!Pref.getBooleanDefaultFalse("mongo_load_transmitter_data")) {
-    		return;
-    	}
-    	newEntry(action, obj);
-    	// For libre us sensors, we have a reading, it might not create a BG entry, but we still need
-    	// to upload it.
-    	startSyncService(3000); // sync in 3 seconds
+        if (!Pref.getBooleanDefaultFalse("mongo_load_transmitter_data")) {
+            return;
+        }
+        newEntry(action, obj);
+        // For libre us sensors, we have a reading, it might not create a BG entry, but we still need
+        // to upload it.
+        startSyncService(3000); // sync in 3 seconds
     }
-    
+
     // TODO remove duplicated functionality, replace with generic multi-purpose method
     public static UploaderQueue newEntryForWatch(String action, Model obj) {
         UserError.Log.d(TAG, "new entry called for watch");
@@ -405,16 +403,16 @@ public class UploaderQueue extends Model {
         // Status for Insulin
         String ageLastInsulinDownload = "n/a";
         String rateLastInsulin = "n/a";
-        if(InsulinManager.lastInsulinDownloaded() != 0) {
+        if (InsulinManager.lastInsulinDownloaded() != 0) {
             long age = JoH.msSince(InsulinManager.lastInsulinDownloaded());
             ageLastInsulinDownload = JoH.niceTimeScalar(age);
         }
-        if(JoH.getRateLimit(InsulinManager.NAME4nsupload_insulin_downloadRATE) != 0) {
+        if (JoH.getRateLimit(InsulinManager.NAME4nsupload_insulin_downloadRATE) != 0) {
             long age = JoH.msSince(JoH.getRateLimit(InsulinManager.NAME4nsupload_insulin_downloadRATE));
             rateLastInsulin = JoH.niceTimeScalar(age);
         }
         String ageLastInsulinUpload = "n/a";
-        if(NightscoutUploader.lastInsulinUploaded() != 0) {
+        if (NightscoutUploader.lastInsulinUploaded() != 0) {
             long age = JoH.msSince(NightscoutUploader.lastInsulinUploaded());
             ageLastInsulinUpload = JoH.niceTimeScalar(age);
         }
@@ -422,13 +420,20 @@ public class UploaderQueue extends Model {
         // Status for Food
         String ageLastFood = "n/a";
         String rateLastFood = "n/a";
-        if(FoodManager.lastFoodDownloaded() != 0) {
+        if (FoodManager.lastFoodDownloaded() != 0) {
             long age = JoH.msSince(FoodManager.lastFoodDownloaded());
             ageLastFood = JoH.niceTimeScalar(age);
         }
-        if(JoH.getRateLimit(FoodManager.NAME4nsupload_food_downloadRATE) != 0) {
+        if (JoH.getRateLimit(FoodManager.NAME4nsupload_food_downloadRATE) != 0) {
             long age = JoH.msSince(JoH.getRateLimit(FoodManager.NAME4nsupload_food_downloadRATE));
             rateLastFood = JoH.niceTimeScalar(age);
+        }
+
+        // Status for Statusupload
+        String ageLastStatusUpload = "n/a";
+        if (NightscoutUploader.lastStatusUploaded() != 0) {
+            long age = JoH.msSince(NightscoutUploader.lastStatusUploaded());
+            ageLastStatusUpload = JoH.niceTimeScalar(age);
         }
 
         // per circuit
@@ -449,19 +454,19 @@ public class UploaderQueue extends Model {
                 }
             }
 
-               /*
-                // handle legacy tables
-                if (bitfield == MONGO_DIRECT) {
-                    // legacy
-                    l.add(new StatusItem(circuits_for_stats.valueAt(i).toString(), getLegacyCount(BgSendQueue.class, null, false, null) + " Legacy Glucose Values"));
-                    l.add(new StatusItem(circuits_for_stats.valueAt(i).toString(), getLegacyCount(CalibrationSendQueue.class, null, false, null) + " Legacy Calibrations"));
-                }
-                // handle legacy tables
-                if (bitfield == NIGHTSCOUT_RESTAPI) {
-                    // legacy
-                    l.add(new StatusItem(circuits_for_stats.valueAt(i).toString(), getLegacyCount(BgSendQueue.class, false, null, null) + " Legacy Glucose Values"));
-                    l.add(new StatusItem(circuits_for_stats.valueAt(i).toString(), getLegacyCount(CalibrationSendQueue.class, false, null, null) + " Legacy Calibrations"));
-                }*/
+           /*
+            // handle legacy tables
+            if (bitfield == MONGO_DIRECT) {
+                // legacy
+                l.add(new StatusItem(circuits_for_stats.valueAt(i).toString(), getLegacyCount(BgSendQueue.class, null, false, null) + " Legacy Glucose Values"));
+                l.add(new StatusItem(circuits_for_stats.valueAt(i).toString(), getLegacyCount(CalibrationSendQueue.class, null, false, null) + " Legacy Calibrations"));
+            }
+            // handle legacy tables
+            if (bitfield == NIGHTSCOUT_RESTAPI) {
+                // legacy
+                l.add(new StatusItem(circuits_for_stats.valueAt(i).toString(), getLegacyCount(BgSendQueue.class, false, null, null) + " Legacy Glucose Values"));
+                l.add(new StatusItem(circuits_for_stats.valueAt(i).toString(), getLegacyCount(CalibrationSendQueue.class, false, null, null) + " Legacy Calibrations"));
+            }*/
         }
 
         if (UploaderTask.exception != null) {
@@ -479,9 +484,9 @@ public class UploaderQueue extends Model {
         if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable")) {
             try {
 
-                /*if (NightscoutUploader.last_success_time > 0) {
-                    l.add(new StatusItem("REST Success", JoH.niceTimeSince(NightscoutUploader.last_success_time) + " ago", StatusItem.Highlight.NORMAL));
-                }*/
+            /*if (NightscoutUploader.last_success_time > 0) {
+                l.add(new StatusItem("REST Success", JoH.niceTimeSince(NightscoutUploader.last_success_time) + " ago", StatusItem.Highlight.NORMAL));
+            }*/
 
                 if ((processedBaseURIs == null) || (JoH.ratelimit("uploader-base-urls-cache", 60))) {
                     // Rebuild url cache
@@ -505,7 +510,7 @@ public class UploaderQueue extends Model {
 
                 // lookup status for each url in cache
                 for (int i = 0; i < processedBaseURIs.size(); i++) {
-                    if(NightscoutUploader.insulinUploadEnabled() && MultipleInsulins.isEnabled()) {
+                    if (NightscoutUploader.insulinUploadEnabled() && MultipleInsulins.isEnabled()) {
                         l.add(new StatusItem("Nightscout REST", InsulinManager.getAllProfiles().size() + " Insulin Profiles"));
                         l.add(new StatusItem("Last Insulin Uploaded", ageLastInsulinUpload + " ago"));
                         String s = gs(R.string.yes);
@@ -514,6 +519,12 @@ public class UploaderQueue extends Model {
                         }
                         l.add(new StatusItem("Upload insulin", s));
                     }
+
+                    if (NightscoutUploader.statusUploadEnabled()) {
+                        l.add(new StatusItem("Last Status Uploaded", ageLastStatusUpload + " ago"));
+                        String s = gs(R.string.yes);
+                        l.add(new StatusItem("Upload device status", s));
+                    } else l.add(new StatusItem("Upload device status", gs(R.string.no)));
 
                     try {
                         final String store_marker = "nightscout-status-poll-" + processedBaseURIs.get(i);
@@ -547,20 +558,19 @@ public class UploaderQueue extends Model {
                                         }
                                     }));
 
-                        if(NightscoutUploader.insulinDownloadEnabled() && MultipleInsulins.isEnabled()) {
+                        if (NightscoutUploader.insulinDownloadEnabled() && MultipleInsulins.isEnabled()) {
                             l.add(new StatusItem("Latest Insulin Download", ageLastInsulinDownload + " ago (Rate: " + rateLastInsulin + " ago)"));
                             String s = gs(R.string.yes);
                             if (!MultipleInsulins.isNightscoutInsulinAPIavailable(processedBaseURIs.get(i))) {
                                 s = "generally " + s + " but currently " + gs(R.string.not_available);
-                            } else
-                            if (!MultipleInsulins.isDownloadAllowed()) {
+                            } else if (!MultipleInsulins.isDownloadAllowed()) {
                                 s = "generally " + s + " but currently " + gs(R.string.no);
                             }
                             l.add(new StatusItem("Download insulin", s));
                         }
 
-                        if(NightscoutUploader.foodDownloadEnabled() && MultipleCarbs.isEnabled()) {
-                            l.add(new StatusItem("Latest Food Download", ageLastFood + " ago (Rate: " + rateLastFood+ " ago)"));
+                        if (NightscoutUploader.foodDownloadEnabled() && MultipleCarbs.isEnabled()) {
+                            l.add(new StatusItem("Latest Food Download", ageLastFood + " ago (Rate: " + rateLastFood + " ago)"));
                             String s = gs(R.string.yes);
                             if (!MultipleCarbs.isDownloadAllowed()) {
                                 s = "generally " + s + " but currently " + gs(R.string.no);
@@ -610,7 +620,7 @@ public class UploaderQueue extends Model {
         return l;
     }
 
-    private static void refreshStatus(String store_marker) {
+    private static void refreshStatus (String store_marker) {
         PersistentStore.setString(store_marker, "");
         if (JoH.ratelimit("nightscout-manual-poll", 15)) {
             startSyncService(100);

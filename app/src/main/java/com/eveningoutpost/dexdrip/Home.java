@@ -72,6 +72,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.eveningoutpost.dexdrip.eassist.GetLocationByLM;
 import com.eveningoutpost.dexdrip.g5model.DexSyncKeeper;
 import com.eveningoutpost.dexdrip.g5model.DexTimeKeeper;
 import com.eveningoutpost.dexdrip.g5model.Ob1G5StateMachine;
@@ -95,6 +96,7 @@ import com.eveningoutpost.dexdrip.services.ActivityRecognizedService;
 import com.eveningoutpost.dexdrip.services.DexCollectionService;
 import com.eveningoutpost.dexdrip.services.Ob1G5CollectionService;
 import com.eveningoutpost.dexdrip.services.PlusSyncService;
+import com.eveningoutpost.dexdrip.services.RunEveryMinuteService;
 import com.eveningoutpost.dexdrip.services.WixelReader;
 import com.eveningoutpost.dexdrip.utilitymodels.AlertPlayer;
 import com.eveningoutpost.dexdrip.utilitymodels.BgGraphBuilder;
@@ -487,10 +489,23 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         if (searchWords == null) {
             initializeSearchWords("");
         }
+
         if (MultipleInsulins.isEnabled())   // alway load all Insulin profiles because even in single mode we store injections with the default bolus
             InsulinManager.getDefaultInstance();
         if (MultipleCarbs.isEnabled())   // alway load all Food profiles
             FoodManager.getDefaultInstance(false);
+
+        if (Pref.getBooleanDefaultFalse("cloud_storage_api_enable") &&
+                Pref.getBooleanDefaultFalse("nightscout_device_append_location_info")) {
+            if ((ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) &&
+                    (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED))
+            {
+                UserError.Log.d(TAG, "requesting permission for location");
+                ActivityCompat.requestPermissions(this, new String[] {android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, GetLocationByLM.MY_PERMISSIONS_REQUEST_GPS);
+            }  else
+                UserError.Log.d(TAG, "permission for location already granted");
+            GetLocationByLM.prepareForLocation();
+        }
 
         this.btnSpeak = (ImageButton) findViewById(R.id.btnTreatment);
         btnSpeak.setOnClickListener(v -> promptTextInput());
@@ -654,6 +669,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
         if (Pref.getBooleanDefaultFalse("audio_recorder_started") && !AudioRecorder.isRunning())
             ManageRecorder.AudioRecorderStart();
+
+        RunEveryMinuteService.startService();
     }
 
     private boolean firstRunDialogs(final boolean checkedeula) {
@@ -1976,6 +1993,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             NightscoutUploader.launchDownloadRest();
             Pendiq.immortality(); // Experimental testing phase
         });
+        RunEveryMinuteService.startService();
     }
 
     private void checkWifiSleepPolicy() {
@@ -3899,6 +3917,11 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                 && permissions.length > 0 && grantResults.length > 0
                 && permissions[0].equals(WRITE_EXTERNAL_STORAGE) && grantResults[0] == 0) {
             SdcardImportExport.restoreSettingsNow(this);
+        }
+        if ((requestCode == GetLocationByLM.MY_PERMISSIONS_REQUEST_GPS)
+                && permissions.length > 0 && grantResults.length > 0
+                && permissions[0].equals(android.Manifest.permission.ACCESS_FINE_LOCATION) && grantResults[0] == 0) {
+            GetLocationByLM.prepareForLocation();
         }
     }
 
