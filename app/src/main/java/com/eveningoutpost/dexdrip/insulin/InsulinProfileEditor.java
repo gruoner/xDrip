@@ -11,12 +11,13 @@ import android.widget.Spinner;
 
 import com.eveningoutpost.dexdrip.BaseAppCompatActivity;
 import com.eveningoutpost.dexdrip.R;
+import com.eveningoutpost.dexdrip.utilitymodels.NightscoutUploader;
+import com.eveningoutpost.dexdrip.utilitymodels.PersistentStore;
+import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollow;
 import com.eveningoutpost.dexdrip.models.JoH;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import lombok.val;
 
 /**
  * Created by gruoner on 28/07/2019.
@@ -34,6 +35,9 @@ public class InsulinProfileEditor extends BaseAppCompatActivity {
     private Spinner basalSpinner, bolusSpinner;
     private HashMap<Insulin, CheckBox> checkboxes;
     private HashMap<String, Insulin> profiles;
+    private CheckBox loadFromNightscout;
+//    private ScrollView parentScrollView;
+//    private ScrollView childScrollView;
 
     //private Context mContext;
 
@@ -52,8 +56,10 @@ public class InsulinProfileEditor extends BaseAppCompatActivity {
         linearLayout = (LinearLayout) findViewById(R.id.profile_layout_view);
         basalSpinner = (Spinner) findViewById(R.id.basalSpinner);
         bolusSpinner = (Spinner) findViewById(R.id.bolusSpinner);
+        loadFromNightscout = (CheckBox) findViewById(R.id.load_from_ms);
 
-        val iprofiles = InsulinManager.getAllProfiles();
+/// gruoner, 05/09/2024: migrated val to ArrayList because of compiler error
+        ArrayList<Insulin> iprofiles = InsulinManager.getAllProfiles();
         if (iprofiles == null) {
             JoH.static_toast_long("Can't initialize insulin profiles");
             finish();
@@ -87,6 +93,7 @@ public class InsulinProfileEditor extends BaseAppCompatActivity {
             linearLayout.addView(v);
             profiles.put(i.getDisplayName(), i);
         }
+
         ArrayList<String> p = new ArrayList<String>(profiles.keySet());
         ArrayAdapter<String> profilesAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, p);
         profilesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -122,6 +129,43 @@ public class InsulinProfileEditor extends BaseAppCompatActivity {
             if (p.get(i).equals(bolus))
                 bolusSpinner.setSelection(i);
         }
+
+        if (!NightscoutFollow.insulinDownloadEnabled() && !NightscoutUploader.insulinDownloadEnabled()) {
+            InsulinManager.setLoadConfigFromNightscout(false);
+            loadFromNightscout.setEnabled(false);
+        }
+        else {
+            if (InsulinManager.getLoadConfigFromNightscout()) {
+                loadFromNightscout.setChecked(true);
+                for (CheckBox i : checkboxes.values())
+                    i.setEnabled(false);
+                basalSpinner.setEnabled(false);
+                bolusSpinner.setEnabled(false);
+            } else {
+                loadFromNightscout.setChecked(false);
+                for (CheckBox i : checkboxes.values())
+                    i.setEnabled(true);
+                basalSpinner.setEnabled(true);
+                bolusSpinner.setEnabled(true);
+            }
+            loadFromNightscout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    InsulinManager.setLoadConfigFromNightscout(!InsulinManager.getLoadConfigFromNightscout());
+                    if (InsulinManager.getLoadConfigFromNightscout()) {
+                        for (CheckBox i : checkboxes.values())
+                            i.setEnabled(false);
+                        basalSpinner.setEnabled(false);
+                        bolusSpinner.setEnabled(false);
+                    } else {
+                        for (CheckBox i : checkboxes.values())
+                            i.setEnabled(true);
+                        basalSpinner.setEnabled(true);
+                        bolusSpinner.setEnabled(true);
+                    }
+                }
+            });
+        }
     }
 
     @Override
@@ -136,6 +180,7 @@ public class InsulinProfileEditor extends BaseAppCompatActivity {
 
     public void profileSaveButton(View myview) {
         InsulinManager.saveDisabledProfilesToPrefs();
+        PersistentStore.setLong("nightscout-rest-insulin-synced-time", 0);
         finish();
     }
 

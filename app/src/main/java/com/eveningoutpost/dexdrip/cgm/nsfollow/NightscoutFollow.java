@@ -2,12 +2,14 @@ package com.eveningoutpost.dexdrip.cgm.nsfollow;
 
 import androidx.annotation.VisibleForTesting;
 
+import com.activeandroid.ActiveAndroid;
 import com.eveningoutpost.dexdrip.BuildConfig;
 import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.models.UserError;
 import com.eveningoutpost.dexdrip.utilitymodels.CollectionServiceStarter;
 import com.eveningoutpost.dexdrip.utilitymodels.Constants;
 import com.eveningoutpost.dexdrip.utilitymodels.NightscoutTreatments;
+import com.eveningoutpost.dexdrip.utilitymodels.PersistentStore;
 import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import com.eveningoutpost.dexdrip.utilitymodels.PumpStatus;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.messages.DeviceStatus;
@@ -15,9 +17,10 @@ import com.eveningoutpost.dexdrip.cgm.nsfollow.messages.Entry;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.utils.NightscoutUrl;
 import com.eveningoutpost.dexdrip.models.BgReading;
 import com.eveningoutpost.dexdrip.utils.framework.RetrofitService;
-
 import java.util.List;
 
+import com.eveningoutpost.dexdrip.insulin.InsulinManager;
+import com.eveningoutpost.dexdrip.insulin.MultipleInsulins;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -25,9 +28,9 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.Query;
-
 import static com.eveningoutpost.dexdrip.models.JoH.emptyString;
 import static com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollowService.msg;
+import org.json.JSONObject;
 
 /**
  * jamorham
@@ -42,6 +45,17 @@ public class NightscoutFollow {
     private static final boolean D = true;
 
     private static Nightscout service;
+
+    public static class NightscoutInsulinStructure {
+        public String _id;
+        public String displayName;
+        public String name;
+        public List<String> pharmacyProductNumber;
+        public String enabled;
+        public String type;
+        public List<Double> IOB1Min;
+        public String color;
+    }
 
 
     public interface Nightscout {
@@ -60,6 +74,11 @@ public class NightscoutFollow {
 
         @GET("/api/v1/devicestatus.json?count=1")
         Call<List<DeviceStatus>> getDeviceStatus(@Header("api-secret") String secret);
+        @GET("/api/v1/insulin")
+        Call<List<NightscoutInsulinStructure>> getInsulinProfiles(@Header("api-secret") String secret);
+
+        @GET("/api/v1/status.json")
+        Call<ResponseBody> getStatus(@Header("api-secret") String secret);
     }
 
     private static Nightscout getService() {
@@ -103,6 +122,33 @@ public class NightscoutFollow {
         })
                 .setOnFailure(() -> msg(session.treatmentsCallback.getStatus()));
 
+        if (MultipleInsulins.isEnabled())
+            // set up processing callback for treatments
+            session.insulinCallback = new NightscoutCallback<List<NightscoutInsulinStructure>>("NS insulin download", session, () -> {
+                // process data
+                try {
+                    if (InsulinManager.updateFromNightscout(session.insulin)) ActiveAndroid.clearCache();   // when at least one profile has been changed ActiveAndroid Cache will be cleared to reload all insulin injections from scratch
+                    InsulinManager.setLastInsulinDownload();
+                } catch (Exception e) {
+                    JoH.clearRatelimit(InsulinManager.NAME4nsfollow_insulin_downloadRATE);
+                    msg("Insulin: " + e);
+                }
+            })
+                    .setOnFailure(() -> msg(session.insulinCallback.getStatus()));
+
+        // set up processing callback for treatments
+        session.statusCallback = new NightscoutCallback<ResponseBody>("NS status download", session, () -> {
+            // process data
+            try {
+                    String store_marker = "nightscout-status-poll-" + urlString;
+                    final JSONObject tr = new JSONObject(session.status.string());
+                    PersistentStore.setString(store_marker, tr.toString());
+            } catch (Exception e) {
+                msg("Status: " + e);
+            }
+        })
+                .setOnFailure(() -> msg(session.statusCallback.getStatus()));
+
         if (!emptyString(urlString)) {
             try {
                 final BgReading last = BgReading.last(true);
@@ -139,17 +185,32 @@ public class NightscoutFollow {
                     UserError.Log.e(TAG, "Exception in devicestatus work() " + e);
                 }
             }
+            if (insulinDownloadEnabled() && MultipleInsulins.isDownloadAllowed() && MultipleInsulins.isNightscoutInsulinAPIavailable(urlString)) {
+                if (JoH.ratelimit(InsulinManager.NAME4nsfollow_insulin_downloadRATE, 60*60)) {    // load insulin every hour
+                    try {
+                        getService().getInsulinProfiles(session.url.getHashedSecret()).enqueue(session.insulinCallback);
+                    } catch (Exception e) {
+                        JoH.clearRatelimit(InsulinManager.NAME4nsfollow_insulin_downloadRATE);
+                        UserError.Log.e(TAG, "Exception in insulin work() " + e);
+                        msg("Nightscout follow insulin error: " + e);
+                    }
+                }
+            }
         } else {
             msg("Please define Nightscout follow URL");
         }
     }
 
-    private static String getUrl() {
+    public static String getUrl() {
         return Pref.getString("nsfollow_url", "");
     }
 
     static boolean treatmentDownloadEnabled() {
         return Pref.getBooleanDefaultFalse("nsfollow_download_treatments");
+    }
+
+    public static boolean insulinDownloadEnabled() {
+        return MultipleInsulins.isEnabled() && Pref.getBooleanDefaultFalse("nsfollow_download_insulin");
     }
 
     public static void resetInstance() {

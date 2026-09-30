@@ -16,7 +16,6 @@ import static com.eveningoutpost.dexdrip.models.JoH.emptyString;
  * Representation of a Nightscout URL with utility methods and caching
  */
 
-@RequiredArgsConstructor
 public class NightscoutUrl {
 
     private final String url;
@@ -26,6 +25,10 @@ public class NightscoutUrl {
     private String secret;
     private String hashedSecret;
 
+    /// gruoner, 05/09/2024: created constructor because of compiler error
+    public NightscoutUrl(String urlString) {
+        url = urlString;
+    }
 
     public URI getURI() {
         if (uri == null) {

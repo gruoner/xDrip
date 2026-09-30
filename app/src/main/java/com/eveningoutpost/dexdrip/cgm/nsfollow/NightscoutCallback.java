@@ -25,6 +25,7 @@ public class NightscoutCallback<T> extends BaseCallback<T> {
     }
 
     public NightscoutCallback(final String name, final Session session, final Consumer<T> populator, final Runnable onSuccess) {
+/// gruoner, 05/09/2024: even when creating a compiler error, MUST be left active otherwise we get an other compiler error
         super(name);
         this.session = session;
         this.populator = populator;
@@ -41,7 +42,7 @@ public class NightscoutCallback<T> extends BaseCallback<T> {
                     UserError.Log.e(TAG, name + " populator error: " + e);
                 }
             } else {
-                session.populate(response.body());
+                session.populate(call.request().url().toString(), response.body());
             }
         }
         super.onResponse(call, response);

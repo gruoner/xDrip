@@ -13,10 +13,14 @@ import okhttp3.Response;
 
 // jamorham
 
-@RequiredArgsConstructor
 public class InfoInterceptor implements Interceptor {
 
     private final String tag;
+
+    /// gruoner, 05/09/2024: created constructor because of compiler error
+    public InfoInterceptor(String t) {
+        tag = t;
+    }
 
     @Override
     public Response intercept(@NonNull final Chain chain) throws IOException {
